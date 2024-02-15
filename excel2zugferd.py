@@ -62,7 +62,7 @@ class Oberflaeche:
             self.root.destroy()
 
     def info_cmd(self):
-        messagebox.showinfo("Info", "Copyright H.Lischka 2024\nVersion 0.1.0")
+        messagebox.showinfo("Info", "Copyright H.Lischka 2024\nVersion 0.1.1")
 
     def loop(self):
         self.root.mainloop()
@@ -187,7 +187,7 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         docDir = Path.home()
         if Path(Path.joinpath(docDir, 'Documents')).is_dir():
             docDir = Path.joinpath(docDir, 'Documents')
-        initDir = contentIniFile["Verzeichnis"] if len(contentIniFile["Verzeichnis"]) > 0 else docDir
+        initDir = contentIniFile["Verzeichnis"] if hasattr(contentIniFile, "Verzeichnis") and len(contentIniFile["Verzeichnis"]) > 0 else docDir
 
         # print(initDir)
         self.filename = filedialog.askopenfilename(
