@@ -54,7 +54,24 @@ class test_ExcelContent(unittest.TestCase):
         )
         value = self.xlsx.getAddressOfCustomer()
         # print(value)
-        self.assertEquals(value, expected, "should be equal")
+        self.assertEqual(value, expected, "should be equal")
+
+    def test__searchAnschrift(self):
+        """
+        Lies die Anschrift des Kunden aus dem Excel Sheet
+        """
+        self.xlsx.readSheet("Rechnung2")
+        expected = "\n".join(
+            [
+                "Kunde Hans Mustermann GmbH",
+                "Frau Mustermann",
+                "Musterstr. 10",
+                "12345 Musterstadt",
+            ]
+        )
+        value = self.xlsx._searchAnschrift('An:')
+        # print(value)
+        self.assertEqual(value, expected, "should be equal")
 
     def test_getInvoicePositions(self):
         """Lies den Inhalt der Positionen"""
