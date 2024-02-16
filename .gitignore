@@ -1,4 +1,6 @@
 __pycache__
+_internal
+build
 *.xml
 *.ini
 *.pdf

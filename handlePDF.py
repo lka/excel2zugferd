@@ -185,15 +185,19 @@ class Pdf(PDF):
         self.stammdaten = stammdaten if stammdaten != None else {}
         self.createXML = createXML
         # import and embed TTF Font to use € in text
-        self.add_font("dejavu-sans", style="", fname="Fonts/DejaVuSansCondensed.ttf")
+        self.add_font("dejavu-sans", style="", fname="./_internal/Fonts/DejaVuSansCondensed.ttf")
         self.add_font(
-            "dejavu-sans", style="b", fname="Fonts/DejaVuSansCondensed-Bold.ttf"
+            "dejavu-sans", style="b", fname="./_internal/Fonts/DejaVuSansCondensed-Bold.ttf"
         )
         self.add_font(
-            "dejavu-sans", style="i", fname="Fonts/DejaVuSansCondensed-Oblique.ttf"
+            "dejavu-sans",
+            style="i",
+            fname="./_internal/Fonts/DejaVuSansCondensed-Oblique.ttf",
         )
         self.add_font(
-            "dejavu-sans", style="bi", fname="Fonts/DejaVuSansCondensed-BoldOblique.ttf"
+            "dejavu-sans",
+            style="bi",
+            fname="./_internal/Fonts/DejaVuSansCondensed-BoldOblique.ttf",
         )
         # use the font imported
         self.set_font("dejavu-sans")

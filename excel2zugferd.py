@@ -160,18 +160,27 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         contentIniFile = self.iniFile.readIniFile()
         self.excelFile.readSheet(self.selectedItem)
         createXML = True if contentIniFile["ZugFeRD"].split("\n")[0] == "Ja" else False
+
+#        msg = f"Ausgewählt wurde das Excel Sheet: {self.selectedItem}"
+#        messagebox.showinfo("Information", msg)
+
         self.pdf = Pdf(self.excelFile, contentIniFile, createXML)
-        # msg = f"Ausgewählt wurde das Excel Sheet: {self.selectedItem}"
-        # messagebox.showinfo("Information", msg)
+
         self.pdf.fill_Pdf()
         fn = self.selectedItem + ".pdf"
         # print(contentIniFile["Verzeichnis"], fn)
         tmpfn = Path.joinpath(Path(contentIniFile["Verzeichnis"]).absolute(), fn)
         outfile = self.pdf.uniquify(tmpfn)
+
+#        msg = f"Die Datei {outfile} wurde vorgesehen"
+#        messagebox.showinfo("Debug-Information", msg)
+
         if createXML:
             with tempfile.TemporaryDirectory() as tmp:
                 fileName = os.path.join(tmp, fn) # doesn't matter, cannot exist twice
                 self.pdf.output(fileName)
+#                msg = f"Die Datei {fileName} wurde erstellt"
+#                messagebox.showinfo("Debug-Information", msg)
                 self.pdf.zugferd.add_xml2pdf(fileName, outfile)
         else:
             self.pdf.output(outfile)
@@ -187,9 +196,9 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         docDir = Path.home()
         if Path(Path.joinpath(docDir, 'Documents')).is_dir():
             docDir = Path.joinpath(docDir, 'Documents')
-        initDir = contentIniFile["Verzeichnis"] if hasattr(contentIniFile, "Verzeichnis") and len(contentIniFile["Verzeichnis"]) > 0 else docDir
+        initDir = contentIniFile["Verzeichnis"] if 'Verzeichnis' in contentIniFile and len(contentIniFile["Verzeichnis"]) > 0 else docDir
 
-        # print(initDir)
+        # print(initDir, "Verzeichnis" in contentIniFile, contentIniFile)
         self.filename = filedialog.askopenfilename(
             title="Bitte die Excel Datei auswählen",
             initialdir=Path(initDir).resolve(),

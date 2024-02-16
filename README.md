@@ -46,6 +46,10 @@ Ich habe daraus den Font `DejaVuSansCondensed` gewählt und in allen Ausprägung
 
 [![Python application](https://github.com/lka/excel2zugferd/actions/workflows/python-app.yml/badge.svg)](https://github.com/lka/excel2zugferd/actions/workflows/python-app.yml)
 
+## Erstellen einer Windows exe
+
+`pyinstaller .\excel2zugferd.py --noconsole --add-data _internal/Fonts:Fonts`
+
 ## Copyright and License
 
 Copyright [2024] [Herbert Lischka]
