@@ -44,4 +44,12 @@ jobs:
           path: junit/test-results.xml
         # Use always() to always run this step to publish test results when there are test failures
       if: ${{ always() }}
-        
+    - name: Build with pyinstaller
+      run: pyinstaller excel2zugferd.py --noconsole --add-data _internal/Fonts:Fonts
+
+    - name: Deploy artifacts
+      uses: actions/upload-artifact@v4
+      with:
+          name: excel2zugferd
+          path: app/dist/excel2zugferd*
+          if-no-files-found: error        
