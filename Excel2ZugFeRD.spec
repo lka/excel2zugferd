@@ -2,10 +2,10 @@
 
 
 a = Analysis(
-    ['Excel2ZugFeRD.py'],
+    ['excel2zugferd.py'],
     pathex=[],
     binaries=[],
-    datas=[('_internal/Fonts', 'Fonts')],
+    datas=[('_internal/Fonts', 'Fonts'), ('./.venv/Lib/site-packages/drafthorse/schema', 'drafthorse/schema')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -20,7 +20,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='Excel2ZugFeRD',
+    name='excel2zugferd',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -39,5 +39,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='Excel2ZugFeRD',
+    name='excel2zugferd',
 )
