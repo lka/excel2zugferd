@@ -25,11 +25,14 @@ jobs:
         python-version: "3.11"
     - name: Install dependencies
       run: |
+        python -m pip install --upgrade pip
         python -m venv .venv
         .venv/Scripts/activate
         python -m pip install --upgrade pip
-        pip install flake8 pytest
         pip install -r requirements.txt
+        pip install pytest
+        .venv/Scripts/deactivate
+        pip install flake8
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -38,6 +41,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
+        .venv/Scripts/activate
         pytest --doctest-modules --junitxml=junit/test-results.xml
     - name: Upload pytest test results
       uses: actions/upload-artifact@v4
@@ -47,7 +51,9 @@ jobs:
         # Use always() to always run this step to publish test results when there are test failures
       if: ${{ always() }}
     - name: Build with pyinstaller
-      run: pyinstaller excel2zugferd.py --noconsole --add-data _internal/Fonts:Fonts --add-data ./.venv/Lib/site-packages/drafthorse/schema:drafthorse/schema --noconfirm
+      run: |
+        .venv/Scripts/activate
+        pyinstaller excel2zugferd.py --noconsole --add-data _internal/Fonts:Fonts --add-data ./.venv/Lib/site-packages/drafthorse/schema:drafthorse/schema --noconfirm
 
     - name: Deploy artifacts
       uses: actions/upload-artifact@v4
