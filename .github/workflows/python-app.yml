@@ -62,8 +62,6 @@ jobs:
           path: dist/excel2zugferd*
           if-no-files-found: error        
     - name: Semantic Release
+      uses: cycjimmy/semantic-release-action@v4
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        pip install semantic-release-cli
-        semantic-release publish
