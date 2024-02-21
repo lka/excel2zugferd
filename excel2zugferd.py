@@ -1,13 +1,15 @@
 import tkinter as tk
-from tkinter import messagebox, filedialog
-from tkinter import *
+from tkinter import messagebox, filedialog, Button
+
+# from tkinter import *
 
 # from tkinter.font import Font
 from handlePDF import Pdf
 
 from handleIniFile import IniFile
 from excelContent import ExcelContent
-import tempfile, os
+import tempfile
+import os
 from pathlib import Path
 
 fields = [
@@ -37,7 +39,7 @@ class Oberflaeche:
     def makeMenuBar(self, menuItems=None):
         menu_bar = tk.Menu(self.root)
         # print(menuItems)
-        if menuItems == None:
+        if menuItems is None:
             return
         for item in menuItems:
             outerkeys = item.keys()
@@ -151,14 +153,16 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         self.quit_button = tk.Button(self.root, text="Beenden", command=self.quit_cmd)
         self.quit_button.pack(side=tk.LEFT, padx=5, pady=5)
         self.quit_button.bind("<Return>", (lambda event: self.quit_cmd()))
-        self.save_button = tk.Button(self.root, text="Speichern", command=self.createPdf)
+        self.save_button = tk.Button(
+            self.root, text="Speichern", command=self.createPdf
+        )
         self.save_button.pack(side=tk.LEFT, padx=5, pady=5)
         self.save_button.bind("<Return>", (lambda event: self.createPdf()))
 
     def createPdf(self):
         # print('entries:', entries)
-        if not hasattr(self, 'selectedItem'):
-            msg = f"Bitte erst ein Excel Tabellenblatt auswählen."
+        if not hasattr(self, "selectedItem"):
+            msg = "Bitte erst ein Excel Tabellenblatt auswählen."
             messagebox.showinfo("Information", msg)
             return
         contentIniFile = self.iniFile.readIniFile()
@@ -183,20 +187,22 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
             try:
                 # tmp = tempfile.gettempdir()
                 with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
-                    fileName = Path.joinpath(Path(tmp), fn) # doesn't matter, cannot exist twice
+                    fileName = Path.joinpath(
+                        Path(tmp), fn
+                    )  # doesn't matter, cannot exist twice
                     self.pdf.output(fileName)
                     #                msg = f"Die Datei {fileName} wurde erstellt"
                     #                messagebox.showinfo("Debug-Information", msg)
                     try:
                         self.pdf.zugferd.add_xml2pdf(fileName, outfile)
                     except Exception as e:
-                        msg = (
-                            f"Konnte {outfile} aus {fileName} nicht erstellen, da ein Problem aufgetreten ist.\n{e.message if hasattr(e, 'message') else e}"
-                        )
+                        msg = f"Konnte {outfile} aus {fileName} nicht erstellen, da ein Problem aufgetreten ist.\
+                                \n{e.message if hasattr(e, 'message') else e}"
                         messagebox.showerror("Fehler:", msg)
                         return
             except Exception as e:
-                msg = f"Konnte {fileName} nicht erstellen, da ein Problem aufgetreten ist.\n{e.message if hasattr(e, 'message') else e}"
+                msg = f"Konnte {fileName} nicht erstellen, da ein Problem aufgetreten ist.\
+                    \n{e.message if hasattr(e, 'message') else e}"
                 messagebox.showerror("Fehler:", msg)
                 return
         else:
@@ -211,9 +217,14 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
     def openFile(self):
         contentIniFile = self.iniFile.readIniFile()
         docDir = Path.home()
-        if Path(Path.joinpath(docDir, 'Documents')).is_dir():
-            docDir = Path.joinpath(docDir, 'Documents')
-        initDir = contentIniFile["Verzeichnis"] if 'Verzeichnis' in contentIniFile and len(contentIniFile["Verzeichnis"]) > 0 else docDir
+        if Path(Path.joinpath(docDir, "Documents")).is_dir():
+            docDir = Path.joinpath(docDir, "Documents")
+        initDir = (
+            contentIniFile["Verzeichnis"]
+            if "Verzeichnis" in contentIniFile
+            and len(contentIniFile["Verzeichnis"]) > 0
+            else docDir
+        )
 
         # print(initDir, "Verzeichnis" in contentIniFile, contentIniFile)
         self.filename = filedialog.askopenfilename(
@@ -225,7 +236,7 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
             dir = os.path.dirname(self.filename)
             self.excelFile = ExcelContent(self.filename, "")
             self.fileNameLabel.config(text=self.filename)
-            self.lb.delete(0,'end')
+            self.lb.delete(0, "end")
             items = self.excelFile.readSheetList()
             for item in items:
                 self.lb.insert("end", item)
@@ -242,8 +253,10 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         self.selectedItem = ",".join([self.lb.get(i) for i in selected_indices])
 
     def makeform(self):
-        self.fileNameButton = Button(self.root, text="Excel-Datei...", command=self.openFile)
-        self.fileNameButton.pack ( anchor='nw' )
+        self.fileNameButton = Button(
+            self.root, text="Excel-Datei...", command=self.openFile
+        )
+        self.fileNameButton.pack(anchor="nw")
         self.fileNameLabel = tk.Label(
             self.root,
             text="Bitte erst die Excel Datei auswählen (über Datei -> Öffnen...).",
@@ -253,8 +266,9 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         self.lb.bind("<<ListboxSelect>>", self.click_button)
         self.lb.pack(expand=True, fill=tk.BOTH)
 
+
 if __name__ == "__main__":
-    dir = Path.joinpath(Path(os.getenv('APPDATA')), Path("excel2zugferd"))
+    dir = Path.joinpath(Path(os.getenv("APPDATA")), Path("excel2zugferd"))
     ini = IniFile("config.ini", dir)
     if not Path.exists(dir):
         try:
@@ -262,7 +276,7 @@ if __name__ == "__main__":
         except Exception as e:
             msg = f"Ich kann das Verzeichnis {dir} nicht erstellen.\n{e.message if hasattr(e, 'message') else e}"
             messagebox.showerror("Fehler", msg)
-    if ini.existsIniFile() == None:
+    if ini.existsIniFile() is None:
         oberfl = OberflaecheIniFile(fields, ini)
         oberfl.loop()
     else:
