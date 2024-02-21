@@ -27,7 +27,8 @@ class ExcelContent:
         self.daten = self.xlsx.parse(sheetName)
 
     def _searchCellRightOf(self, columnName, searchValue):
-        """Search in row with columnName for searchValue, return array with values right of the searchValue until next empty cell"""
+        """Search in row with columnName for searchValue, return array with values \
+            right of the searchValue until next empty cell"""
         arr = self.daten.loc[self.daten[columnName] == searchValue]
         # print(arr, arr.iat[0, -1], np.NaN, math.isnan(arr.iat[0, -1]))
         return arr.iat[0, -1] if not math.isnan(arr.iat[0, -1]) else arr.iat[0, 1]
@@ -58,7 +59,7 @@ class ExcelContent:
             # print (retVal["Datum"])
             retVal["Datum"] = pd.to_datetime(retVal["Datum"]).dt.strftime("%d.%m.%Y")
             # print (retVal["Datum"])
-        except:
+        except Exception as e:
             pass
         # pattern = "{:.2f} €".format
         # retVal.to_string(formatters={'Preis': pattern, 'Summe': pattern})

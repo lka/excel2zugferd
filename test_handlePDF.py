@@ -18,7 +18,7 @@ class test_handlePDF(unittest.TestCase):
         """
         try:
             os.remove("hello_world.pdf")
-        except:
+        except Exception as e:
             pass
 
         self.pdf.demo()
@@ -32,13 +32,13 @@ class test_handlePDF(unittest.TestCase):
         expected = "testUniquify (1).pdf"
         try:
             Path(fn).touch()
-        except:
+        except Exception as e:
             pass
         retVal = self.pdf.uniquify(fn)
         self.assertEqual(retVal, expected, "should be equal")
         try:
             os.remove(fn)
-        except:
+        except Exception as e:
             pass
 
 

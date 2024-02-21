@@ -54,7 +54,8 @@ posistionsExpected = np.array(
         [
             "5",
             "04.01.2024",
-            "Email wg. Herrn R Anmeldung im AWS (hat versucht sich anzumelden mehr als 120 Tage vor Beginn der Reha, steht in der Logdatei im W2k19-fs)",
+            "Email wg. Herrn R Anmeldung im AWS (hat versucht sich anzumelden mehr als \
+                120 Tage vor Beginn der Reha, steht in der Logdatei im W2k19-fs)",
             "1",
             "10 Min.",
             "22,00 €",
@@ -108,6 +109,7 @@ posistionsExpected = np.array(
     ]
 )
 
+
 class test_ExcelContent(unittest.TestCase):
     def setUp(self) -> None:
         self.fn = 'TestRechnung.xlsx'
@@ -126,7 +128,7 @@ class test_ExcelContent(unittest.TestCase):
         expected = ['Tabelle1', 'Rechnung2']
         retVal = self.xlsx.readSheetList()
         # print (retVal)
-        self.assertEqual(retVal, expected, f"Excel File should contain expected sheets")
+        self.assertEqual(retVal, expected, "Excel File should contain expected sheets")
 
     def test_readSheet(self):
         """

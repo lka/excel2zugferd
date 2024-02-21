@@ -257,7 +257,8 @@ class Pdf(PDF):
                 (
                     "1",
                     "01.01.2024",
-                    "Irgendwas, das länger ist als zwei Zeilen in der Ausgabe mit einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als zwei Zeilen in der Ausgabe mit einer Dokumentation dessen,\
+                          was geleistet wurde.",
                     "1",
                     "10 Min.",
                     "22.00",
@@ -266,7 +267,8 @@ class Pdf(PDF):
                 (
                     "2",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
+                        was geleistet wurde.",
                     "1",
                     "h",
                     "75.00",
@@ -275,7 +277,8 @@ class Pdf(PDF):
                 (
                     "3",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
+                        was geleistet wurde.",
                     "1",
                     "h",
                     "75.00",
@@ -284,7 +287,8 @@ class Pdf(PDF):
                 (
                     "4",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
+                        was geleistet wurde.",
                     "1",
                     "h",
                     "75.00",
@@ -293,7 +297,8 @@ class Pdf(PDF):
                 (
                     "5",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
+                        was geleistet wurde.",
                     "1",
                     "h",
                     "75.00",
@@ -302,7 +307,8 @@ class Pdf(PDF):
                 (
                     "6",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
+                        was geleistet wurde.",
                     "1",
                     "h",
                     "75.00",
@@ -311,7 +317,8 @@ class Pdf(PDF):
                 (
                     "7",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
+                        was geleistet wurde.",
                     "1",
                     "h",
                     "75.00",
@@ -320,7 +327,8 @@ class Pdf(PDF):
                 (
                     "8",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
+                        was geleistet wurde.",
                     "1",
                     "h",
                     "75.00",
@@ -329,7 +337,8 @@ class Pdf(PDF):
                 (
                     "9",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
+                        was geleistet wurde.",
                     "1",
                     "h",
                     "75.00",
@@ -338,7 +347,8 @@ class Pdf(PDF):
                 (
                     "10",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
+                        was geleistet wurde.",
                     "1",
                     "h",
                     "75.00",
@@ -347,7 +357,8 @@ class Pdf(PDF):
                 (
                     "11",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
+                        was geleistet wurde.",
                     "2",
                     "10 Min.",
                     "22.00",
@@ -356,7 +367,8 @@ class Pdf(PDF):
                 (
                     "12",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
+                        was geleistet wurde.",
                     "2",
                     "10 Min.",
                     "22.00",
@@ -365,7 +377,8 @@ class Pdf(PDF):
                 (
                     "13",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
+                        was geleistet wurde.",
                     "2",
                     "10 Min.",
                     "22.00",
@@ -374,7 +387,8 @@ class Pdf(PDF):
                 (
                     "14",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
+                        was geleistet wurde.",
                     "2",
                     "10 Min.",
                     "22.00",
@@ -383,7 +397,8 @@ class Pdf(PDF):
                 (
                     "15",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
+                        was geleistet wurde.",
                     "2",
                     "10 Min.",
                     "22.00",
@@ -401,7 +416,8 @@ class Pdf(PDF):
         )
 
         self.print_Abspann(
-            f"Bitte überweisen Sie den Betrag von 1.690,98 € bis zum {ueberweisungsdatum} auf u.a. Konto.\n\nMit freundlichen Grüßen\nMax Mustermann",
+            f"Bitte überweisen Sie den Betrag von 1.690,98 € bis zum {ueberweisungsdatum} auf u.a. Konto.\
+                \n\nMit freundlichen Grüßen\nMax Mustermann",
         )
 
         self.output("hello_world.pdf")

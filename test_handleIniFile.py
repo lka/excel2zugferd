@@ -2,6 +2,7 @@ import unittest
 import handleIniFile
 import os
 
+
 class test_IniFile(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -14,7 +15,7 @@ class test_IniFile(unittest.TestCase):
             pass
         self.IniFileClass = handleIniFile.IniFile(self.fn, self.dir)
         return super().setUp()
-    
+
     def tearDown(self) -> None:
         try:
             os.remove(self.file)
@@ -33,12 +34,13 @@ class test_IniFile(unittest.TestCase):
         """
         Teste, ob ein ini File existiert
         """
-        expected = { 'Test1': 'Irgendwas', 'Test3': 'Was anderes', 'Test2': 'Ganz was anderes'}
+        expected = {'Test1': 'Irgendwas', 'Test3': 'Was anderes', 'Test2': 'Ganz was anderes'}
         self.IniFileClass.createIniFile(expected)
         file = self.IniFileClass.existsIniFile()
         self.assertIsNotNone(file, "Should not be None (File-Handle), because ini file exist")
         content = self.IniFileClass.readIniFile()
         self.assertDictEqual(content, expected, f"Content of Ini-File should be equal to {expected}")
+
 
 if __name__ == '__main__':
     unittest.main()
