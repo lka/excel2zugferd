@@ -55,7 +55,7 @@ posistionsExpected = np.array(
             "5",
             "04.01.2024",
             "Email wg. Herrn R Anmeldung im AWS (hat versucht sich anzumelden mehr als \
-                120 Tage vor Beginn der Reha, steht in der Logdatei im W2k19-fs)",
+120 Tage vor Beginn der Reha, steht in der Logdatei im W2k19-fs)",
             "1",
             "10 Min.",
             "22,00 €",
