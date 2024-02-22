@@ -140,7 +140,7 @@ class PDF(FPDF):
             self.TableLines if hasattr(self, "TableLines") else (255, 0, 255)
         )
         self.set_line_width(0.3)
-        # headings_style = FontFace(emphasis="BOLD", color=255, fill_color=self.TableHead if hasattr(self, "TableHead") 
+        # headings_style = FontFace(emphasis="BOLD", color=255, fill_color=self.TableHead if hasattr(self, "TableHead")
         # else (255, 100, 0))
         with self.table(
             borders_layout="NO_HORIZONTAL_LINES",
@@ -491,7 +491,7 @@ class Pdf(PDF):
         self.print_summen(summen)
         if self.createXML:
             self.zugferd.add_gesamtsummen(summen)
-            self.zugferd.add_zahlungsziel(f"Bitte überweisen Sie den Betrag von {brutto} bis zum", 
+            self.zugferd.add_zahlungsziel(f"Bitte überweisen Sie den Betrag von {brutto} bis zum",
                                           today + timedelta(days=int(self.stammdaten["Zahlungsziel"])))
 
         self.print_Abspann(
