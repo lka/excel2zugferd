@@ -64,6 +64,10 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    concurrency: release
+    permissions:
+      id-token: write
+      contents: write
     
     steps:
     - name: Clone Repository
