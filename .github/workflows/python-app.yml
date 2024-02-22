@@ -102,12 +102,18 @@ jobs:
         release_name: Version ${{ steps.get_next_version.outputs.version }}
         draft: false
         prerelease: true
-    - name: Get Asset
+    - name: Download Artifact
+      id: download_artifact
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
-      run: |
-        curl -X POST -H "Authorization: Bearer "${{ secrets.GITHUB_TOKEN }}" \
-        -H "Content-Type: application/octet-stream" \
-        --data-binary "${{needs.build.outputs.output1}}"
+      uses: dawidd6/action-download-artifact@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        name: excel2zugferd.zip
+        skip_unpack: true
+      # run: |
+      #   curl -X POST -H "Authorization: Bearer "${{ secrets.GITHUB_TOKEN }}" \
+      #   -H "Content-Type: application/octet-stream" \
+      #   --data-binary "${{needs.build.outputs.output1}}"
     - name: Upload Release Asset
       id: upload-release-asset 
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
