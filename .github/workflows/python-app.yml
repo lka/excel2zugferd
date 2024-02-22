@@ -83,16 +83,25 @@ jobs:
       with:
         prefix: 'v'
       id: get_next_version
-    - name: Create new release
+    - name: Create new tag
       env:
         OUTPUT1: ${{needs.build.outputs.output1}}
 #      env:
 #        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
       run: |
-        echo 'create new release'
         NEXT_VERSION=${{ steps.get_next_version.outputs.version }}
         git tag $NEXT_VERSION
         git push origin $NEXT_VERSION
-        gh release create $NEXT_VERSION $OUTPUT1
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: $NEXT_VERSION
+        release_name: Version $NEXT_VERSION
+        draft: false
+        prerelease: true
+#        gh release create $NEXT_VERSION $OUTPUT1
 
