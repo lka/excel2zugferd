@@ -72,13 +72,16 @@ jobs:
         fetch-depth: 0
     - name: Semantic Release
       uses: thenativeweb/get-next-version@2.0.0
+      with:
+        prefix: 'v'
       id: get_next_version
     - name: Create new release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
       run: |
         echo 'create new release'
         NEXT_VERSION=${{ steps.get_next_version.outputs.version }}
         git tag $NEXT_VERSION
         git push origin $NEXT_VERSION
-#      env:
-#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
