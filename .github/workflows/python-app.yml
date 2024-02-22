@@ -108,7 +108,7 @@ jobs:
       uses: dawidd6/action-download-artifact@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        name: excel2zugferd.zip
+        name: excel2zugferd
         skip_unpack: true
       # run: |
       #   curl -X POST -H "Authorization: Bearer "${{ secrets.GITHUB_TOKEN }}" \
