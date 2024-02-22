@@ -84,10 +84,6 @@ jobs:
         prefix: 'v'
       id: get_next_version
     - name: Create new tag
-      env:
-        OUTPUT1: ${{needs.build.outputs.output1}}
-#      env:
-#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
       run: |
         NEXT_VERSION=${{ steps.get_next_version.outputs.version }}
@@ -98,6 +94,8 @@ jobs:
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        NEXT_VERSION: ${{ steps.get_next_version.outputs.version }}
+        OUTPUT1: ${{needs.build.outputs.output1}}
       with:
         tag_name: $NEXT_VERSION
         release_name: Version $NEXT_VERSION
