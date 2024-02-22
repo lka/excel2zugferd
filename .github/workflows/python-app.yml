@@ -90,24 +90,16 @@ jobs:
         git tag $NEXT_VERSION
         git push origin $NEXT_VERSION
     - name: Create Release
-      id: create_release
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
-#      uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ steps.get_next_version.outputs.version }}
-#       with:
-#         tag_name: ${{ steps.get_next_version.outputs.version }}
-#         release_name: Version ${{ steps.get_next_version.outputs.version }}
-#         draft: false
-#         prerelease: true
       run: |
         gh release create ${{ steps.get_next_version.outputs.version }} \
           --repo="$GITHUB_REPOSITORY" \
           --title="Version ${tag}" \
           --generate-notes
     - name: Download Artifact
-      id: download_artifact
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
       uses: dawidd6/action-download-artifact@v3
       with:
@@ -115,16 +107,9 @@ jobs:
         name: excel2zugferd
         skip_unpack: true
     - name: Upload Release Asset
-      id: upload-release-asset 
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
-#      uses: actions/upload-release-asset@v1
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-      #     asset_path: ./excel2zugferd.zip
-      #     asset_name: excel2zugferd.zip
-      #     asset_content_type: application/zip
       run: |
         gh release upload ${{ steps.get_next_version.outputs.version }} ./excel2zugferd.zip
 
