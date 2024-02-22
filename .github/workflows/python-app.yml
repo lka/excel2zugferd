@@ -16,8 +16,6 @@ jobs:
   build:
 
     runs-on: windows-latest
-    outputs:
-      output1: ${{ steps.artifact.outputs.artifact-url }}
 
     steps:
     - uses: actions/checkout@v4
@@ -110,10 +108,6 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         name: excel2zugferd
         skip_unpack: true
-      # run: |
-      #   curl -X POST -H "Authorization: Bearer "${{ secrets.GITHUB_TOKEN }}" \
-      #   -H "Content-Type: application/octet-stream" \
-      #   --data-binary "${{needs.build.outputs.output1}}"
     - name: Upload Release Asset
       id: upload-release-asset 
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
@@ -125,5 +119,4 @@ jobs:
           asset_path: ./excel2zugferd.zip
           asset_name: excel2zugferd.zip
           asset_content_type: application/zip
-#        gh release create $NEXT_VERSION $OUTPUT1
 
