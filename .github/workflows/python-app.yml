@@ -92,14 +92,20 @@ jobs:
     - name: Create Release
       id: create_release
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
-      uses: actions/create-release@v1
+#      uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.get_next_version.outputs.version }}
-        release_name: Version ${{ steps.get_next_version.outputs.version }}
-        draft: false
-        prerelease: true
+        tag: ${{ steps.get_next_version.outputs.version }}
+#       with:
+#         tag_name: ${{ steps.get_next_version.outputs.version }}
+#         release_name: Version ${{ steps.get_next_version.outputs.version }}
+#         draft: false
+#         prerelease: true
+      run: |
+        gh release create ${{ steps.get_next_version.outputs.version }} \
+          --repo="$GITHUB_REPOSITORY" \
+          --title="Version ${tag}" \
+          --generate-notes
     - name: Download Artifact
       id: download_artifact
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
