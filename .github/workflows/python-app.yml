@@ -101,6 +101,11 @@ jobs:
         release_name: Version ${{ steps.get_next_version.outputs.version }}
         draft: false
         prerelease: true
+    - name: Get Asset
+      run: |
+        curl -X POST -H "Authorization: Bearer "${{ secrets.GITHUB_TOKEN }}" \
+        -H "Content-Type: application/octet-stream" \
+        --data-binary ${{needs.build.outputs.output1}}
     - name: Upload Release Asset
       id: upload-release-asset 
       uses: actions/upload-release-asset@v1
@@ -108,7 +113,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ${{needs.build.outputs.output1}}
+          asset_path: ./excel2zugferd.zip
           asset_name: excel2zugferd.zip
           asset_content_type: application/zip
 #        gh release create $NEXT_VERSION $OUTPUT1
