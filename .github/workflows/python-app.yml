@@ -64,6 +64,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    needs: build
     concurrency: release
     permissions:
       id-token: write
@@ -75,13 +76,13 @@ jobs:
       with:
         fetch-depth: 0
     - name: Semantic Release
-      uses: thenativeweb/get-next-version@2.0.0
+      uses: thenativeweb/get-next-version@2.6.1
       with:
         prefix: 'v'
       id: get_next_version
     - name: Create new release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
       run: |
         echo 'create new release'
