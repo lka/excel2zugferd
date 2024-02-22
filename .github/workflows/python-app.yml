@@ -60,8 +60,25 @@ jobs:
       with:
           name: excel2zugferd
           path: dist/excel2zugferd*
-          if-no-files-found: error        
-#    - name: Semantic Release
-#      uses: cycjimmy/semantic-release-action@v4
+          if-no-files-found: error
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Clone Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Semantic Release
+      uses: thenativeweb/get-next-version@2.0.0
+      id: get_next_version
+    - name: Create new release
+      if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
+      run: |
+        echo 'create new release'
+        NEXT_VERSION=${{ steps.get_next_version.outputs.version }}
+        git tag $NEXT_VERSION
+        git push origin $NEXT_VERSION
 #      env:
 #        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
