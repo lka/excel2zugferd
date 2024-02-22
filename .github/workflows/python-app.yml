@@ -126,5 +126,5 @@ jobs:
       #     asset_name: excel2zugferd.zip
       #     asset_content_type: application/zip
       run: |
-        gh upload ${{ steps.get_next_version.outputs.version }} ./excel2zugferd.zip
+        gh release upload ${{ steps.get_next_version.outputs.version }} ./excel2zugferd.zip
 
