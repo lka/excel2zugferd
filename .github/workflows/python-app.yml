@@ -16,8 +16,8 @@ jobs:
   build:
 
     runs-on: windows-latest
-#    outputs:
-#      output1: ${{ steps.artifact.outputs.artifact-url }}
+    outputs:
+      output1: ${{ steps.artifact.outputs.artifact-url }}
 
     steps:
     - uses: actions/checkout@v4
@@ -88,6 +88,48 @@ jobs:
           name: excel2zugferd
           path: dist/excel2zugferd*
           if-no-files-found: error
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: build
+    concurrency: release
+    permissions:
+      id-token: write
+      contents: write
+    
+    steps:
+    - name: Clone Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Semantic Release
+      uses: thenativeweb/get-next-version@2.6.1
+      with:
+        prefix: 'v'
+      id: get_next_version
+    - name: Create new tag
+      if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
+      run: |
+        NEXT_VERSION=${{ steps.get_next_version.outputs.version }}
+        git tag $NEXT_VERSION
+        git push origin $NEXT_VERSION
+    - name: Create Release
+      id: create_release
+      if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get_next_version.outputs.version }}
+        release_name: Version ${{ steps.get_next_version.outputs.version }}
+        draft: false
+        prerelease: true
+    - name: Get Asset
+      if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
+      run: |
+        curl -X POST -H "Authorization: Bearer "${{ secrets.GITHUB_TOKEN }}" \
+        -H "Content-Type: application/octet-stream" \
+        --data-binary "${{needs.build.outputs.output1}}"
     - name: Upload Release Asset
       id: upload-release-asset 
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
@@ -96,62 +138,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: dist/excel2zugferd
+          asset_path: ./excel2zugferd.zip
           asset_name: excel2zugferd.zip
           asset_content_type: application/zip
-
-#   release:
-#     name: Release
-#     runs-on: ubuntu-latest
-#     needs: build
-#     concurrency: release
-#     permissions:
-#       id-token: write
-#       contents: write
-    
-#     steps:
-#     - name: Clone Repository
-#       uses: actions/checkout@v4
-#       with:
-#         fetch-depth: 0
-#     - name: Semantic Release
-#       uses: thenativeweb/get-next-version@2.6.1
-#       with:
-#         prefix: 'v'
-#       id: get_next_version
-#     - name: Create new tag
-#       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
-#       run: |
-#         NEXT_VERSION=${{ steps.get_next_version.outputs.version }}
-#         git tag $NEXT_VERSION
-#         git push origin $NEXT_VERSION
-#     - name: Create Release
-#       id: create_release
-#       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
-#       uses: actions/create-release@v1
-#       env:
-#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#       with:
-#         tag_name: ${{ steps.get_next_version.outputs.version }}
-#         release_name: Version ${{ steps.get_next_version.outputs.version }}
-#         draft: false
-#         prerelease: true
-#     - name: Get Asset
-#       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
-#       run: |
-#         curl -X POST -H "Authorization: Bearer "${{ secrets.GITHUB_TOKEN }}" \
-#         -H "Content-Type: application/octet-stream" \
-#         --data-binary ${{needs.build.outputs.output1}}
-#     - name: Upload Release Asset
-#       id: upload-release-asset 
-#       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
-#       uses: actions/upload-release-asset@v1
-#       env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#       with:
-#           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-#           asset_path: ./excel2zugferd.zip
-#           asset_name: excel2zugferd.zip
-#           asset_content_type: application/zip
-# #        gh release create $NEXT_VERSION $OUTPUT1
+#        gh release create $NEXT_VERSION $OUTPUT1
 
