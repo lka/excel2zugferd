@@ -18,7 +18,7 @@ class test_zugFerd(unittest.TestCase):
         """
         try:
             os.remove("hello_world_zugferd.pdf")
-        except Exception as e:
+        except Exception:
             pass
 
         self.zugferd.add_rgNr("2024000000000123")
@@ -114,11 +114,11 @@ class test_zugFerd(unittest.TestCase):
         self.assertTrue(os.path.isfile("hello_world.pdf"))
         try:
             os.remove("hello_world_zugferd.pdf")
-        except Exception as e:
+        except Exception:
             pass
         try:
             os.remove("hello_world.pdf")
-        except Exception as e:
+        except Exception:
             pass
 
 

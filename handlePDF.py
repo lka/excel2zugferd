@@ -140,7 +140,8 @@ class PDF(FPDF):
             self.TableLines if hasattr(self, "TableLines") else (255, 0, 255)
         )
         self.set_line_width(0.3)
-        # headings_style = FontFace(emphasis="BOLD", color=255, fill_color=self.TableHead if hasattr(self, "TableHead") else (255, 100, 0))
+        # headings_style = FontFace(emphasis="BOLD", color=255, fill_color=self.TableHead if hasattr(self, "TableHead") 
+        # else (255, 100, 0))
         with self.table(
             borders_layout="NO_HORIZONTAL_LINES",
             cell_fill_color=self.TableFillColor
@@ -182,7 +183,7 @@ class Pdf(PDF):
         # print("----------")
         # print(stammdaten)
         self.daten = daten if isinstance(daten, ExcelContent) else None
-        self.stammdaten = stammdaten if stammdaten != None else {}
+        self.stammdaten = stammdaten if stammdaten is not None else {}
         self.createXML = createXML
         # import and embed TTF Font to use € in text
         self.add_font("dejavu-sans", style="", fname="./_internal/Fonts/DejaVuSansCondensed.ttf")
@@ -490,8 +491,10 @@ class Pdf(PDF):
         self.print_summen(summen)
         if self.createXML:
             self.zugferd.add_gesamtsummen(summen)
-            self.zugferd.add_zahlungsziel(f"Bitte überweisen Sie den Betrag von {brutto} bis zum", today + timedelta(days=int(self.stammdaten["Zahlungsziel"])))
+            self.zugferd.add_zahlungsziel(f"Bitte überweisen Sie den Betrag von {brutto} bis zum", 
+                                          today + timedelta(days=int(self.stammdaten["Zahlungsziel"])))
 
         self.print_Abspann(
-            f"Bitte überweisen Sie den Betrag von {brutto} bis zum {ueberweisungsdatum} auf u.a. Konto.\n\nMit freundlichen Grüßen\n{self.stammdaten['Name']}"
+            f"Bitte überweisen Sie den Betrag von {brutto} bis zum {ueberweisungsdatum} auf u.a. Konto.\
+                \n\nMit freundlichen Grüßen\n{self.stammdaten['Name']}"
         )

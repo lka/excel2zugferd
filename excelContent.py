@@ -50,7 +50,7 @@ class ExcelContent:
         line = self.daten[self.daten[columnName] == searchValue]
         # print(line)
         startIndex = int(line.index[0]) + 1
-        tmpDf = self.daten.iloc[startIndex : len(self.daten), :]
+        tmpDf = self.daten.iloc[startIndex: len(self.daten), :]
         nan_idx = self._getIndexOfNextNaN(tmpDf[columnName])
         retVal = tmpDf[0:nan_idx]
         retVal.columns = line.loc[int(line.index[0])]
@@ -59,7 +59,7 @@ class ExcelContent:
             # print (retVal["Datum"])
             retVal["Datum"] = pd.to_datetime(retVal["Datum"]).dt.strftime("%d.%m.%Y")
             # print (retVal["Datum"])
-        except Exception as e:
+        except Exception:
             pass
         # pattern = "{:.2f} €".format
         # retVal.to_string(formatters={'Preis': pattern, 'Summe': pattern})

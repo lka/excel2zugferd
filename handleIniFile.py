@@ -13,7 +13,7 @@ class IniFile:
         try:
             with open(self.path) as file:
                 return file
-        except Exception as e:
+        except Exception:
             return None
 
     def createIniFile(self, content):
@@ -26,6 +26,6 @@ class IniFile:
             try:
                 with open(self.path, 'r', encoding='utf-8') as f_in:
                     self.content = json.load(f_in)
-            except:
+            except Exception:
                 return ()
         return self.content
