@@ -26,6 +26,8 @@ Some examples for commit messages are shown below:
 
 Please note that `!` indicates breaking changes, and will always result in a new major version, independent of the type of change.
 
+`..\get-next-version-windows-amd64.exe -p 'v'` liefert die nächste Versionnummer, wenn das Programm von https://github.com/thenativeweb/get-next-version installiert ist.
+
 ## Tests
 
 Die tkinter Umgebung zur Ein- / Ausgabe kann nicht mit Unittests getestet werden. (Todo: mit Selenium testen?)
