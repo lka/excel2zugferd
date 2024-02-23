@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox, filedialog, Button
+import json
 
 # from tkinter import *
 
@@ -64,7 +65,14 @@ class Oberflaeche:
             self.root.destroy()
 
     def info_cmd(self):
-        messagebox.showinfo("Info", "Copyright H.Lischka 2024\nVersion 0.1.1")
+        try:
+            with open(r'version.json', 'r', encoding='utf-16') as f_in:
+                version = json.load(f_in)
+                msg = f"Copyright © H.Lischka, 2024\nVersion {version['version'] if version is not None else 'unbekannt'}"
+        except Exception as e:
+            msg = f"Error: {e.message if hasattr(e, 'message')  else e}"
+
+        messagebox.showinfo("Info", msg)
 
     def loop(self):
         self.root.mainloop()
