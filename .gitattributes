@@ -1,5 +1,5 @@
 *   text=auto
-*.txt  text
+*.txt  text eol=crlf
 *.sh    text eol=lf
 *.patch text eol=lf
 *.jpg   -text
