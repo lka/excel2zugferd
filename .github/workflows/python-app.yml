@@ -53,7 +53,10 @@ jobs:
     - name: Build with pyinstaller
       run: |
         .venv/Scripts/activate
-        pyinstaller excel2zugferd.py --noconsole --add-data _internal/Fonts:Fonts --add-data ./.venv/Lib/site-packages/drafthorse/schema:drafthorse/schema --noconfirm
+        pyinstaller excel2zugferd.py --noconsole --add-data _internal/Fonts:Fonts \
+        --add-data ./.venv/Lib/site-packages/drafthorse/schema:drafthorse/schema \
+        --add-data version.json:. \
+        --noconfirm
 
     - name: Deploy artifacts
       uses: actions/upload-artifact@v4
