@@ -77,7 +77,8 @@ jobs:
     - name: Clone Repository
       uses: actions/checkout@v4
       with:
-        fetch-depth: '0'
+        fetch-depth: 0
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: Semantic Release
       uses: thenativeweb/get-next-version@2.6.1
       with:
