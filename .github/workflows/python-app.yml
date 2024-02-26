@@ -19,6 +19,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - name: Set up Python 3.11
       uses: actions/setup-python@v4
       with:
@@ -51,6 +53,11 @@ jobs:
           path: junit/test-results.xml
         # Use always() to always run this step to publish test results when there are test failures
       if: ${{ always() }}
+    - name: get get-next-version
+      run: |
+        Invoke-WebRequest -uri https://github.com/thenativeweb/get-next-version/releases/download/2.6.1/get-next-version-windows-amd64.exe -outfile get-next-version-windows-amd64.exe
+        get-next-version-windows-amd64.exe  -p 'v' --target json > version.json
+      shell: powershell
     - name: Build with pyinstaller
       run: |
         .venv/Scripts/activate
