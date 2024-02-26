@@ -1,17 +1,15 @@
 import tkinter as tk
 from tkinter import messagebox, filedialog, Button
 import json
-
-# from tkinter import *
-
-# from tkinter.font import Font
 from handlePDF import Pdf
-
-from handleIniFile import IniFile
-from excelContent import ExcelContent
 import tempfile
 import os
 from pathlib import Path
+from PIL import Image, ImageTk
+import shutil
+
+from handleIniFile import IniFile
+from excelContent import ExcelContent
 
 fields = [
     {"Text": "Betriebsbezeichnung", "Lines": 1},
@@ -27,10 +25,11 @@ fields = [
 
 
 class Oberflaeche:
-    def __init__(self, *args, **kwargs):
-        self.root = tk.Tk()
+    def __init__(self, window=None, *args, **kwargs):
+        self.root = tk.Tk() if window is None else window
         # self.myFont = Font(family="Helvetica", size=12)
         self.root.resizable(0, 0)
+        self.logo_fn = os.path.join(os.getenv("APPDATA"), "excel2zugferd", "logo.jpg")
         try:
             # windows only (remove the minimize/maximize button)
             self.root.attributes("-toolwindow", True)
@@ -59,6 +58,14 @@ class Oberflaeche:
                 menu_bar.add_cascade(label=outerkey, menu=menu, underline=0)
         self.root.config(menu=menu_bar)
 
+    def makeLogo(self, fn):
+        if Path(fn).exists():
+            img = Image.open(fn)
+            img = img.resize((100, 100), Image.BOX)
+            image = ImageTk.PhotoImage(img)
+            self.imgArea = self.canvas.create_image(0, 0, anchor=tk.NW, image=image)
+            self.canvas.img = image
+
     def quit_cmd(self):
         confirm = messagebox.askokcancel("Beenden?", "Möchten Sie wirklich Beenden ?")
         if confirm:
@@ -73,6 +80,7 @@ class Oberflaeche:
             msg = f"Error: {e.message if hasattr(e, 'message')  else e}"
 
         messagebox.showinfo("Info", msg)
+        self.root.lift()
 
     def loop(self):
         self.root.mainloop()
@@ -80,7 +88,8 @@ class Oberflaeche:
 
 class OberflaecheIniFile(Oberflaeche):
     def __init__(self, fields, iniFile=None, *args, **kwargs):
-        super(OberflaecheIniFile, self).__init__(*args, **kwargs)
+        super(OberflaecheIniFile, self).__init__(window=tk.Toplevel(), *args, **kwargs)
+
         self.fields = fields
         self.iniFile = iniFile
         self.root.title("Stammdateneingabe")
@@ -90,13 +99,30 @@ class OberflaecheIniFile(Oberflaeche):
                 {"Hilfe": {"Info über...": self.info_cmd}},
             ]
         )
+        row = tk.Frame(self.root)
+        row.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
+        self.logo_button = tk.Button(
+            row, text="Logo auswählen...", anchor='w', command=self.handleFileButton
+        )
+        self.logo_button.pack(side=tk.LEFT, padx=5)
+        self.logo_button.bind("<Return>", (lambda event: self.handleFileButton))
+        self.logo_delete = tk.Button(row, text="Logo löschen", command=self.handleLogoDeleteButton)
+        self.logo_delete.bind("<Return>", (lambda event: self.handleLogoDeleteButton))
+        if Path(self.logo_fn).exists():
+            self.logo_delete.pack(side=tk.LEFT, padx=5)
+
+        self.canvas = tk.Canvas(row, width=100, height=100, bg="white")
+        self.canvas.pack(side=tk.RIGHT, padx=38, anchor='w', expand=True)
+
+        self.makeLogo(self.logo_fn)
+
         self.ents = self.makeform()
         # self.root.bind('<Return>', (lambda event, e=self.ents: self.fetch(e)))
         self.quit_button = tk.Button(self.root, text="Beenden", command=self.quit_cmd)
-        self.quit_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.quit_button.pack(side=tk.LEFT, padx=5, pady=5, expand=False)
         self.quit_button.bind("<Return>", (lambda event: self.quit_cmd()))
         self.save_button = tk.Button(self.root, text="Speichern", command=self.fetch)
-        self.save_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.save_button.pack(side=tk.LEFT, padx=5, pady=5, expand=False)
         self.save_button.bind("<Return>", (lambda event: self.fetch()))
 
     def fetch(self):
@@ -135,6 +161,31 @@ class OberflaecheIniFile(Oberflaeche):
             ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
             entries[field["Text"]] = ent
         return entries
+
+    def handleFileButton(self):
+        destdir = Path.joinpath(Path(os.getenv("APPDATA")), Path("excel2zugferd"))
+        initDir = Path.joinpath(Path.home(), "Pictures")
+
+        filename = filedialog.askopenfilename(
+            title="Bitte die Datei mit dem Logo auswählen",
+            initialdir=Path(initDir).resolve(),
+            filetypes=(("Bilder", "*.jpg"), ("Alle Dateien", "*.*")),
+        )
+
+        if filename is not None:
+            shutil.copy(filename, Path.joinpath(destdir, "logo.jpg"))
+            self.makeLogo(self.logo_fn)
+            self.logo_delete.pack(side=tk.LEFT, padx=5)
+            self.root.lift()
+
+    def handleLogoDeleteButton(self):
+        resp = messagebox.askyesno("Löschen des Logos", "Sind Sie sicher, dass Sie das Logo löschen möchten?")
+        print (resp)
+        if resp == True:
+            os.remove(self.logo_fn)
+            self.logo_delete.pack_forget()
+            self.canvas.delete('all')
+        self.root.lift()
 
 
 class OberflaecheExcel2Zugferd(Oberflaeche):
