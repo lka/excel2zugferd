@@ -115,8 +115,9 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         name: excel2zugferd
+        workflow_conclusion: 'in_progress'
         # run_number: ${{ github.run_number }}
-        search_artifacts: true
+        # search_artifacts: true
         skip_unpack: true
     - name: Upload Release Asset
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
