@@ -102,17 +102,19 @@ class OberflaecheIniFile(Oberflaeche):
         row = tk.Frame(self.root)
         row.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
         self.logo_button = tk.Button(
-            row, text="Logo auswählen...", anchor='w', command=self.handleFileButton
+            row, text="Logo auswählen...", anchor="w", command=self.handleFileButton
         )
         self.logo_button.pack(side=tk.LEFT, padx=5)
         self.logo_button.bind("<Return>", (lambda event: self.handleFileButton))
-        self.logo_delete = tk.Button(row, text="Logo löschen", command=self.handleLogoDeleteButton)
+        self.logo_delete = tk.Button(
+            row, text="Logo löschen", command=self.handleLogoDeleteButton
+        )
         self.logo_delete.bind("<Return>", (lambda event: self.handleLogoDeleteButton))
         if Path(self.logo_fn).exists():
             self.logo_delete.pack(side=tk.LEFT, padx=5)
 
         self.canvas = tk.Canvas(row, width=100, height=100, bg="white")
-        self.canvas.pack(side=tk.RIGHT, padx=38, anchor='w', expand=True)
+        self.canvas.pack(side=tk.RIGHT, padx=38, anchor="w", expand=True)
 
         self.makeLogo(self.logo_fn)
 
@@ -163,28 +165,29 @@ class OberflaecheIniFile(Oberflaeche):
         return entries
 
     def handleFileButton(self):
-        destdir = Path.joinpath(Path(os.getenv("APPDATA")), Path("excel2zugferd"))
         initDir = Path.joinpath(Path.home(), "Pictures")
 
         filename = filedialog.askopenfilename(
             title="Bitte die Datei mit dem Logo auswählen",
             initialdir=Path(initDir).resolve(),
-            filetypes=(("Bilder", "*.jpg"), ("Alle Dateien", "*.*")),
+            filetypes=(("Bilder", "*.jpg; *.jpeg"), ("Alle Dateien", "*.*")),
         )
 
         if filename is not None:
-            shutil.copy(filename, Path.joinpath(destdir, "logo.jpg"))
+            shutil.copy(filename, self.logo_fn)
             self.makeLogo(self.logo_fn)
             self.logo_delete.pack(side=tk.LEFT, padx=5)
             self.root.lift()
 
     def handleLogoDeleteButton(self):
-        resp = messagebox.askyesno("Löschen des Logos", "Sind Sie sicher, dass Sie das Logo löschen möchten?")
-        print (resp)
+        resp = messagebox.askyesno(
+            "Löschen des Logos", "Sind Sie sicher, dass Sie das Logo löschen möchten?"
+        )
+        print(resp)
         if resp == True:
             os.remove(self.logo_fn)
             self.logo_delete.pack_forget()
-            self.canvas.delete('all')
+            self.canvas.delete("all")
         self.root.lift()
 
 
@@ -231,7 +234,12 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         #        msg = f"Ausgewählt wurde das Excel Sheet: {self.selectedItem}"
         #        messagebox.showinfo("Information", msg)
 
-        self.pdf = Pdf(self.excelFile, contentIniFile, createXML)
+        self.pdf = Pdf(
+            self.excelFile,
+            contentIniFile,
+            createXML,
+            self.logo_fn if Path(self.logo_fn).exists() else None,
+        )
 
         self.pdf.fill_Pdf()
         fn = self.selectedItem + ".pdf"

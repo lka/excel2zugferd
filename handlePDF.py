@@ -177,11 +177,12 @@ class PDF(FPDF):
 
 
 class Pdf(PDF):
-    def __init__(self, daten, stammdaten, createXML=False) -> None:
+    def __init__(self, daten, stammdaten, createXML=False, logo_fn=None) -> None:
         super(Pdf, self).__init__()
         # print(daten)
         # print("----------")
         # print(stammdaten)
+        self.logo_fn = logo_fn
         self.daten = daten if isinstance(daten, ExcelContent) else None
         self.stammdaten = stammdaten if stammdaten is not None else {}
         self.createXML = createXML
@@ -207,6 +208,16 @@ class Pdf(PDF):
         self.set_margins(25, 16.9, 20)
         if createXML:
             self.zugferd = ZugFeRD()
+
+    def print_logo(self):
+        if self.logo_fn is None:
+            return
+        rect1 = 27, 30, 20, 20
+        self.set_draw_color(255)
+        self.rect(*rect1)
+        self.image(self.logo_fn, *rect1, keep_aspect_ratio=True)
+        self.set_draw_color(0)
+
 
     def uniquify(self, path):
         fn, ext = os.path.splitext(path)
@@ -443,6 +454,7 @@ class Pdf(PDF):
 
         self.add_page()
         self.print_faltmarken()
+        self.print_logo()
         self.print_absender(self.stammdaten["Anschrift"])
         self.print_kontakt(
             self.stammdaten["Kontakt"] + "\n\n" + self.stammdaten["Umsatzsteuer"]
