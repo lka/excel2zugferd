@@ -103,13 +103,17 @@ class PDF(FPDF):
         )
         with self.table(
             borders_layout="NO_HORIZONTAL_LINES",
-            cell_fill_color=self.TableFillColor
-            if hasattr(self, "TableFillColor")
-            else (244, 235, 255),
+            cell_fill_color=(
+                self.TableFillColor
+                if hasattr(self, "TableFillColor")
+                else (244, 235, 255)
+            ),
             cell_fill_mode=TableCellFillMode.ROWS,
-            col_widths=self.TableWidths
-            if hasattr(self, "TableWidths")
-            else (10, 21, 68, 16, 15, 16, 19),
+            col_widths=(
+                self.TableWidths
+                if hasattr(self, "TableWidths")
+                else (10, 21, 68, 16, 15, 16, 19)
+            ),
             text_align=(
                 "CENTER",
                 "LEFT",
@@ -144,13 +148,15 @@ class PDF(FPDF):
         # else (255, 100, 0))
         with self.table(
             borders_layout="NO_HORIZONTAL_LINES",
-            cell_fill_color=self.TableFillColor
-            if hasattr(self, "TableFillColor")
-            else (244, 235, 255),
+            cell_fill_color=(
+                self.TableFillColor
+                if hasattr(self, "TableFillColor")
+                else (244, 235, 255)
+            ),
             cell_fill_mode=TableCellFillMode.ROWS,
-            col_widths=self.SumTableWidths
-            if hasattr(self, "SumTableWidths")
-            else (50, 22),
+            col_widths=(
+                self.SumTableWidths if hasattr(self, "SumTableWidths") else (50, 22)
+            ),
             text_align=(
                 "RIGHT",
                 "RIGHT",
@@ -187,9 +193,13 @@ class Pdf(PDF):
         self.stammdaten = stammdaten if stammdaten is not None else {}
         self.createXML = createXML
         # import and embed TTF Font to use € in text
-        self.add_font("dejavu-sans", style="", fname="./_internal/Fonts/DejaVuSansCondensed.ttf")
         self.add_font(
-            "dejavu-sans", style="b", fname="./_internal/Fonts/DejaVuSansCondensed-Bold.ttf"
+            "dejavu-sans", style="", fname="./_internal/Fonts/DejaVuSansCondensed.ttf"
+        )
+        self.add_font(
+            "dejavu-sans",
+            style="b",
+            fname="./_internal/Fonts/DejaVuSansCondensed-Bold.ttf",
         )
         self.add_font(
             "dejavu-sans",
@@ -217,7 +227,6 @@ class Pdf(PDF):
         self.rect(*rect1)
         self.image(self.logo_fn, *rect1, keep_aspect_ratio=True)
         self.set_draw_color(0)
-
 
     def uniquify(self, path):
         fn, ext = os.path.splitext(path)
@@ -473,7 +482,7 @@ class Pdf(PDF):
                 self.stammdaten["Anschrift"],
                 self.stammdaten["Betriebsbezeichnung"],
                 self.stammdaten["Kontakt"],
-                self.stammdaten["Umsatzsteuer"].split('\n')[0].split()[1],
+                self.stammdaten["Umsatzsteuer"].split("\n")[0].split()[1],
             )
 
         an = self.daten.getAddressOfCustomer()
@@ -490,7 +499,9 @@ class Pdf(PDF):
             self.zugferd.add_rgNr(f"{rgNr[list(rgNr.keys())[0]]}")
             self.zugferd.add_rechnungsempfaenger(an)
 
-        self.print_bezug(f"{list(rgNr.keys())[0]} {rgNr[list(rgNr.keys())[0]]} vom {datum}")
+        self.print_bezug(
+            f"{list(rgNr.keys())[0]} {rgNr[list(rgNr.keys())[0]]} vom {datum}"
+        )
 
         # print(self.split_dataframe_by_SearchValue(AN, "Pos."))
         df = self.daten.getInvoicePositions()
@@ -503,8 +514,10 @@ class Pdf(PDF):
         self.print_summen(summen)
         if self.createXML:
             self.zugferd.add_gesamtsummen(summen)
-            self.zugferd.add_zahlungsziel(f"Bitte überweisen Sie den Betrag von {brutto} bis zum",
-                                          today + timedelta(days=int(self.stammdaten["Zahlungsziel"])))
+            self.zugferd.add_zahlungsziel(
+                f"Bitte überweisen Sie den Betrag von {brutto} bis zum",
+                today + timedelta(days=int(self.stammdaten["Zahlungsziel"])),
+            )
 
         self.print_Abspann(
             f"Bitte überweisen Sie den Betrag von {brutto} bis zum {ueberweisungsdatum} auf u.a. Konto.\

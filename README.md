@@ -26,7 +26,7 @@ Some examples for commit messages are shown below:
 
 Please note that `!` indicates breaking changes, and will always result in a new major version, independent of the type of change.
 
-`..\get-next-version-windows-amd64.exe -p 'v' --target json > version.json` schreibt die nächste Versionnummer nach version.json, wenn das Programm von https://github.com/thenativeweb/get-next-version installiert ist.
+`..\get-next-version-windows-amd64.exe -p 'v' --target json > .\_internal\version.json` schreibt die nächste Versionnummer nach _internal\version.json, wenn das Programm von https://github.com/thenativeweb/get-next-version installiert ist.
 
 ## Tests
 
