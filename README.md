@@ -67,7 +67,7 @@ Ich habe daraus den Font `DejaVuSansCondensed` gewählt und in allen Ausprägung
 
 ## Erstellen einer Windows exe
 
-`pyinstaller .\excel2zugferd.py --noconsole --add-data _internal/Fonts:Fonts --add-data ./.venv/Lib/site-packages/drafthorse/schema:drafthorse/schema --noconfirm`
+`pyinstaller .\excel2zugferd.py --noconsole --add-data _internal/Fonts:Fonts --add-data ./.venv/Lib/site-packages/drafthorse/schema:drafthorse/schema --add-data _version/version.json:. --noconfirm`
 
 ## Copyright and License
 

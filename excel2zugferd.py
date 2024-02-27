@@ -73,7 +73,9 @@ class Oberflaeche:
 
     def info_cmd(self):
         try:
-            with open(r".\\_internal\\version.json", "r", encoding="utf-16") as f_in:
+            with open(
+                os.path.join("_internal", "version.json"), "r", encoding="utf-16"
+            ) as f_in:
                 version = json.load(f_in)
                 msg = f"Copyright © H.Lischka, 2024\nVersion {version['version'] if version is not None else 'unbekannt'}"
         except Exception as e:

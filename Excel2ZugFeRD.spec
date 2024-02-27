@@ -5,7 +5,7 @@ a = Analysis(
     ['excel2zugferd.py'],
     pathex=[],
     binaries=[],
-    datas=[('_internal/Fonts', 'Fonts'), ('./.venv/Lib/site-packages/drafthorse/schema', 'drafthorse/schema')],
+    datas=[('_internal/Fonts', 'Fonts'), ('./.venv/Lib/site-packages/drafthorse/schema', 'drafthorse/schema'), ('_internal/version.json', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
