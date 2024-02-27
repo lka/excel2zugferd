@@ -56,13 +56,14 @@ jobs:
     - name: get get-next-version
       run: |
         Invoke-WebRequest -uri https://github.com/thenativeweb/get-next-version/releases/download/2.6.1/get-next-version-windows-amd64.exe -outfile get-next-version-windows-amd64.exe
+        ls
         .\get-next-version-windows-amd64.exe  -p 'v' --target json > version.json
       shell: powershell
     - name: Build with pyinstaller
       run: |
         .venv/Scripts/activate
         pyinstaller excel2zugferd.py --noconsole --add-data _internal/Fonts:Fonts --add-data ./.venv/Lib/site-packages/drafthorse/schema:drafthorse/schema --add-data version.json:. --noconfirm
-
+        more version.json
     - name: Deploy artifacts
       uses: actions/upload-artifact@v4
       id: artifact
