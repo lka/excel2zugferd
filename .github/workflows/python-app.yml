@@ -34,7 +34,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -U git+https://github.com/lka/fpdf2.git@master
-        pip install pytest pytest-md pytest-emoji
         # git apply --unsafe-paths --verbose .\drafthorse_pdf.patch
     - name: Lint with flake8
       run: |
@@ -44,24 +43,17 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude .venv
     - name: Test with pytest
-      uses: pavelzw/pytest-action@v2
+      run: |
+        .venv/Scripts/activate
+        pip install pytest
+        pytest --doctest-modules --junitxml=junit/test-results.xml
+    - name: Upload pytest test results
+      uses: actions/upload-artifact@v4
       with:
-        verbose: true
-        emoji: true
-        job-summary: true
-        custom-arguments: '-q'
-        click-to-expand: true
-        report-title: 'Test Report'
-    #   run: |
-    #     .venv/Scripts/activate
-    #     pytest --doctest-modules --junitxml=junit/test-results.xml
-    # - name: Upload pytest test results
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #       name: pytest-results
-    #       path: junit/test-results.xml
-    #     # Use always() to always run this step to publish test results when there are test failures
-    #   if: ${{ always() }}
+          name: pytest-results
+          path: junit/test-results.xml
+        # Use always() to always run this step to publish test results when there are test failures
+      if: ${{ always() }}
     - name: get get-next-version
       run: |
         Invoke-WebRequest -uri https://github.com/thenativeweb/get-next-version/releases/download/2.6.1/get-next-version-windows-amd64.exe -outfile get-next-version-windows-amd64.exe
