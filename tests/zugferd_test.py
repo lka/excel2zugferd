@@ -118,7 +118,7 @@ dessen, was geleistet wurde.",
         self.zugferd.add_zahlungsziel(
             "Zahlbar ohne Abschlag bis", datetime.now() + timedelta(days=int(14))
         )
-        yield self.zugferd.add_xml2pdf("hello_world.pdf", "hello_world_zugferd.pdf")
+        self.zugferd.add_xml2pdf("hello_world.pdf", "hello_world_zugferd.pdf")
         self.assertTrue(os.path.isfile("hello_world_zugferd.pdf"))
         self.assertTrue(os.path.isfile("hello_world.pdf"))
 
@@ -133,5 +133,5 @@ dessen, was geleistet wurde.",
                 pass
 
 
-if __name__ == "__main__":
-    unittest.main()
+# if __name__ == "__main__":
+#     unittest.main()
