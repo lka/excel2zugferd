@@ -33,9 +33,9 @@ jobs:
         .venv/Scripts/activate
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pytest --doctest-modules --junitxml=junit/test-results.xml
         pip install pytest
         # git apply --unsafe-paths --verbose .\drafthorse_pdf.patch
-        pip install -U git+https://github.com/lka/fpdf2.git@master
     - name: Lint with flake8
       run: |
         .venv/Scripts/deactivate

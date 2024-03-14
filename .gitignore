@@ -5,3 +5,4 @@ build
 *.ini
 *.pdf
 .venv
+.pytest_cache
