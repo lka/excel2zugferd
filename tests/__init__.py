@@ -3,4 +3,4 @@
 import sys
 import os
 
-sys.path.append('.' + os.sep)
+sys.path.append(os.path.join('..', '/'))
