@@ -3,4 +3,4 @@
 import sys
 import os
 
-sys.path.append(os.curdir)
+sys.path.append('..\\')
