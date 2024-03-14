@@ -3,7 +3,7 @@ TestModule for IniFile
 """
 import os
 import unittest
-import handle_ini_file
+from handle_ini_file import IniFile
 
 
 class TestIniFile(unittest.TestCase):
@@ -17,7 +17,7 @@ class TestIniFile(unittest.TestCase):
             os.remove(self.file)
         except FileNotFoundError:
             pass
-        self.ini_file_class = handle_ini_file.IniFile(self.fn, self.dir)
+        self.ini_file_class = IniFile(self.fn, self.dir)
         return super().setUp()
 
     def tearDown(self) -> None:

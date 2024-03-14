@@ -5,14 +5,14 @@ Testmodul for zugferd
 import unittest
 import os
 from datetime import datetime, timedelta
-from zugferd import ZugFeRD
+import zugferd
 
 
 class TestZugFerd(unittest.TestCase):
     """Testclass for zugferd tests"""
 
     def setUp(self) -> None:
-        self.zugferd = ZugFeRD()
+        self.zugferd = zugferd.ZugFeRD()
         self.mydebug = None
         return super().setUp()
 

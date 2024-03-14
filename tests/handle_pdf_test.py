@@ -5,7 +5,7 @@ Provides Tests for handling PDF
 import os
 from pathlib import Path
 import unittest
-from handle_pdf import Pdf
+import handle_pdf
 
 
 class TestHandlePdf(unittest.TestCase):
@@ -13,7 +13,7 @@ class TestHandlePdf(unittest.TestCase):
     Test Class for handling pdf
     """
     def setUp(self) -> None:
-        self.pdf = Pdf(None, None)
+        self.pdf = handle_pdf.Pdf(None, None)
         return super().setUp()
 
     def test_demo(self):

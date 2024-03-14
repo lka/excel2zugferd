@@ -5,7 +5,7 @@ Testmodul for excel content
 from unittest import TestCase
 import os
 import numpy as np
-import excel_content
+from excel_content import ExcelContent
 
 ADDRESS_EXPECTED = "\n".join(
     [
@@ -123,7 +123,7 @@ class TestExcelContent(TestCase):
         self.fn = "TestRechnung.xlsx"
         self.dir = "."
         self.path = os.path.join(self.dir, self.fn)
-        self.xlsx = excel_content.ExcelContent(self.fn, self.dir)
+        self.xlsx = ExcelContent(self.fn, self.dir)
         return super().setUp()
 
     def test_read_sheet_list(self):
