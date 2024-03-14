@@ -1,3 +1,6 @@
+"""
+Module handle_pdf
+"""
 # -*- coding: utf8 -*-
 
 from datetime import datetime, timedelta

@@ -1,5 +1,5 @@
 """
-Testmodul for excel content
+Modul excel_content_test
 """
 
 from unittest import TestCase

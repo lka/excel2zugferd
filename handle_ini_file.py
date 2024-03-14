@@ -1,5 +1,5 @@
 """
-Module IniFile
+Module handle_ini_file
 """
 import os
 import json
