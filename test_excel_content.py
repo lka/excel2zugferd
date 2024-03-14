@@ -1,9 +1,13 @@
+"""
+Testmodul for excel content
+"""
+
 import unittest
 import os
-import excelContent
 import numpy as np
+import excel_content
 
-adressExpected = "\n".join(
+ADDRESS_EXPECTED = "\n".join(
     [
         "Kunde Hans Mustermann GmbH",
         "Frau Mustermann",
@@ -12,7 +16,7 @@ adressExpected = "\n".join(
     ]
 )
 
-posistionsExpected = np.array(
+POSITIONS_EXPECTED = np.array(
     [
         ["Pos.", "Datum", "Tätigkeit", "Anzahl", "Typ", "Preis", "Summe"],
         [
@@ -64,7 +68,8 @@ posistionsExpected = np.array(
         [
             "6",
             "05.01.2024",
-            "Anmeldung im AWS von Patienten mit falscher MassnahmeID verbessert. Gemäß Email Fr. S.",
+            "Anmeldung im AWS von Patienten mit falscher \
+MassnahmeID verbessert. Gemäß Email Fr. S.",
             "1",
             "h",
             "75,00 €",
@@ -100,7 +105,8 @@ posistionsExpected = np.array(
         [
             "10",
             "18.01.2024",
-            "Email von Hrn. F bzgl. KVS Downtime und Funktion im Saal. (Kein KVS, keine Funktion im Saal)",
+            "Email von Hrn. F bzgl. KVS Downtime und Funktion im Saal. \
+(Kein KVS, keine Funktion im Saal)",
             "1",
             "10 Min.",
             "22,00 €",
@@ -110,113 +116,118 @@ posistionsExpected = np.array(
 )
 
 
-class test_ExcelContent(unittest.TestCase):
+class TestExcelContent(unittest.TestCase):
+    """TestClass for Excel Content"""
+
     def setUp(self) -> None:
-        self.fn = 'TestRechnung.xlsx'
-        self.dir = '.'
+        self.fn = "TestRechnung.xlsx"
+        self.dir = "."
         self.path = os.path.join(self.dir, self.fn)
-        self.xlsx = excelContent.ExcelContent(self.fn, self.dir)
+        self.xlsx = excel_content.ExcelContent(self.fn, self.dir)
         return super().setUp()
 
-    def tearDown(self) -> None:
-        return super().tearDown()
-
-    def test_readSheetList(self):
+    def test_read_sheet_list(self):
         """
         Teste, ob der Inhalt einer Excel-Datei gelesen werden kann
         """
-        expected = ['Tabelle1', 'Rechnung2']
-        retVal = self.xlsx.readSheetList()
-        # print (retVal)
-        self.assertEqual(retVal, expected, "Excel File should contain expected sheets")
+        expected = ["Tabelle1", "Rechnung2"]
+        retval = self.xlsx.read_sheet_list()
+        # print (retval)
+        self.assertEqual(retval, expected, "Excel File should contain expected sheets")
 
-    def test_readSheet(self):
+    def test_read_sheet(self):
         """
         Lies ein Sheet aus der Excel Datei als dataFrame
         """
-        self.xlsx.readSheet('Rechnung2')
-        # print(retVal)
-        self.assertGreater(len(self.xlsx.daten), 0, 'Should contain any content')
+        self.xlsx.read_sheet("Rechnung2")
+        # print(retval)
+        if self.xlsx and self.xlsx.daten is not None:
+            self.assertGreater(len(self.xlsx.daten), 0, "Should contain any content")
 
-    def test_getInvoiceNumber(self):
+    def test_get_invoice_number(self):
         """Lies die Rechnungsnummer aus dem Excel Sheet aus"""
-        self.xlsx.readSheet("Rechnung2")
+        self.xlsx.read_sheet("Rechnung2")
         expected = 20240001
-        retVal = self.xlsx.getInvoiceNumber()
-        # print(retVal)
-        self.assertEqual(retVal[list(retVal.keys())[0]], expected, "should be equal")
+        retval = self.xlsx.get_invoice_number()
+        # print(retval)
+        self.assertEqual(retval[list(retval.keys())[0]], expected, "should be equal")
 
-    def test_getAddressOfCustomer(self):
+    def test_get_address_of_customer(self):
         """
         Lies die Anschrift des Kunden aus dem Excel Sheet
         """
-        self.xlsx.readSheet("Rechnung2")
-        expected = adressExpected
-        value = self.xlsx.getAddressOfCustomer()
+        self.xlsx.read_sheet("Rechnung2")
+        expected = ADDRESS_EXPECTED
+        value = self.xlsx.get_address_of_customer()
         # print(value)
         self.assertEqual(value, expected, "should be equal")
 
-    def test__searchAnschrift(self):
+    def test__search_anschrift(self):
         """
         Lies die Anschrift des Kunden aus dem Excel Sheet
         """
-        self.xlsx.readSheet("Rechnung2")
-        expected = adressExpected
-        value = self.xlsx._searchAnschrift('An:')
+        self.xlsx.read_sheet("Rechnung2")
+        expected = ADDRESS_EXPECTED
+        value = self.xlsx._search_anschrift("An:")  # pylint: disable=protected-access
         # print(value)
         self.assertEqual(value, expected, "should be equal")
 
-    def test__getIndexOfNextNaN(self):
+    def test__get_index_of_nan(self):
         """
         Lies die Anschrift des Kunden aus dem Excel Sheet
         """
-        self.xlsx.readSheet("Rechnung2")
-        expected = adressExpected
-        an = self.xlsx.daten["An:"]
-        nan_idx = self.xlsx._getIndexOfNextNaN(an)
-        value = "\n".join(an[0:nan_idx])
-        # print(value)
-        self.assertEqual(value, expected, "should be equal")
+        self.xlsx.read_sheet("Rechnung2")
+        expected = ADDRESS_EXPECTED
+        if self.xlsx.daten is not None:
+            an = self.xlsx.daten["An:"]
+            nan_idx = self.xlsx._get_index_of_nan(  # pylint: disable=protected-access
+                an
+            )
+            value = "\n".join(an[0:nan_idx])
+            # print(value)
+            self.assertEqual(value, expected, "should be equal")
 
-    def test_getInvoicePositions(self):
+    def test_get_invoice_positions(self):
         """Lies den Inhalt der Positionen"""
 
-        self.xlsx.readSheet("Rechnung2")
-        expected = posistionsExpected
-        value = self.xlsx.getInvoicePositions()
+        self.xlsx.read_sheet("Rechnung2")
+        expected = POSITIONS_EXPECTED
+        value = self.xlsx.get_invoice_positions()
         # print(value)
         # self.assertEqual(value.ndim, expected.ndim, "should be equal")
-        self.assertTrue(np.array_equiv(value, expected), "should be equal")
+        self.assertTrue(np.array_equiv(value, expected), "should be equal")  # type: ignore
 
-    def test__split_dataframe_by_SearchValue(self):
+    def test__split_dataframe_by_search_value(self):
         """Lies den Inhalt der Positionen"""
 
-        self.xlsx.readSheet("Rechnung2")
-        expected = posistionsExpected
-        value = self.xlsx._split_dataframe_by_SearchValue("An:", "Pos.")
+        self.xlsx.read_sheet("Rechnung2")
+        expected = POSITIONS_EXPECTED
+        value = self.xlsx._split_dataframe_by_search_value(  # pylint: disable=protected-access
+            "An:", "Pos."
+        )
         # print(value)
         # self.assertEqual(value.ndim, expected.ndim, "should be equal")
-        self.assertTrue(np.array_equiv(value, expected), "should be equal")
+        self.assertTrue(np.array_equiv(value, expected), "should be equal")  # type: ignore
 
-    def test_getInvoiceSums(self):
+    def test_get_invoice_sums(self):
         """Lies die Summen aus dem Excel Sheet"""
-        self.xlsx.readSheet("Rechnung2")
+        self.xlsx.read_sheet("Rechnung2")
         expected = "957,00 €"
-        retVal = self.xlsx.getInvoiceSums()
-        # print(retVal)
-        self.assertEqual(retVal[0][1], expected, "should be equal")
+        retval = self.xlsx.get_invoice_sums()
+        # print(retval)
+        self.assertEqual(retval[0][1], expected, "should be equal")
 
-    def test__searchCellRightOf(self):
+    def test_search_cell_right_of(self):
         """Lies die Summen aus dem Excel Sheet"""
-        SUMS = "Unnamed: 5"
-        self.xlsx.readSheet("Rechnung2")
+        sums = "Unnamed: 5"
+        self.xlsx.read_sheet("Rechnung2")
         expected = "1138,83 €"
-        retVal = "{:.2f} €".format(
-            float(self.xlsx._searchCellRightOf(SUMS, "Bruttobetrag"))
-        ).replace(".", ",")
-        # print(retVal)
-        self.assertEqual(retVal, expected, "should be equal")
+        retval = f"{float(self.xlsx.search_cell_right_of(sums, 'Bruttobetrag')):.2f} €".replace(
+            ".", ","
+        )
+        # print(retval)
+        self.assertEqual(retval, expected, "should be equal")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

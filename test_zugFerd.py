@@ -1,16 +1,20 @@
+"""
+Testmodul for zugferd
+"""
+
 import unittest
-from zugFerd import ZugFeRD
-from datetime import datetime, timedelta
 import os
+from datetime import datetime, timedelta
+from zugferd import ZugFeRD
 
 
-class test_zugFerd(unittest.TestCase):
+class TestZugFerd(unittest.TestCase):
+    """Testclass for zugferd tests"""
+
     def setUp(self) -> None:
         self.zugferd = ZugFeRD()
+        self.mydebug = None
         return super().setUp()
-
-    def tearDown(self) -> None:
-        return super().tearDown()
 
     def test_add_xml2pdf(self):
         """
@@ -18,10 +22,10 @@ class test_zugFerd(unittest.TestCase):
         """
         try:
             os.remove("hello_world_zugferd.pdf")
-        except Exception:
+        except OSError:
             pass
 
-        self.zugferd.add_rgNr("2024000000000123")
+        self.zugferd.add_rgnr("2024000000000123")
         self.zugferd.add_note(
             "Max Mustermann - Softwareentwicklung\nMusterstr. 1\n12345 Musterstadt"
         )
@@ -31,7 +35,7 @@ class test_zugFerd(unittest.TestCase):
         self.zugferd.add_zahlungsempfaenger(
             "Max Mustermann\nIBAN: DE97 xxx xxx xxx xxx xxx xxx\nBIC: SOLADES1XYZ"
         )
-        self.zugferd.add_myCompany(
+        self.zugferd.add_my_company(
             "Max Mustermann\nMusterstr. 1\n12345 Musterstadt",
             "Max Mustermann - Softwareentwicklung",
             "Tel.: 01234-123456789\nEmail: max@mustermann.de",
@@ -43,8 +47,8 @@ class test_zugFerd(unittest.TestCase):
                 (
                     "1",
                     "01.01.2024",
-                    "Irgendwas, das länger ist als zwei Zeilen in der Ausgabe mit einer Dokumentation dessen, \
-                        was geleistet wurde.",
+                    "Irgendwas, das länger ist als zwei Zeilen in der Ausgabe mit \
+einer Dokumentation dessen, was geleistet wurde.",
                     "3",
                     "10 Min.",
                     "22,00",
@@ -53,7 +57,8 @@ class test_zugFerd(unittest.TestCase):
                 (
                     "2",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation \
+dessen, was geleistet wurde.",
                     "1",
                     "h",
                     "75,00",
@@ -62,7 +67,8 @@ class test_zugFerd(unittest.TestCase):
                 (
                     "3",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation \
+dessen, was geleistet wurde.",
                     "1",
                     "h",
                     "75,00",
@@ -71,7 +77,8 @@ class test_zugFerd(unittest.TestCase):
                 (
                     "4",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation \
+dessen, was geleistet wurde.",
                     "1",
                     "h",
                     "75,00",
@@ -80,7 +87,8 @@ class test_zugFerd(unittest.TestCase):
                 (
                     "5",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation \
+dessen, was geleistet wurde.",
                     "1",
                     "h",
                     "75,00",
@@ -89,7 +97,8 @@ class test_zugFerd(unittest.TestCase):
                 (
                     "6",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation \
+dessen, was geleistet wurde.",
                     "1",
                     "h",
                     "75,00 €",
@@ -109,17 +118,19 @@ class test_zugFerd(unittest.TestCase):
         self.zugferd.add_zahlungsziel(
             "Zahlbar ohne Abschlag bis", datetime.now() + timedelta(days=int(14))
         )
-        self.zugferd.add_xml2pdf("hello_world.pdf", "hello_world_zugferd.pdf")
+        yield self.zugferd.add_xml2pdf("hello_world.pdf", "hello_world_zugferd.pdf")
         self.assertTrue(os.path.isfile("hello_world_zugferd.pdf"))
         self.assertTrue(os.path.isfile("hello_world.pdf"))
-        try:
-            os.remove("hello_world_zugferd.pdf")
-        except Exception:
-            pass
-        try:
-            os.remove("hello_world.pdf")
-        except Exception:
-            pass
+
+        if not self.mydebug:
+            try:
+                os.remove("hello_world_zugferd.pdf")
+            except OSError:
+                pass
+            try:
+                os.remove("hello_world.pdf")
+            except OSError:
+                pass
 
 
 if __name__ == "__main__":

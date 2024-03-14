@@ -1,32 +1,51 @@
 # -*- coding: utf8 -*-
 
-from fpdf import FPDF
 from datetime import datetime, timedelta
-from fpdf.fonts import FontFace
-from fpdf.enums import TableCellFillMode
-from excelContent import ExcelContent
-from zugFerd import ZugFeRD
 import os
+from pathlib import Path
+from fpdf import FPDF
+from fpdf.fonts import FontFace
+from fpdf.enums import TableCellFillMode, OutputIntentSubType, OutputConditionIdentifier
+from excel_content import ExcelContent
+from zugferd import ZugFeRD
 
+# HERE = Path(__file__).resolve().parent
 
 class PDF(FPDF):
-    def footer(self):
+    """
+    Klassendeklaration
+    """
+    def __init__(self, footer_txt: str = ''):
+        super().__init__()
+        self.footer_txt = footer_txt
+        self.table_lines = None
+        self.table_head_color = None
+        self.table_head = None
+        self.table_fill_color = None
+        self.table_widths = None
+        self.sum_table_widths = None
+
+    def footer(self) -> None:
+        """
+        declare a footer for the pdf file
+        """
+        if len(self.footer_txt) == 0:
+            return
         self.set_y(-15)
-        if hasattr(self, "footer_txt"):
-            self.set_font_size(size=8)
-            self.cell(
-                0,
-                1,
-                self.footer_txt,
-                align="C",
-            )
+        self.set_font_size(size=8)
+        self.cell(
+            0,
+            1,
+            self.footer_txt,
+            align="C",
+        )
         self.ln()
         self.set_font(None, "I", 8)
         self.cell(0, 10, f"Seite {self.page_no()}/{{nb}}", align="C")
 
-    def header(self):
+    def header(self) -> None:
         if not hasattr(self, "title"):
-            return None
+            return
         # Setting font: origin font bold 15
         self.set_font(None, "B", 15)
         # Calculating width of title and setting cursor position:
@@ -53,12 +72,18 @@ class PDF(FPDF):
         # Performing a line break:
         self.ln()
 
-    def print_faltmarken(self):
+    def print_faltmarken(self) -> None:
+        """
+        prints Falt- und Lochmarkierungen
+        """
         self.line(4, 105, 8, 105)
         self.line(3, 148.5, 6, 148.5)  # Lochmarke
         self.line(4, 210, 8, 210)
 
-    def print_absender(self, adress):
+    def print_absender(self, adress: str) -> None:
+        """
+        prints Absenderdaten
+        """
         self.start_section("Absender", 0)
         self.set_xy(140, 32.5)
         self.set_font_size(12)
@@ -68,50 +93,63 @@ class PDF(FPDF):
         self.cell(105, 1, adress.replace("\n", ", "))
         self.ln()
 
-    def print_kontakt(self, daten):
+    def print_kontakt(self, daten: str) -> None:
+        """
+        prints Kontakt
+        """
         self.start_section("Kontakt", 0)
         self.set_xy(140, 60)
         self.set_font(None, "", size=10)
         self.multi_cell(105, 5, daten)
 
-    def print_adress(self, adress):
+    def print_adress(self, adress: str) -> None:
+        """
+        prints Empfänger
+        """
         self.start_section("Empfänger", 0)
         self.set_xy(25, 63.6)
         self.set_font_size(12)
         self.multi_cell(105, 5, adress)
         self.ln()
 
-    def print_bezug(self, text):
+    def print_bezug(self, text: str) -> None:
+        """
+        prints Betreffzeile
+        """
         self.start_section("Betreff", 0)
         self.set_xy(25, 97.4)
         self.set_font(None, "B", size=12)
         self.cell(None, None, text)
         self.ln()
 
-    def print_positions(self, arr):
+    def print_positions(self, arr: list) -> None:
+        """
+        prints Table with Positions
+        """
         self.start_section("Rechnungspositionen", 0)
         self.set_xy(25, 110)
         self.set_font(None, "", size=10)
-        self.set_draw_color(
-            self.TableLines if hasattr(self, "TableLines") else (0, 0, 255)
-        )
+        if self.table_lines:
+            self.set_draw_color(self.table_lines)
+        else:
+            self.set_draw_color(0, 0, 255)
         self.set_line_width(0.3)
         headings_style = FontFace(
             emphasis="BOLD",
-            color=self.TableHeadColor if hasattr(self, "TableHeadColor") else 255,
-            fill_color=self.TableHead if hasattr(self, "TableHead") else (255, 100, 0),
+            color=self.table_head_color if self.table_head_color else 255,
+            fill_color=self.table_head if self.table_head else (255, 100, 0),
         )
         with self.table(
             borders_layout="NO_HORIZONTAL_LINES",
             cell_fill_color=(
-                self.TableFillColor
-                if hasattr(self, "TableFillColor")
+                self.table_fill_color
+                if self.table_fill_color
                 else (244, 235, 255)
             ),
             cell_fill_mode=TableCellFillMode.ROWS,
             col_widths=(
-                self.TableWidths
-                if hasattr(self, "TableWidths")
+                self.table_widths
+                if hasattr(self, "table_widths")
                 else (10, 21, 68, 16, 15, 16, 19)
             ),
             text_align=(
@@ -127,7 +165,7 @@ class PDF(FPDF):
             headings_style=headings_style,
             line_height=5.5,
             width=min(
-                sum(self.TableWidths) if hasattr(self, "TableWidths") else 165, 165
+                sum(self.table_widths) if self.table_widths else 165, 165
             ),
             padding=(2, 0, 2, 0),
             v_align="TOP",
@@ -135,27 +173,32 @@ class PDF(FPDF):
             for data_row in arr:
                 table.row(data_row)
 
-    def print_summen(self, arr):
+    def print_summen(self, arr: list) -> None:
+        """
+        print Summen
+        """
         self.start_section("Rechnungssumme", 0)
         self.set_x(153)
         self.ln()
         self.set_font(None, "", size=10)
-        self.set_draw_color(
-            self.TableLines if hasattr(self, "TableLines") else (255, 0, 255)
-        )
+        if self.table_lines:
+            self.set_draw_color(self.table_lines)
+        else:
+            self.set_draw_color(255, 0, 255)
         self.set_line_width(0.3)
-        # headings_style = FontFace(emphasis="BOLD", color=255, fill_color=self.TableHead if hasattr(self, "TableHead")
+        # headings_style = FontFace(emphasis="BOLD", color=255, fill_color=self.table_head
+        # if hasattr(self, "table_head")
         # else (255, 100, 0))
         with self.table(
             borders_layout="NO_HORIZONTAL_LINES",
             cell_fill_color=(
-                self.TableFillColor
-                if hasattr(self, "TableFillColor")
+                self.table_fill_color
+                if hasattr(self, "table_fill_color")
                 else (244, 235, 255)
             ),
             cell_fill_mode=TableCellFillMode.ROWS,
             col_widths=(
-                self.SumTableWidths if hasattr(self, "SumTableWidths") else (50, 22)
+                self.sum_table_widths if self.sum_table_widths else (50, 22)
             ),
             text_align=(
                 "RIGHT",
@@ -165,7 +208,7 @@ class PDF(FPDF):
             align="RIGHT",
             # headings_style=headings_style,
             line_height=5.5,
-            width=sum(self.SumTableWidths) if hasattr(self, "SumTableWidths") else 72,
+            width=sum(self.sum_table_widths) if self.sum_table_widths else 72,
             padding=(2, 0, 2, 0),
             v_align="TOP",
         ) as table:
@@ -173,7 +216,10 @@ class PDF(FPDF):
                 table.row(data_row)
         self.ln()
 
-    def print_Abspann(self, text):
+    def print_abspann(self, text: str) -> None:
+        """
+        print Abspann
+        """
         self.ln()
         self.ln()
         self.start_section("Abspann", 0)
@@ -183,16 +229,24 @@ class PDF(FPDF):
 
 
 class Pdf(PDF):
-    def __init__(self, daten, stammdaten, createXML=False, logo_fn=None) -> None:
-        super(Pdf, self).__init__()
+    """
+    Klasse Pdf
+    """
+    def __init__(self, daten, stammdaten, create_xml=False, logo_fn=None) -> None:
+        super().__init__()
         # print(daten)
         # print("----------")
         # print(stammdaten)
         self.logo_fn = logo_fn
         self.daten = daten if isinstance(daten, ExcelContent) else None
         self.stammdaten = stammdaten if stammdaten is not None else {}
-        self.createXML = createXML
-        # import and embed TTF Font to use € in text
+        self.create_xml = create_xml
+        self.set_fonts_and_other_stuff()
+
+    def set_fonts_and_other_stuff(self) -> None:
+        """
+        import and embed TTF Font to use € in text
+        """
         self.add_font(
             "dejavu-sans", style="", fname="./_internal/Fonts/DejaVuSansCondensed.ttf"
         )
@@ -216,10 +270,21 @@ class Pdf(PDF):
         self.set_lang("de_DE")
         # set left, top and right margin for document
         self.set_margins(25, 16.9, 20)
-        if createXML:
+        self.set_output_intents(
+            OutputIntentSubType.PDFA,
+            OutputConditionIdentifier.sRGB,
+            "CGATS TR 001 (SWOP)",
+            "http://www.color.org",
+            os.path.join("_internal", "sRGB2014.icc"),
+            "sRGB2014 (v2)",
+        )
+        if self.create_xml:
             self.zugferd = ZugFeRD()
 
-    def print_logo(self):
+    def print_logo(self) -> None:
+        """
+        print Logo
+        """
         if self.logo_fn is None:
             return
         rect1 = 27, 30, 20, 20
@@ -228,7 +293,10 @@ class Pdf(PDF):
         self.image(self.logo_fn, *rect1, keep_aspect_ratio=True)
         self.set_draw_color(0)
 
-    def uniquify(self, path):
+    def uniquify(self, path: str) -> str:
+        """
+        make unique Path from filename
+        """
         fn, ext = os.path.splitext(path)
         counter = 1
 
@@ -237,7 +305,10 @@ class Pdf(PDF):
             counter += 1
         return path
 
-    def demo(self):
+    def demo(self) -> None:
+        """
+        Demo for creation of Pdf
+        """
         today = datetime.now()
         german_date = "%d.%m.%Y"
         datum = today.strftime(german_date)
@@ -245,14 +316,14 @@ class Pdf(PDF):
         # self = self()
 
         #
-        self.TableHead = (
+        self.table_head = (
             255  # white fill-color of Table Header (30, 144, 255)  # DodgerBlue1
         )
-        self.TableHeadColor = 0  # black text-color of Table Header
-        self.TableLines = 0  # black (0, 0, 255)  # Blue
-        self.TableFillColor = 220  # lightgrey
-        self.TableWidths = (10, 21, 68, 16, 15, 16, 19)  # (11, 22, 61, 16, 20, 21, 21)
-        self.TableLines = 120  # darkgrey
+        self.table_head_color = 0  # black text-color of Table Header
+        self.table_lines = 0  # black (0, 0, 255)  # Blue
+        self.table_fill_color = 220  # lightgrey
+        self.table_widths = (10, 21, 68, 16, 15, 16, 19)  # (11, 22, 61, 16, 20, 21, 21)
+        self.table_lines = 120  # darkgrey
 
         self.set_title("Max Mustermann - Softwareentwicklung")
         self.footer_txt = (
@@ -436,30 +507,34 @@ class Pdf(PDF):
             ]
         )
 
-        self.print_Abspann(
-            f"Bitte überweisen Sie den Betrag von 1.690,98 € bis zum {ueberweisungsdatum} auf u.a. Konto.\
+        self.print_abspann(
+            f"Bitte überweisen Sie den Betrag von 1.690,98 € bis zum \
+                {ueberweisungsdatum} auf u.a. Konto.\
                 \n\nMit freundlichen Grüßen\nMax Mustermann",
         )
 
         self.output("hello_world.pdf")
 
-    def fill_Pdf(self):
+    def fill_pdf(self) -> None:
+        """
+        set own data
+        """
         self.set_title(self.stammdaten["Betriebsbezeichnung"])
-        tmpStr = self.stammdaten["Konto"].replace("\n", ", ")
-        self.footer_txt = f"{tmpStr}"
+        tmp_str = self.stammdaten["Konto"].replace("\n", ", ")
+        self.footer_txt = f"{tmp_str}"
         self.set_author(self.stammdaten["Name"])
 
-        if self.createXML:
+        if self.create_xml:
             self.zugferd.add_zahlungsempfaenger(self.stammdaten["Konto"])
 
-        self.TableHead = (
+        self.table_head = (
             255  # white fill-color of Table Header (30, 144, 255)  # DodgerBlue1
         )
-        self.TableHeadColor = 0  # black text-color of Table Header
-        self.TableLines = 0  # black (0, 0, 255)  # Blue
-        self.TableFillColor = 220  # lightgrey
-        self.TableWidths = (10, 21, 68, 16, 15, 16, 19)  # (11, 22, 61, 16, 20, 21, 21)
-        self.TableLines = 120  # darkgrey
+        self.table_head_color = 0  # black text-color of Table Header
+        self.table_lines = 0  # black (0, 0, 255)  # Blue
+        self.table_fill_color = 220  # lightgrey
+        self.table_widths = (10, 21, 68, 16, 15, 16, 19)  # (11, 22, 61, 16, 20, 21, 21)
+        self.table_lines = 120  # darkgrey
 
         self.add_page()
         self.print_faltmarken()
@@ -469,7 +544,7 @@ class Pdf(PDF):
             self.stammdaten["Kontakt"] + "\n\n" + self.stammdaten["Umsatzsteuer"]
         )
 
-        if self.createXML:
+        if self.create_xml:
             txt = (
                 self.stammdaten["Anschrift"]
                 + "\n"
@@ -478,16 +553,17 @@ class Pdf(PDF):
                 + self.stammdaten["Umsatzsteuer"]
             )
             self.zugferd.add_note(txt)
-            self.zugferd.add_myCompany(
+            self.zugferd.add_my_company(
                 self.stammdaten["Anschrift"],
                 self.stammdaten["Betriebsbezeichnung"],
                 self.stammdaten["Kontakt"],
                 self.stammdaten["Umsatzsteuer"].split("\n")[0].split()[1],
             )
 
-        an = self.daten.getAddressOfCustomer()
-        self.print_adress(an)
-        rgNr = self.daten.getInvoiceNumber()
+        an = self.daten.get_address_of_customer() if self.daten else ''
+        if an:
+            self.print_adress(an)
+        rg_nr = self.daten.get_invoice_number() if self.daten else {}
 
         today = datetime.now()
         german_date = "%d.%m.%Y"
@@ -495,31 +571,33 @@ class Pdf(PDF):
         ueberweisungsdatum = (
             today + timedelta(days=int(self.stammdaten["Zahlungsziel"]))
         ).strftime(german_date)
-        if self.createXML:
-            self.zugferd.add_rgNr(f"{rgNr[list(rgNr.keys())[0]]}")
+        if self.create_xml:
+            self.zugferd.add_rgnr(f"{rg_nr[list(rg_nr.keys())[0]]}")
             self.zugferd.add_rechnungsempfaenger(an)
 
         self.print_bezug(
-            f"{list(rgNr.keys())[0]} {rgNr[list(rgNr.keys())[0]]} vom {datum}"
+            f"{list(rg_nr.keys())[0]} {rg_nr[list(rg_nr.keys())[0]]} vom {datum}"
         )
 
         # print(self.split_dataframe_by_SearchValue(AN, "Pos."))
-        df = self.daten.getInvoicePositions()
-        self.print_positions(df)
-        if self.createXML:
+        df = self.daten.get_invoice_positions() if self.daten else []
+        if df is not None:
+            self.print_positions(df)
+        if self.create_xml:
             self.zugferd.add_items(df)
 
-        summen = self.daten.getInvoiceSums()
+        summen = self.daten.get_invoice_sums() if self.daten else []
         brutto = summen[-1][-1]
         self.print_summen(summen)
-        if self.createXML:
+        if self.create_xml:
             self.zugferd.add_gesamtsummen(summen)
             self.zugferd.add_zahlungsziel(
                 f"Bitte überweisen Sie den Betrag von {brutto} bis zum",
                 today + timedelta(days=int(self.stammdaten["Zahlungsziel"])),
             )
 
-        self.print_Abspann(
-            f"Bitte überweisen Sie den Betrag von {brutto} bis zum {ueberweisungsdatum} auf u.a. Konto.\
+        self.print_abspann(
+            f"Bitte überweisen Sie den Betrag von {brutto} bis zum {ueberweisungsdatum} \
+                auf u.a. Konto.\
                 \n\nMit freundlichen Grüßen\n{self.stammdaten['Name']}"
         )

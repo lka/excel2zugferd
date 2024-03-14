@@ -1,16 +1,20 @@
-import unittest
-from handlePDF import Pdf
+"""
+Provides Tests for handling PDF
+"""
+
 import os
 from pathlib import Path
+import unittest
+from handle_pdf import Pdf
 
 
-class test_handlePDF(unittest.TestCase):
+class TestHandlePdf(unittest.TestCase):
+    """
+    Test Class for handling pdf
+    """
     def setUp(self) -> None:
         self.pdf = Pdf(None, None)
         return super().setUp()
-
-    def tearDown(self) -> None:
-        return super().tearDown()
 
     def test_demo(self):
         """
@@ -18,7 +22,7 @@ class test_handlePDF(unittest.TestCase):
         """
         try:
             os.remove("hello_world.pdf")
-        except Exception:
+        except OSError:
             pass
 
         self.pdf.demo()
@@ -32,13 +36,13 @@ class test_handlePDF(unittest.TestCase):
         expected = "testUniquify (1).pdf"
         try:
             Path(fn).touch()
-        except Exception:
+        except OSError:
             pass
-        retVal = self.pdf.uniquify(fn)
-        self.assertEqual(retVal, expected, "should be equal")
+        retval = self.pdf.uniquify(fn)
+        self.assertEqual(retval, expected, "should be equal")
         try:
             os.remove(fn)
-        except Exception:
+        except OSError:
             pass
 
 

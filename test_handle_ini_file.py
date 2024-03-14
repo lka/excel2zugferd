@@ -1,9 +1,13 @@
-import unittest
-import handleIniFile
+"""
+TestModule for IniFile
+"""
 import os
+import unittest
+import handle_ini_file
 
 
-class test_IniFile(unittest.TestCase):
+class TestIniFile(unittest.TestCase):
+    """Testclass for IniFile"""
 
     def setUp(self) -> None:
         self.fn = 'Test.ini'
@@ -13,7 +17,7 @@ class test_IniFile(unittest.TestCase):
             os.remove(self.file)
         except FileNotFoundError:
             pass
-        self.IniFileClass = handleIniFile.IniFile(self.fn, self.dir)
+        self.ini_file_class = handle_ini_file.IniFile(self.fn, self.dir)
         return super().setUp()
 
     def tearDown(self) -> None:
@@ -27,7 +31,7 @@ class test_IniFile(unittest.TestCase):
         """
         Teste, dass kein ini File existiert
         """
-        file = self.IniFileClass.existsIniFile()
+        file = self.ini_file_class.exists_ini_file()
         self.assertIsNone(file, "Should be None, because ini file doesn't exist")
 
     def test_exists_true(self):
@@ -35,11 +39,11 @@ class test_IniFile(unittest.TestCase):
         Teste, ob ein ini File existiert
         """
         expected = {'Test1': 'Irgendwas', 'Test3': 'Was anderes', 'Test2': 'Ganz was anderes'}
-        self.IniFileClass.createIniFile(expected)
-        file = self.IniFileClass.existsIniFile()
+        self.ini_file_class.create_ini_file(expected)
+        file = self.ini_file_class.exists_ini_file()
         self.assertIsNotNone(file, "Should not be None (File-Handle), because ini file exist")
-        content = self.IniFileClass.readIniFile()
-        self.assertDictEqual(content, expected, f"Content of Ini-File should be equal to {expected}")
+        content = self.ini_file_class.read_ini_file()
+        self.assertDictEqual(content, expected, f"Content of Ini-File should be equal to {expected}") # type: ignore
 
 
 if __name__ == '__main__':

@@ -1,3 +1,6 @@
+"""
+Module ZugFeRD
+"""
 from datetime import date
 from decimal import Decimal
 
@@ -11,6 +14,7 @@ from drafthorse.pdf import attach_xml
 
 
 class ZugFeRD:
+    """Class ZugFeRD"""
     def __init__(self):
         # Build data structure
         self.doc = Document()
@@ -23,15 +27,18 @@ class ZugFeRD:
         self.doc.header.languages.add("de")
         self.debug = False
 
-    def add_rgNr(self, rgNr):
-        self.doc.header.id = rgNr
+    def add_rgnr(self, rgnr):
+        """Set Rechnungsnummer to id in header"""
+        self.doc.header.id = rgnr
 
     def add_note(self, text):
+        """Add note to notes"""
         note = IncludedNote()
         note.content.add(text)
         self.doc.header.notes.add(note)
 
     def add_zahlungsempfaenger(self, text):
+        """set Zahlungsempfaenger to correct value"""
         self.doc.trade.settlement.payment_means.type_code = (
             "58"  # SEPA Überweisung else "ZZZ"
         )
@@ -48,6 +55,7 @@ class ZugFeRD:
             ].split(" ", 1)[1]
 
     def add_rechnungsempfaenger(self, text):
+        """set Rechnungsempfänger"""
         self.doc.trade.settlement.currency_code = "EUR"
 
         arr = text.split("\n")
@@ -62,7 +70,8 @@ class ZugFeRD:
             self.doc.trade.agreement.buyer.address.city_name = arr[-1].split(" ", 1)[1]
             self.doc.trade.agreement.buyer.address.country_id = "DE"
 
-    def add_myCompany(self, adr, company, kontakt, ustid):
+    def add_my_company(self, adr, company, kontakt, ustid):
+        """Add Address of my company to zugferd"""
         self.doc.trade.agreement.seller.id = company
 
         arr = adr.split("\n")
@@ -87,6 +96,7 @@ class ZugFeRD:
         # self.doc.trade.agreement.seller.tax = ustid
 
     def add_items(self, dat):
+        """add items to invoice"""
         i = 0
         # ("Pos.", "Datum", "Tätigkeit", "Menge", "Typ", "Einzel €", "Gesamt €")
         for item in dat:
@@ -116,7 +126,7 @@ class ZugFeRD:
             i = i + 1
 
     def add_gesamtsummen(self, dat):
-
+        """add gesamtsumme to invoice"""
         netto = float(dat[0][1].split()[0].replace(",", "."))
         steuer = float(dat[1][1].split()[0].replace(",", "."))
         brutto = float(dat[2][1].split()[0].replace(",", "."))
@@ -150,12 +160,14 @@ class ZugFeRD:
         )
 
     def add_zahlungsziel(self, text, datum):
+        """add zahlungsziel to zugferd"""
         terms = PaymentTerms()
         terms.description = text
         terms.due = datum
         self.doc.trade.settlement.terms.add(terms)
 
-    def add_xml2pdf(self, inFile=None, outFile=None) -> None:
+    def add_xml2pdf(self, in_file=None, out_file=None) -> None:
+        """add xml content to out_file"""
         # Generate XML file
         xml = self.doc.serialize(schema="FACTUR-X_EXTENDED")
 
@@ -164,12 +176,12 @@ class ZugFeRD:
         # Attach XML to an existing PDF.
         # Note that the existing PDF should be compliant to PDF/A-3!
         # You can validate this here: https://www.pdf-online.com/osa/validate.aspx
-        if inFile:
-            with open(inFile, "rb") as original_file:
+        if in_file:
+            with open(in_file, "rb") as original_file:
                 new_pdf_bytes = attach_xml(original_file.read(), xml, "EXTENDED")
         if self.debug:
             with open("factur-x.xml", "wb") as f:
                 f.write(xml)
-        if outFile:
-            with open(outFile, "wb") as f:
+        if out_file:
+            with open(out_file, "wb") as f:
                 f.write(new_pdf_bytes)

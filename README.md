@@ -8,6 +8,10 @@ Erstellt eine Virtual-Env Umgebung: `Ctrl+Shift+P -> Python: Create Environment 
 
 Zum aktivieren der Umgebung: `.\.venv\scripts\activate` aufrufen. (jedes mal)
 
+## von mir geändertes fpdf2 von github installieren
+
+`pip install --update git+https://github.com/lka/fpdf2.git@master`
+
 ## Using commit messages
 
 In case you are not familiar with conventional commits (as mentioned above), here is a short summary. Basically, you should prefix your commit messages with one of the following keywords:
@@ -67,7 +71,7 @@ Ich habe daraus den Font `DejaVuSansCondensed` gewählt und in allen Ausprägung
 
 ## Erstellen einer Windows exe
 
-`pyinstaller .\excel2zugferd.py --noconsole --add-data _internal/Fonts:Fonts --add-data ./.venv/Lib/site-packages/drafthorse/schema:drafthorse/schema --add-data _version/version.json:. --noconfirm`
+`pyinstaller .\excel2zugferd.py --noconsole --add-data _internal/Fonts:Fonts --add-data ./.venv/Lib/site-packages/drafthorse/schema:drafthorse/schema --add-data _internal/version.json:. --add-data _internal/sRGB2014.icc:. --noconfirm`
 
 ## Copyright and License
 

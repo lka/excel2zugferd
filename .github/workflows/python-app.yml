@@ -34,7 +34,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pytest
-        git apply --unsafe-paths --verbose .\drafthorse_pdf.patch
+        # git apply --unsafe-paths --verbose .\drafthorse_pdf.patch
+        pip install --update git+https://github.com/lka/fpdf2.git@master
     - name: Lint with flake8
       run: |
         .venv/Scripts/deactivate
@@ -63,7 +64,7 @@ jobs:
     - name: Build with pyinstaller
       run: |
         .venv/Scripts/activate
-        pyinstaller excel2zugferd.py --noconsole --add-data _internal/Fonts:Fonts --add-data ./.venv/Lib/site-packages/drafthorse/schema:drafthorse/schema --add-data version.json:. --noconfirm
+        pyinstaller excel2zugferd.py --noconsole --add-data _internal/Fonts:Fonts --add-data ./.venv/Lib/site-packages/drafthorse/schema:drafthorse/schema --add-data version.json:. --add-data _internal/sRGB2014.icc:. --noconfirm
     - name: Deploy artifacts
       uses: actions/upload-artifact@v4
       id: artifact
