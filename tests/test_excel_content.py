@@ -2,7 +2,7 @@
 Testmodul for excel content
 """
 
-import unittest
+from unittest import TestCase
 import os
 import numpy as np
 import excel_content
@@ -116,7 +116,7 @@ MassnahmeID verbessert. Gemäß Email Fr. S.",
 )
 
 
-class TestExcelContent(unittest.TestCase):
+class TestExcelContent(TestCase):
     """TestClass for Excel Content"""
 
     def setUp(self) -> None:
@@ -229,5 +229,5 @@ class TestExcelContent(unittest.TestCase):
         self.assertEqual(retval, expected, "should be equal")
 
 
-if __name__ == "__main__":
-    unittest.main()
+# if __name__ == "__main__":
+#     unittest.main()

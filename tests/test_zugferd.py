@@ -122,7 +122,7 @@ dessen, was geleistet wurde.",
         self.assertTrue(os.path.isfile("hello_world_zugferd.pdf"))
         self.assertTrue(os.path.isfile("hello_world.pdf"))
 
-        if not self.mydebug:
+        if self.mydebug is None:
             try:
                 os.remove("hello_world_zugferd.pdf")
             except OSError:
