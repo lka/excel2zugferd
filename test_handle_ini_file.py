@@ -43,7 +43,7 @@ class TestIniFile(unittest.TestCase):
         file = self.ini_file_class.exists_ini_file()
         self.assertIsNotNone(file, "Should not be None (File-Handle), because ini file exist")
         content = self.ini_file_class.read_ini_file()
-        self.assertDictEqual(content, expected, f"Content of Ini-File should be equal to {expected}") # type: ignore
+        self.assertDictEqual(content, expected, f"Content of Ini-File should be equal to {expected}")  # type: ignore
 
 
 if __name__ == '__main__':

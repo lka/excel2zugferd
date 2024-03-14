@@ -1,5 +1,5 @@
 """
-Module ZugFeRD
+Module zugferd
 """
 from datetime import date
 from decimal import Decimal

@@ -2,14 +2,12 @@
 
 from datetime import datetime, timedelta
 import os
-from pathlib import Path
 from fpdf import FPDF
 from fpdf.fonts import FontFace
 from fpdf.enums import TableCellFillMode, OutputIntentSubType, OutputConditionIdentifier
 from excel_content import ExcelContent
 from zugferd import ZugFeRD
 
-# HERE = Path(__file__).resolve().parent
 
 class PDF(FPDF):
     """
