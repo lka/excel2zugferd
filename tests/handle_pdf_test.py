@@ -5,7 +5,7 @@ Modul handle_pdf_test
 import os
 from pathlib import Path
 import unittest
-from .. import handle_pdf
+import handle_pdf
 
 
 class TestHandlePdf(unittest.TestCase):
