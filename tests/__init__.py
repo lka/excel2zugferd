@@ -1,6 +1,6 @@
 """ Module for inititalization of path for tests """
 
 import sys
-# import os
+import os
 
-sys.path.append('.')
+sys.path.append(os.path.dirname(__file__))
