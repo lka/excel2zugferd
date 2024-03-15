@@ -1,5 +1,5 @@
 """
-Provides Tests for handling PDF
+Modul handle_pdf_test
 """
 
 import os

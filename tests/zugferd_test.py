@@ -1,5 +1,5 @@
 """
-Modul zugferd
+Modul zugferd_test
 """
 
 import unittest
