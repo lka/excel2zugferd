@@ -46,7 +46,8 @@ jobs:
       run: |
         .venv/Scripts/activate
         pip install pytest
-        pytest --doctest-modules --junitxml=junit/test-results.xml -v
+        dir
+        pytest --doctest-modules --junitxml=junit/test-results.xml
     - name: Upload pytest test results
       uses: actions/upload-artifact@v4
       with:
