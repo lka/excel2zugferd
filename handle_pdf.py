@@ -9,7 +9,7 @@ from fpdf import FPDF
 from fpdf.fonts import FontFace
 from fpdf.enums import TableCellFillMode, OutputIntentSubType, OutputConditionIdentifier
 from excel_content import ExcelContent
-import zugferd
+from zugferd import ZugFeRD
 
 
 class PDF(FPDF):
@@ -280,7 +280,7 @@ class Pdf(PDF):
             "sRGB2014 (v2)",
         )
         if self.create_xml:
-            self.zugferd = zugferd.ZugFeRD()
+            self.zugferd = ZugFeRD()
 
     def print_logo(self) -> None:
         """
