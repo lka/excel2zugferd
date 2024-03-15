@@ -66,7 +66,7 @@ class ExcelContent:
         # print(line)
         start_index = int(line.index[0]) + 1
         tmpdf = self.daten.iloc[
-            start_index : len(self.daten), :  # pylint: disable=bad-whitespace
+            start_index : len(self.daten), :  # noqa: E203
         ]
         nan_idx = self._get_index_of_nan(tmpdf[column_name])
         retval = tmpdf[0:nan_idx]
