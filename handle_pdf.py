@@ -276,7 +276,7 @@ class Pdf(PDF):
             OutputConditionIdentifier.sRGB,
             "CGATS TR 001 (SWOP)",
             "http://www.color.org",
-            os.path.join("_internal", "sRGB2014.icc"),
+            FPDF.dest_output_profile(fn=os.path.join("_internal", "sRGB2014.icc"), N=3, alternate="DeviceRGB"),
             "sRGB2014 (v2)",
         )
         if self.create_xml:

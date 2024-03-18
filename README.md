@@ -10,7 +10,7 @@ Zum aktivieren der Umgebung: `.\.venv\scripts\activate` aufrufen. (jedes mal)
 
 ## von mir geändertes fpdf2 von github installieren
 
-`pip install --update git+https://github.com/lka/fpdf2.git@master`
+`pip install --upgrade git+https://github.com/lka/fpdf2.git@master`
 
 ## Using commit messages
 
