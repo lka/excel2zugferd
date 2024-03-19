@@ -1,8 +1,10 @@
 __pycache__
 dist
 build
+junit
 *.xml
 *.ini
 *.pdf
 .venv
 .pytest_cache
+node_modules

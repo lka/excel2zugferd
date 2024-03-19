@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import os
 from fpdf import FPDF
 from fpdf.fonts import FontFace
-from fpdf.enums import TableCellFillMode, OutputIntentSubType, OutputConditionIdentifier
+from fpdf.enums import TableCellFillMode, OutputIntentSubType
 from excel_content import ExcelContent
 import handle_zugferd
 
@@ -273,10 +273,12 @@ class Pdf(PDF):
         self.set_margins(25, 16.9, 20)
         self.set_output_intents(
             OutputIntentSubType.PDFA,
-            OutputConditionIdentifier.sRGB,
-            "CGATS TR 001 (SWOP)",
+            "sRGB",
+            "IEC 61966-2-1:1999",
             "http://www.color.org",
-            FPDF.dest_output_profile(fn=os.path.join("_internal", "sRGB2014.icc"), N=3, alternate="DeviceRGB"),
+            FPDF.dest_output_profile(
+                fn=os.path.join("_internal", "sRGB2014.icc"), N=3, alternate="DeviceRGB"
+            ),
             "sRGB2014 (v2)",
         )
         if self.create_xml:
