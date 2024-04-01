@@ -61,8 +61,8 @@ jobs:
         Invoke-WebRequest -uri https://github.com/thenativeweb/get-next-version/releases/download/2.6.1/get-next-version-windows-amd64.exe -outfile get-next-version-windows-amd64.exe
         ls
         .\get-next-version-windows-amd64.exe  -p 'v' --target json > version.json
-        echo "MyAppVersion=$(./get-next-version-windows-amd64.exe)"
-        echo "MyAppVersion=$(./get-next-version-windows-amd64.exe)" >> GITHUB_OUTPUT
+        # echo "MyAppVersion=$(./get-next-version-windows-amd64.exe)"
+        echo "MyAppVersion=$(./get-next-version-windows-amd64.exe)" >> $env:GITHUB_OUTPUT
         more version.json
       shell: powershell
     - name: Build with pyinstaller
