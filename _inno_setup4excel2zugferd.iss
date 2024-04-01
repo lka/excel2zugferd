@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Excel2ZugFeRD"
-#define MyAppVersion "0.4.1"
+; #define MyAppVersion "0.4.1"
 #define MyAppPublisher "Herbert Lischka Softwareentwicklung"
 #define MyAppURL "https://github.com/lka/excel2zugferd"
 #define MyAppExeName "excel2zugferd.exe"
