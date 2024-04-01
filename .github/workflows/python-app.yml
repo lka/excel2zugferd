@@ -55,7 +55,7 @@ jobs:
           path: junit/test-results.xml
         # Use always() to always run this step to publish test results when there are test failures
       if: ${{ always() }}
-    - name: w-get-next-version
+    - name: get next version
       id: vars
       run: |
         Invoke-WebRequest -uri https://github.com/thenativeweb/get-next-version/releases/download/2.6.1/get-next-version-windows-amd64.exe -outfile get-next-version-windows-amd64.exe
@@ -71,8 +71,8 @@ jobs:
     - name: Compile .ISS to .EXE Installer
       uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
       with:
-        path: ./inno_setup4excel2zugferd.iss
-        options: /dMyAppVersion=${{steps.vars.outputs.MyAppVersion}}
+        path: ./_inno_setup4excel2zugferd.iss
+        options: /dMyAppVersion="${{steps.vars.outputs.MyAppVersion}}"
     - name: Deploy artifacts
       uses: actions/upload-artifact@v4
       id: artifact
