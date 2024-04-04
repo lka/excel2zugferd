@@ -428,8 +428,9 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
             # messagebox.showinfo("Info", "Double-Clicked")
             self.create_pdf()
             self.double_clicked_flag = False
-#        else:
-#            messagebox.showinfo("Info", "Single-Clicked")
+
+    #        else:
+    #            messagebox.showinfo("Info", "Single-Clicked")
 
     def makeform(self):
         """
