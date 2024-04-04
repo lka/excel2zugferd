@@ -93,6 +93,8 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    # don't create Release on pull request
+    if: ${{github.ref == 'refs/heads/master'}} && job.status == 'success'
     needs: build
     concurrency: release
     permissions:
