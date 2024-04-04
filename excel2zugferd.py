@@ -266,6 +266,7 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         self.filename = None
         self.excel_file = None
         self.selected_lb_item = None
+        self.double_clicked_flag = False
         self.root.title("Excel2ZugFeRD")
         self.make_menu_bar(
             [
@@ -403,14 +404,32 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
                     {format_ioerr(ex)}"
                 messagebox.showerror("Fehler", mymsg)
 
-    def click_button(self, event):  # pylint: disable=unused-argument
+    def mouse_click(self, event):  # pylint: disable=unused-argument
         """
-        react to clicking of the button
+        reaction to clicking of the selected item in listbox
+        """
+        self.lb.after(300, self.mouse_action, event)
+
+    def double_click(self, event):  # pylint: disable=unused-argument
+        """
+        reaction to double-clicking of the selected item in listbox
+        """
+        self.double_clicked_flag = True
+
+    def mouse_action(self, event):  # pylint: disable=unused-argument
+        """
+        reaction to clicking or double-clicking of the selected item in listbox
         """
         # get selected indices
         selected_indices = self.lb.curselection()
         # get selected items
         self.selected_lb_item = ",".join([self.lb.get(i) for i in selected_indices])
+        if self.double_clicked_flag:
+            # messagebox.showinfo("Info", "Double-Clicked")
+            self.create_pdf()
+            self.double_clicked_flag = False
+#        else:
+#            messagebox.showinfo("Info", "Single-Clicked")
 
     def makeform(self):
         """
@@ -426,7 +445,8 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         )
         self.file_name_label.pack()
         self.lb = tk.Listbox(self.root, height=20)
-        self.lb.bind("<<ListboxSelect>>", self.click_button)  # type: ignore
+        self.lb.bind("<<ListboxSelect>>", self.mouse_click)  # type: ignore
+        self.lb.bind("<Double-Button>", self.double_click)
         self.lb.pack(expand=True, fill=tk.BOTH)
 
 
