@@ -3,7 +3,7 @@ Module excel2zugferd
 """
 
 import tkinter as tk
-from tkinter import messagebox, filedialog, Button
+from tkinter import messagebox, filedialog, Button, ttk
 import json
 import tempfile
 import os
@@ -24,17 +24,32 @@ def format_ioerr(err: IOError) -> str:
 
 
 fields = [
-    {"Text": "Betriebsbezeichnung", "Lines": 1},
-    {"Text": "Anschrift", "Lines": 5},
-    {"Text": "Name", "Lines": 1},
-    {"Text": "Kontakt", "Lines": 5},
-    {"Text": "Umsatzsteuer", "Lines": 2},
-    {"Text": "Konto", "Lines": 3},
-    {"Text": "Zahlungsziel", "Lines": 1},
-    {"Text": "Abspann", "Lines": 5},
-    {"Text": "ZugFeRD", "Lines": 1},
+    {
+        "Text": "Betriebsbezeichnung",
+        "Label": "Betriebsbezeichnung",
+        "Lines": 1,
+        "Type": "String",
+    },
+    {"Text": "Anschrift", "Label": "Anschrift", "Lines": 5, "Type": "String"},
+    {"Text": "Name", "Label": "Name", "Lines": 1, "Type": "String"},
+    {"Text": "Kontakt", "Label": "Kontakt", "Lines": 5, "Type": "String"},
+    {"Text": "Umsatzsteuer", "Label": "Umsatzsteuer", "Lines": 2, "Type": "String"},
+    {"Text": "Konto", "Label": "Konto", "Lines": 3, "Type": "String"},
+    {"Text": "Zahlungsziel", "Label": "Zahlungsziel", "Lines": 1, "Type": "String"},
+    {"Text": "Abspann", "Label": "Abspann", "Lines": 5, "Type": "String"},
+    {
+        "Text": "ZugFeRD",
+        "Label": "ZugFeRD Datensatz erzeugen und anhängen",
+        "Lines": 1,
+        "Type": "Boolean",
+        "Variable": "ZugFeRD",
+    },
 ]
 
+LABELWIDTH = 22
+TEXTWIDTH = 40
+PADX = 5
+PADY = 5
 
 class Oberflaeche:
     """
@@ -136,6 +151,7 @@ class OberflaecheIniFile(Oberflaeche):
         super().__init__(window=tk.Toplevel())
 
         self.fields = thefields
+        self.menuvars = {}
         self.ini_file = myini_file
         self.root.title("Stammdateneingabe")
         self.make_menu_bar(
@@ -145,11 +161,11 @@ class OberflaecheIniFile(Oberflaeche):
             ]
         )
         row = tk.Frame(self.root)
-        row.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
+        row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
         self.logo_button = tk.Button(
             row, text="Logo auswählen...", anchor="w", command=self.handle_file_button
         )
-        self.logo_button.pack(side=tk.LEFT, padx=5)
+        self.logo_button.pack(side=tk.LEFT, padx=PADX)
         self.logo_button.bind("<Return>", (lambda event: self.handle_file_button))
         self.logo_delete = tk.Button(
             row, text="Logo löschen", command=self.handle_logo_delete_button
@@ -158,7 +174,7 @@ class OberflaecheIniFile(Oberflaeche):
             "<Return>", (lambda event: self.handle_logo_delete_button)
         )
         if Path(self.logo_fn).exists():
-            self.logo_delete.pack(side=tk.LEFT, padx=5)
+            self.logo_delete.pack(side=tk.LEFT, padx=PADX)
 
         self.canvas = tk.Canvas(row, width=100, height=100, bg="white")
         self.canvas.pack(side=tk.RIGHT, padx=38, anchor="w", expand=True)
@@ -168,10 +184,10 @@ class OberflaecheIniFile(Oberflaeche):
         self.ents = self.makeform()
         # self.root.bind('<Return>', (lambda event, e=self.ents: self.fetch(e)))
         self.quit_button = tk.Button(self.root, text="Beenden", command=self.quit_cmd)
-        self.quit_button.pack(side=tk.LEFT, padx=5, pady=5, expand=False)
+        self.quit_button.pack(side=tk.LEFT, padx=PADX, pady=PADY, expand=False)
         self.quit_button.bind("<Return>", (lambda event: self.quit_cmd()))
         self.save_button = tk.Button(self.root, text="Speichern", command=self.fetch)
-        self.save_button.pack(side=tk.LEFT, padx=5, pady=5, expand=False)
+        self.save_button.pack(side=tk.LEFT, padx=PADX, pady=PADY, expand=False)
         self.save_button.bind("<Return>", (lambda event: self.fetch()))
 
     def fetch(self):
@@ -182,7 +198,11 @@ class OberflaecheIniFile(Oberflaeche):
         content = {}
         if self.ents:
             for key, field in self.ents.items():
-                text = field.get("1.0", "end-1c")
+                text = (
+                    field.get("1.0", "end-1c")
+                    if hasattr(field, "get")
+                    else "Ja" if field.instate(["selected"]) else "Nein"
+                )
                 content[key] = text
                 # print('%s:%s "%s"' % (key, field, text))
             try:
@@ -206,18 +226,34 @@ class OberflaecheIniFile(Oberflaeche):
         # print(fields)
         for field in self.fields:
             row = tk.Frame(self.root)
-            lab = tk.Label(row, width=22, text=field["Text"] + ": ", anchor="w")
-            # ent = Entry(row)
-            # ent.insert(0, "")
-            ent = tk.Text(row, width=40, height=field["Lines"])
-            # ent.configure(font=self.myFont)
-            ent.insert(
-                tk.END,
-                content[field["Text"]] if field["Text"] in content else "",
-            )
-            row.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
-            lab.pack(side=tk.LEFT)
-            ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
+            if field["Type"] == "String":
+                lab = tk.Label(row, width=LABELWIDTH, text=field["Label"] + ": ", anchor="w")
+                # ent = Entry(row)
+                # ent.insert(0, "")
+                ent = tk.Text(row, width=TEXTWIDTH, height=field["Lines"])
+                # ent.configure(font=self.myFont)
+                ent.insert(
+                    tk.END,
+                    content[field["Text"]] if field["Text"] in content else "",
+                )
+                row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
+                lab.pack(side=tk.LEFT)
+                ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
+            if field["Type"] == "Boolean":
+                self.menuvars[field["Variable"]] = tk.StringVar()
+                ent = ttk.Checkbutton(
+                    row, text=field["Label"], variable=self.menuvars[field["Variable"]]
+                )
+                self.menuvars[field["Variable"]].set(
+                    "1"
+                    if (content[field["Text"]] == "Ja")
+                    or (content[field["Text"]] == "1")
+                    else "0"
+                )
+                lab = tk.Label(row, width=LABELWIDTH, text=" ", anchor="w")
+                row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
+                lab.pack(side=tk.LEFT)
+                ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
             entries[field["Text"]] = ent
         return entries
 
@@ -284,12 +320,12 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         self.makeform()
         # self.root.bind('<Return>', (lambda event, e=self.ents: self.fetch(e)))
         self.quit_button = tk.Button(self.root, text="Beenden", command=self.quit_cmd)
-        self.quit_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.quit_button.pack(side=tk.LEFT, padx=PADX, pady=PADY)
         self.quit_button.bind("<Return>", (lambda event: self.quit_cmd()))
         self.save_button = tk.Button(
             self.root, text="Speichern", command=self.create_pdf
         )
-        self.save_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.save_button.pack(side=tk.LEFT, padx=PADX, pady=PADY)
         self.save_button.bind("<Return>", (lambda event: self.create_pdf()))
 
     def create_pdf(self):
