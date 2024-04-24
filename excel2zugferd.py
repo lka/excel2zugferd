@@ -222,7 +222,7 @@ class OberflaecheIniFile(Oberflaeche):
             content = self.ini_file.read_ini_file()
         else:
             return entries
-        # print(content)
+        # print(self.ini_file, content)
         # print(fields)
         for field in self.fields:
             row = tk.Frame(self.root)
@@ -246,10 +246,10 @@ class OberflaecheIniFile(Oberflaeche):
                 )
                 self.menuvars[field["Variable"]].set(
                     "1"
-                    if (content[field["Text"]] == "Ja")
-                    or (content[field["Text"]] == "1")
-                    else "0"
-                )
+                    if (len(content) > 0) and
+                    ((content[field["Text"]] == "Ja")
+                    or (content[field["Text"]] == "1"))
+                    else "0")
                 lab = tk.Label(row, width=LABELWIDTH, text=" ", anchor="w")
                 row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
                 lab.pack(side=tk.LEFT)
