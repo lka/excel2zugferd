@@ -49,6 +49,13 @@ Alle anderen Klassen werden mit Unittests versehen und getestet.
 * Die Klasse Pdf (in handlePDF.py) erstellt die PDF-Datei.
 * Die Klasse ZugFeRD erstellt die XML Rechnungsdaten nach ZugFeRD 2.2 Spezifikation mit Hilfe der Bibliothek drafthorse.
 
+## Installation
+
+1. Aus dem Release-Verzeichnis in github die neueste Version "setup_excel2zugferd.zip" herunterladen und entpacken.
+    Mein Virenscanner meckert dabei, dass das eine Datei sei, die einen Virus enthalten könnte, was Quatsch ist, das ist die fehlende Signatur für das Python Setup. Ich sage dann "Download beibehalten".
+1. Die Datei "setup_excel2zugferd.exe" als Administrator ausführen. Der Defender Smart Screen sagt dann, dass diese Datei nicht ausgeführt werden sollte, was ich aber will und auf "trotzdem ausführen" klicke. Das Programm wird in das Verzeichnis "C:\Program Files (x86)\Excel2ZugFeRD" installiert.
+1. Eine Verknüpfung auf die Datei "C:\Program Files (x86)\Excel2ZugFeRD\excel2zugferd.exe" dort erzeugen, von wo aus das Programm gestartet werden können soll. Ich habe das von meinem Desktop aus gemacht.
+
 ## Programmablauf
 
 Nach dem Start des Programms:
