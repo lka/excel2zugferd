@@ -37,6 +37,7 @@ fields = [
     {"Text": "Konto", "Label": "Konto", "Lines": 3, "Type": "String"},
     {"Text": "Zahlungsziel", "Label": "Zahlungsziel", "Lines": 1, "Type": "String"},
     {"Text": "Abspann", "Label": "Abspann", "Lines": 5, "Type": "String"},
+    {"Text": "Verzeichnis", "Label": "Verzeichnis", "Lines": 1, "Type": "String"},
     {
         "Text": "ZugFeRD",
         "Label": "ZugFeRD Datensatz erzeugen und anhängen",

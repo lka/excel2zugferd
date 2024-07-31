@@ -1,6 +1,7 @@
 """
 Module handle_pdf
 """
+
 # -*- coding: utf8 -*-
 
 from datetime import datetime, timedelta
@@ -16,7 +17,8 @@ class PDF(FPDF):
     """
     Klassendeklaration
     """
-    def __init__(self, footer_txt: str = ''):
+
+    def __init__(self, footer_txt: str = ""):
         super().__init__()
         self.footer_txt = footer_txt
         self.table_lines = None
@@ -143,9 +145,7 @@ class PDF(FPDF):
         with self.table(
             borders_layout="NO_HORIZONTAL_LINES",
             cell_fill_color=(
-                self.table_fill_color
-                if self.table_fill_color
-                else (244, 235, 255)
+                self.table_fill_color if self.table_fill_color else (244, 235, 255)
             ),
             cell_fill_mode=TableCellFillMode.ROWS,
             col_widths=(
@@ -165,9 +165,7 @@ class PDF(FPDF):
             align="RIGHT",
             headings_style=headings_style,
             line_height=5.5,
-            width=min(
-                sum(self.table_widths) if self.table_widths else 165, 165
-            ),
+            width=min(sum(self.table_widths) if self.table_widths else 165, 165),
             padding=(2, 0, 2, 0),
             v_align="TOP",
         ) as table:
@@ -198,9 +196,7 @@ class PDF(FPDF):
                 else (244, 235, 255)
             ),
             cell_fill_mode=TableCellFillMode.ROWS,
-            col_widths=(
-                self.sum_table_widths if self.sum_table_widths else (50, 22)
-            ),
+            col_widths=(self.sum_table_widths if self.sum_table_widths else (50, 22)),
             text_align=(
                 "RIGHT",
                 "RIGHT",
@@ -233,6 +229,7 @@ class Pdf(PDF):
     """
     Klasse Pdf
     """
+
     def __init__(self, daten, stammdaten, create_xml=False, logo_fn=None) -> None:
         super().__init__()
         # print(daten)
@@ -560,10 +557,15 @@ class Pdf(PDF):
                 self.stammdaten["Anschrift"],
                 self.stammdaten["Betriebsbezeichnung"],
                 self.stammdaten["Kontakt"],
-                self.stammdaten["Umsatzsteuer"].split("\n")[0].split()[1],
+                (
+                    self.stammdaten["Umsatzsteuer"].split("\n")[0].split()[1]
+                    if len(self.stammdaten["Umsatzsteuer"]) > 0
+                    and len(self.stammdaten["Umsatzsteuer"].split("\n")[0].split()) > 0
+                    else ""
+                ),
             )
 
-        an = self.daten.get_address_of_customer() if self.daten else ''
+        an = self.daten.get_address_of_customer() if self.daten else ""
         if an:
             self.print_adress(an)
         rg_nr = self.daten.get_invoice_number() if self.daten else {}
@@ -572,7 +574,14 @@ class Pdf(PDF):
         german_date = "%d.%m.%Y"
         datum = today.strftime(german_date)
         ueberweisungsdatum = (
-            today + timedelta(days=int(self.stammdaten["Zahlungsziel"]))
+            today
+            + timedelta(
+                days=int(
+                    self.stammdaten["Zahlungsziel"]
+                    if self.stammdaten["Zahlungsziel"] > ""
+                    else "0"
+                )
+            )
         ).strftime(german_date)
         if self.create_xml:
             self.zugferd.add_rgnr(f"{rg_nr[list(rg_nr.keys())[0]]}")
@@ -596,7 +605,14 @@ class Pdf(PDF):
             self.zugferd.add_gesamtsummen(summen)
             self.zugferd.add_zahlungsziel(
                 f"Bitte überweisen Sie den Betrag von {brutto} bis zum",
-                today + timedelta(days=int(self.stammdaten["Zahlungsziel"])),
+                today
+                + timedelta(
+                    days=int(
+                        self.stammdaten["Zahlungsziel"]
+                        if self.stammdaten["Zahlungsziel"] > ""
+                        else "0"
+                    )
+                ),
             )
 
         self.print_abspann(

@@ -1,6 +1,7 @@
 """
 Module handle_zugferd
 """
+
 from datetime import date
 from decimal import Decimal
 
@@ -15,6 +16,7 @@ from drafthorse.pdf import attach_xml
 
 class ZugFeRD:
     """Class ZugFeRD"""
+
     def __init__(self):
         # Build data structure
         self.doc = Document()
@@ -75,7 +77,9 @@ class ZugFeRD:
         self.doc.trade.agreement.seller.id = company
 
         arr = adr.split("\n")
-        self.doc.trade.agreement.seller.name = arr[0] if len(arr) > 1 else adr
+        self.doc.trade.agreement.seller.name = (
+            arr[0] if len(arr) > 1 else adr if len(adr) > 0 else "unbekannt"
+        )
         if len(arr) > 2:
             self.doc.trade.agreement.seller.address.line_one = arr[1]
         if len(arr) > 3:
@@ -86,10 +90,14 @@ class ZugFeRD:
             self.doc.trade.agreement.seller.address.country_id = "DE"
 
         arr = kontakt.split("\n")
-        self.doc.trade.agreement.seller.contact.telephone.number = arr[0].split(" ", 1)[
-            1
-        ]
-        self.doc.trade.agreement.seller.contact.email.address = arr[1].split(" ", 1)[1]
+        self.doc.trade.agreement.seller.contact.telephone.number = (
+            arr[0].split(" ", 1)[1] if len(arr) > 0 and len(arr[0]) > 0 else " "
+        )
+        self.doc.trade.agreement.seller.contact.email.address = (
+            arr[1].split(" ", 1)[1]
+            if len(arr) > 1 and len(arr[1]) > 0 and len(arr[1].split(" ", 1)) > 0
+            else " "
+        )
         taxreg = TaxRegistration()
         taxreg.id = ("FC", ustid)
         self.doc.trade.agreement.seller.tax_registrations.add(taxreg)
@@ -171,7 +179,7 @@ class ZugFeRD:
         # Generate XML file
         xml = self.doc.serialize(schema="FACTUR-X_EXTENDED")
 
-        # print (xml)
+        # print ('XML:', xml)
 
         # Attach XML to an existing PDF.
         # Note that the existing PDF should be compliant to PDF/A-3!
