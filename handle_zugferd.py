@@ -119,8 +119,9 @@ class ZugFeRD:
                 # )  # C62 == pieces
                 # li.agreement.net.basis_quantity = (Decimal("1.0000"), item[4])
                 einzelpreisnetto = float(item[5].split()[0].replace(",", "."))
+                # einzelpreisbrutto = round(einzelpreisnetto * 1.19, 2)
                 li.agreement.net.amount = Decimal(f"{einzelpreisnetto:.2f}")
-                li.agreement.gross.amount = Decimal(f"{einzelpreisnetto:.2f}")
+                # li.agreement.gross.amount = Decimal(f"{einzelpreisnetto:.2f}") # Decimal(f"{einzelpreisbrutto:.2f}")
                 li.delivery.billed_quantity = (
                     Decimal(f"{menge:.4f}"),
                     "HUR" if item[4] == "h" else "MIN",

@@ -560,6 +560,7 @@ class Pdf(PDF):
                 (
                     self.stammdaten["Umsatzsteuer"].split("\n")[0].split()[1]
                     if len(self.stammdaten["Umsatzsteuer"]) > 0
+                    and len(self.stammdaten["Umsatzsteuer"].split("\n")) > 1
                     and len(self.stammdaten["Umsatzsteuer"].split("\n")[0].split()) > 0
                     else ""
                 ),
@@ -615,8 +616,11 @@ class Pdf(PDF):
                 ),
             )
 
+        abspann = (
+            self.stammdaten["Abspann"]
+            if len(self.stammdaten["Abspann"]) > 1
+            else "Mit freundlichen Grüßen\n" + self.stammdaten["Name"]
+        )
         self.print_abspann(
-            f"Bitte überweisen Sie den Betrag von {brutto} bis zum {ueberweisungsdatum} \
-                auf u.a. Konto.\
-                \n\nMit freundlichen Grüßen\n{self.stammdaten['Name']}"
+            f"Bitte überweisen Sie den Betrag von {brutto} bis zum {ueberweisungsdatum} auf u.a. Konto.\n\n{abspann}"
         )
