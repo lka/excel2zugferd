@@ -69,6 +69,9 @@ Nach dem Start des Programms:
 * Hänge an das PDF das ZugFeRD Konstrukt im XML-Format an.
 * Speichere die Datei als Tabellenblatt-Name.pdf in dem ausgewählten Verzeichnis der Excel-Datei.
 
+### Stammdateneingabe
+![Image der Stammdaten](/assets/Stammdaten.png)
+
 ## Benutzter Font
 
 ### Free Font Pack
