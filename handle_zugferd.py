@@ -2,7 +2,7 @@
 Module handle_zugferd
 """
 
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 from drafthorse.models.accounting import ApplicableTradeTax
@@ -11,6 +11,7 @@ from drafthorse.models.note import IncludedNote
 from drafthorse.models.tradelines import LineItem
 from drafthorse.models.payment import PaymentTerms
 from drafthorse.models.party import TaxRegistration
+from drafthorse.models.fields import MultiStringField
 from drafthorse.pdf import attach_xml
 
 
@@ -26,8 +27,10 @@ class ZugFeRD:
         self.doc.header.type_code = "380"
         self.doc.header.name = "RECHNUNG"
         self.doc.header.issue_date_time = date.today()
-        self.doc.header.languages.add("de")
+        # self.doc.header.languages.add("de")
         self.debug = False
+        self.first_date = None
+        self.last_date = None
 
     def add_rgnr(self, rgnr):
         """Set Rechnungsnummer to id in header"""
@@ -37,6 +40,7 @@ class ZugFeRD:
         """Add note to notes"""
         note = IncludedNote()
         note.content.add(text)
+        note.subject_code = "REG"
         self.doc.header.notes.add(note)
 
     def add_zahlungsempfaenger(self, text):
@@ -44,6 +48,7 @@ class ZugFeRD:
         self.doc.trade.settlement.payment_means.type_code = (
             "58"  # SEPA Überweisung else "ZZZ"
         )
+        self.doc.trade.settlement.payment_means.information.add('Zahlung per SEPA Überweisung.')
         arr = text.split("\n")
         self.doc.trade.settlement.payee.name = arr[0]
         self.doc.trade.settlement.payment_means.payee_account.account_name = arr[0]
@@ -61,12 +66,12 @@ class ZugFeRD:
         self.doc.trade.settlement.currency_code = "EUR"
 
         arr = text.split("\n")
-        self.doc.trade.settlement.invoicee.name = arr[0]
+        # self.doc.trade.settlement.invoicee.name = arr[0]
         self.doc.trade.agreement.buyer.name = arr[0]
         if len(arr) > 2:
             self.doc.trade.agreement.buyer.address.line_one = arr[1]
         if len(arr) > 3:
-            self.doc.trade.agreement.buyer.address.line_two = arr[2]
+            self.doc.trade.agreement.buyer.address.line_one = arr[-2]
         if len(arr) > 1:
             self.doc.trade.agreement.buyer.address.postcode = arr[-1].split(" ", 1)[0]
             self.doc.trade.agreement.buyer.address.city_name = arr[-1].split(" ", 1)[1]
@@ -83,7 +88,7 @@ class ZugFeRD:
         if len(arr) > 2:
             self.doc.trade.agreement.seller.address.line_one = arr[1]
         if len(arr) > 3:
-            self.doc.trade.agreement.seller.address.line_two = arr[2]
+            self.doc.trade.agreement.seller.address.line_one = arr[-2]
         if len(arr) > 1:
             self.doc.trade.agreement.seller.address.postcode = arr[-1].split(" ", 1)[0]
             self.doc.trade.agreement.seller.address.city_name = arr[-1].split(" ", 1)[1]
@@ -126,6 +131,13 @@ class ZugFeRD:
                     Decimal(f"{menge:.4f}"),
                     "HUR" if item[4] == "h" else "MIN",
                 )  # C62 == pieces
+                if item[1] and len(item[1]) == 10:
+                    the_date = datetime.strptime(item[1], '%d.%m.%Y') # tatsächlicher Zeitpunkt der Tätigkeit
+                    li.delivery.event.occurrence = the_date
+                    if self.first_date == None:
+                        self.first_date = the_date
+                    else:
+                        self.last_date = the_date # ich benutze nur den ersten Leistungsbezug, keinen Bereich
                 li.settlement.trade_tax.type_code = "VAT"
                 li.settlement.trade_tax.category_code = "S"
                 li.settlement.trade_tax.rate_applicable_percent = Decimal("19.00")
@@ -167,6 +179,9 @@ class ZugFeRD:
         self.doc.trade.settlement.monetary_summation.due_amount = Decimal(
             f"{brutto:.2f}"
         )
+        self.doc.trade.delivery.event.occurrence = self.first_date
+        self.doc.trade.settlement.monetary_summation.charge_total = 0.00
+        self.doc.trade.settlement.monetary_summation.allowance_total = 0.00
 
     def add_zahlungsziel(self, text, datum):
         """add zahlungsziel to zugferd"""
