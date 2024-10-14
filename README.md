@@ -2,6 +2,12 @@
 
 Dieses Programm liest die Daten aus einer Excel Datei aus und hängt sie als ZugFeRD - kompatible XML-Daten an die erstellte PDF an.
 
+Ich benutze das Programm ausschließlich um meine Stundenabrechnungen zu erledigen. Es werden also nur Stunden "h" als Typen erkannt, alle anderen Typen werden als Minuten im ZugFerd-Part dargestellt, auch wenn in der Testrechnung.xlsx beispielsweise "10 Min." stehen.
+
+Die Umsatzsteuer wird ausgewiesen und zwar fix mit 19%.
+
+Das Datum von Position 1 wird als Lieferdatum eingetragen.
+
 ## Installation
 
 1. Aus dem Release-Verzeichnis in github die neueste Version "setup_excel2zugferd.zip" herunterladen und entpacken.
@@ -15,12 +21,13 @@ Nach dem Start des Programms:
 
 * Wenn keine Ini-Datei vorhanden ist, erstelle sie mit Hilfe der Oberfläche.
     * Sie enthält die Stammdaten des Rechnungserstellers
-* Wenn eine Ini-Datei vorhanden ist, lies sie ein.
-* Lasse eine Excel-Datei auswählen und lies Namen der darin vorhandenen Tabellenblätter aus.
+    * Die Datei "config.ini" steht im Verzeichnis "C:\Benutzer\BENUTZERNAME\AppData\Roaming\excel2zugferd".
+* Wenn die Ini-Datei vorhanden ist, lies sie ein.
+* Lasse eine Excel-Datei auswählen und lies die Namen der darin vorhandenen Tabellenblätter aus.
 * Stelle die Tabellenblätter-Namen als Liste dar und lasse ein Tabellenblatt daraus auswählen.
 * Lies die Daten des ausgewählten Tabellenblattes ein und erstelle daraus ein PDF.
 * Hänge an das PDF das ZugFeRD Konstrukt im XML-Format an.
-* Speichere die Datei als Tabellenblatt-Name.pdf in dem ausgewählten Verzeichnis der Excel-Datei.
+* Speichere die Datei als Tabellenblatt-Name.pdf im Verzeichnis der ausgewählten Excel-Datei.
 
 ### Stammdateneingabe
 ![Image der Stammdaten](/assets/Stammdaten.png)
