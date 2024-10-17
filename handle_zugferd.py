@@ -11,7 +11,6 @@ from drafthorse.models.note import IncludedNote
 from drafthorse.models.tradelines import LineItem
 from drafthorse.models.payment import PaymentTerms
 from drafthorse.models.party import TaxRegistration
-from drafthorse.models.fields import MultiStringField
 from drafthorse.pdf import attach_xml
 
 
@@ -50,7 +49,7 @@ class ZugFeRD:
         )
         self.doc.trade.settlement.payment_means.information.add('Zahlung per SEPA Überweisung.')
         arr = text.split("\n")
-        self.doc.trade.settlement.payee.name = arr[0]
+        # self.doc.trade.settlement.payee.name = arr[0] # BR-17
         self.doc.trade.settlement.payment_means.payee_account.account_name = arr[0]
         if len(arr) > 1:
             self.doc.trade.settlement.payment_means.payee_account.iban = arr[1].split(
@@ -64,6 +63,7 @@ class ZugFeRD:
     def add_rechnungsempfaenger(self, text):
         """set Rechnungsempfänger"""
         self.doc.trade.settlement.currency_code = "EUR"
+        # self.doc.trade.settlement.tax_currency_code = "EUR" # BR-53-1
 
         arr = text.split("\n")
         # self.doc.trade.settlement.invoicee.name = arr[0]
