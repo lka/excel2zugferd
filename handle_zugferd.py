@@ -1,6 +1,7 @@
 """
 Module handle_zugferd
 """
+import re
 
 from datetime import date, datetime
 from decimal import Decimal
@@ -12,6 +13,7 @@ from drafthorse.models.tradelines import LineItem
 from drafthorse.models.payment import PaymentTerms
 from drafthorse.models.party import TaxRegistration
 from drafthorse.pdf import attach_xml
+from drafthorse.models import NS_QDT
 
 
 class ZugFeRD:
@@ -193,9 +195,9 @@ class ZugFeRD:
     def add_xml2pdf(self, in_file=None, out_file=None) -> None:
         """add xml content to out_file"""
         # Generate XML file
-        xml = self.doc.serialize(schema="FACTUR-X_EXTENDED")
+        xml = self.modify_xml(self.doc.serialize(schema="FACTUR-X_EXTENDED"))
 
-        # print ('XML:', xml)
+        # print ('XML:', xml[:512])
 
         # Attach XML to an existing PDF.
         # Note that the existing PDF should be compliant to PDF/A-3!
@@ -209,3 +211,18 @@ class ZugFeRD:
         if out_file:
             with open(out_file, "wb") as f:
                 f.write(new_pdf_bytes)
+
+    def modify_xml(self, xml=None):
+        """insert xmlns:qdt if it is not in namespaces"""
+        decoded = xml.decode('utf-8')
+        searchstr = re.search(r'<rsm:CrossIndustryInvoice(.*)>', decoded).group()
+        # print(searchstr)
+        nsmap = searchstr.split(' ')
+        _QDT = 'xmlns:qdt='
+        if not _QDT in nsmap:
+            QDT = _QDT + '\"' + NS_QDT + '\"'
+            nsmap.insert(1, QDT)
+            decoded = decoded.replace(searchstr, ' '.join(nsmap))
+        # print ('MAP:', nsmap)
+
+        return decoded.encode('utf-8')
