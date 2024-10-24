@@ -44,6 +44,10 @@ class ZugFeRD:
         note.subject_code = "REG"
         self.doc.header.notes.add(note)
 
+    def add_bundesland(self, bundesland):
+        """Add Bundesland"""
+        self.doc.trade.agreement.seller.address.country_subdivision = bundesland
+
     def add_zahlungsempfaenger(self, text):
         """set Zahlungsempfaenger to correct value"""
         self.doc.trade.settlement.payment_means.type_code = (

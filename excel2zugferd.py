@@ -31,6 +31,7 @@ fields = [
         "Type": "String",
     },
     {"Text": "Anschrift", "Label": "Anschrift", "Lines": 5, "Type": "String"},
+    {"Text": "Bundesland", "Label": "Bundesland", "Lines": 1, "Type": "String"},
     {"Text": "Name", "Label": "Name", "Lines": 1, "Type": "String"},
     {"Text": "Kontakt", "Label": "Kontakt", "Lines": 5, "Type": "String"},
     {"Text": "Umsatzsteuer", "Label": "Umsatzsteuer", "Lines": 2, "Type": "String"},

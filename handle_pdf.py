@@ -88,13 +88,22 @@ class PDF(FPDF):
         prints Absenderdaten
         """
         self.start_section("Absender", 0)
-        self.set_xy(140, 32.5)
+        self.set_xy(140, 25.5)
         self.set_font_size(12)
         self.multi_cell(105, 5, adress)
         self.set_xy(25, 60.5)
         self.set_font(None, "U", size=6)
         self.cell(105, 1, adress.replace("\n", ", "))
         self.ln()
+
+    def print_bundesland(self, bundesland: str) -> None:
+        """
+        prints Bundesland
+        """
+        self.start_section("Bundesland", 0)
+        self.set_xy(140, 54.5)
+        self.set_font(None, "", 10)
+        self.cell(105, 1, bundesland)
 
     def print_kontakt(self, daten: str) -> None:
         """
@@ -540,6 +549,11 @@ class Pdf(PDF):
         self.print_faltmarken()
         self.print_logo()
         self.print_absender(self.stammdaten["Anschrift"])
+        bundesland = self.stammdaten["Bundesland"]
+        if len(bundesland) > 0:
+            self.print_bundesland(bundesland)
+            if self.create_xml:
+                self.zugferd.add_bundesland(bundesland)
         self.print_kontakt(
             self.stammdaten["Kontakt"] + "\n\n" + self.stammdaten["Umsatzsteuer"]
         )
