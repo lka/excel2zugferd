@@ -1,19 +1,23 @@
 # Excel2ZugFeRD
 
-Dieses Programm liest die Daten aus einer Excel Datei aus und hängt sie als ZugFeRD - kompatible XML-Daten an die erstellte PDF an.
+Dieses Programm liest die Daten aus einer Excel Datei aus und hängt sie als ZUGFeRD - kompatible XML-Daten an die erstellte PDF an.
 
-Ich benutze das Programm ausschließlich um meine Stundenabrechnungen zu erledigen. Es werden also nur Stunden "h" als Typen erkannt, alle anderen Typen werden als Minuten im ZugFerd-Part dargestellt, auch wenn in der Testrechnung.xlsx beispielsweise "10 Min." stehen.
+Ich benutze das Programm ausschließlich um meine Stundenabrechnungen zu erledigen. Es werden also nur Stunden "h" als Typen erkannt, alle anderen Typen werden als Minuten im XML-Part dargestellt, auch wenn in der Testrechnung.xlsx beispielsweise "10 Min." stehen.
 
 Die Umsatzsteuer wird ausgewiesen und zwar fix mit 19%.
-
-Das Datum von Position 1 wird als Lieferdatum eingetragen.
 
 ## Installation
 
 1. Aus dem Release-Verzeichnis in github die neueste Version "setup_excel2zugferd.zip" herunterladen und entpacken.
-    Mein Virenscanner meckert dabei, dass das eine Datei sei, die einen Virus enthalten könnte, was Quatsch ist, das ist die fehlende Signatur für das Python Setup. Ich sage dann "Download beibehalten".
 1. Die Datei "setup_excel2zugferd.exe" als Administrator ausführen. Der Defender Smart Screen sagt dann, dass diese Datei nicht ausgeführt werden sollte, was ich aber will und auf "trotzdem ausführen" klicke. Das Programm wird in das Verzeichnis "C:\Program Files (x86)\Excel2ZugFeRD" installiert.
-1. Eine Verknüpfung auf die Datei "C:\Program Files (x86)\Excel2ZugFeRD\excel2zugferd.exe" dort erzeugen, von wo aus das Programm gestartet werden können soll. Ich habe das von meinem Desktop aus gemacht.
+1. Eine Verknüpfung auf die Datei "excel2zugferd.exe" auf den Desktop kann vom Setup-Programm erstellt werden.
+
+- Wenn eine neue Version des Setup-Programms herauskommt, meckert der Virenscanner bei der Ausführung, dass das eine Datei sei, die einen Virus enthalten könnte, das ist die am Anfang fehlende Hash-Signatur für das Python Setup. Ich sage dann "Download beibehalten" und lasse das Ganze vom Virenprogramm im Internet Scannen. Nach ca. 14 Tagen hat sich das bisher immer gegeben.
+
+## Updates
+
+- Die Vorgehensweise ist Identisch zur Installation.
+- Bei der Ausführung des Setup-Programms keine neue Verknüpfung erstellen lassen.
 
 ## Programmablauf
 
@@ -34,7 +38,19 @@ Nach dem Start des Programms:
 
 ### Excel-Datei
 Die Struktur der Excel Datei ist vorgegeben und kann nicht verändert werden, ohne die Funktion zu verlieren.
-Als Vorgabe benutzen Sie bitte die Datei TestRechnung.xlsx.
+Als Vorlage benutzen Sie bitte die Datei TestRechnung.xlsx.
+
+## Versionen
+
+### 0.7.0
+
+- Die Validierung des erzeugten ZUGFeRD Dokuments auf https://www.portinvoice.com ist erfolgreich (Ohne Fehler und Warnungen).
+- Die Eingabe vom Bundesland des Rechnungsempfängers ermöglicht.
+
+### 0.6.0
+
+- Das Datum der ersten Position wird als Lieferdatum eingetragen.
+- Alle Datumsangaben der Positionen werden im XML zu den Positionen eingetragen.
 
 ## Copyright and License
 
