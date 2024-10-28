@@ -42,6 +42,11 @@ Als Vorlage benutzen Sie bitte die Datei TestRechnung.xlsx.
 
 ## Versionen
 
+### 0.8.0
+
+- Der Verzicht auf die Erhebung der Umsatzsteuer nach § 19 UStG nach der Kleinuntehmerregelung kann in den Stammdaten eingestellt werden und wird in der Rechnung und im XML ausgewiesen. Zusätzlich muss im Excel die Umsatzsteuer 19% auf den Wert 0.00 € gesetzt werden.
+- Die Validierung des erzeugten ZUGFeRD Dokuments auf https://www.portinvoice.com ist erfolgreich (Ohne Fehler und Warnungen).
+
 ### 0.7.0
 
 - Die Validierung des erzeugten ZUGFeRD Dokuments auf https://www.portinvoice.com ist erfolgreich (Ohne Fehler und Warnungen).

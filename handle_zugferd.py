@@ -114,7 +114,7 @@ class ZugFeRD:
         self.doc.trade.agreement.seller.tax_registrations.add(taxreg)
         # self.doc.trade.agreement.seller.tax = ustid
 
-    def add_items(self, dat):
+    def add_items(self, dat, the_tax: str):
         """add items to invoice"""
         i = 0
         # ("Pos.", "Datum", "Tätigkeit", "Menge", "Typ", "Einzel €", "Gesamt €")
@@ -145,14 +145,14 @@ class ZugFeRD:
                     else:
                         self.last_date = the_date # ich benutze nur den ersten Leistungsbezug, keinen Bereich
                 li.settlement.trade_tax.type_code = "VAT"
-                li.settlement.trade_tax.category_code = "S"
-                li.settlement.trade_tax.rate_applicable_percent = Decimal("19.00")
+                li.settlement.trade_tax.category_code = "E" if the_tax == "0.00" else "S"
+                li.settlement.trade_tax.rate_applicable_percent = Decimal(the_tax)
                 gesamt = float(item[6].split()[0].replace(",", "."))
                 li.settlement.monetary_summation.total_amount = Decimal(f"{gesamt:.2f}")
                 self.doc.trade.items.add(li)
             i = i + 1
 
-    def add_gesamtsummen(self, dat):
+    def add_gesamtsummen(self, dat, the_tax: str, steuerbefreiungsgrund: str = None) -> None:
         """add gesamtsumme to invoice"""
         netto = float(dat[0][1].split()[0].replace(",", "."))
         steuer = float(dat[1][1].split()[0].replace(",", "."))
@@ -162,9 +162,11 @@ class ZugFeRD:
         trade_tax.calculated_amount = Decimal(f"{steuer:.2f}")
         trade_tax.basis_amount = Decimal(f"{netto:.2f}")
         trade_tax.type_code = "VAT"
-        trade_tax.category_code = "S"
+        trade_tax.category_code = "E" if the_tax == "0.00" else 'S'
         # trade_tax.exemption_reason_code = 'VATEX-EU-AE'
-        trade_tax.rate_applicable_percent = Decimal("19.00")
+        trade_tax.rate_applicable_percent = Decimal(the_tax)
+        if steuerbefreiungsgrund:
+            trade_tax.exemption_reason = steuerbefreiungsgrund
         self.doc.trade.settlement.trade_tax.add(trade_tax)
 
         self.doc.trade.settlement.monetary_summation.line_total = Decimal(

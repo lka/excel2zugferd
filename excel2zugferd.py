@@ -40,6 +40,13 @@ fields = [
     {"Text": "Abspann", "Label": "Abspann", "Lines": 5, "Type": "String"},
     {"Text": "Verzeichnis", "Label": "Verzeichnis", "Lines": 1, "Type": "String"},
     {
+        "Text": "Kleinunternehmen",
+        "Label": "Kleinunternehmen",
+        "Lines": 1,
+        "Type": "Boolean",
+        "Variable": "Kleinunternehmen",
+    },
+    {
         "Text": "ZugFeRD",
         "Label": "ZugFeRD Datensatz erzeugen und anhängen",
         "Lines": 1,
@@ -248,7 +255,7 @@ class OberflaecheIniFile(Oberflaeche):
                 )
                 self.menuvars[field["Variable"]].set(
                     "1"
-                    if (len(content) > 0) and
+                    if (len(content) > 0) and field["Text"] in content and
                     ((content[field["Text"]] == "Ja")
                     or (content[field["Text"]] == "1"))
                     else "0")

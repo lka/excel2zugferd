@@ -105,6 +105,15 @@ class PDF(FPDF):
         self.set_font(None, "", 10)
         self.cell(105, 1, bundesland)
 
+    def print_kleinunternehmerregelung(self, grund: str) -> None:
+        """
+        prints Begründung Kleinunternehmerregelung
+        """
+        self.start_section("Kleinunternehmen")
+        self.set_xy(25, 105)
+        self.set_font(None, "", 10)
+        self.cell(105, 1, grund)
+
     def print_kontakt(self, daten: str) -> None:
         """
         prints Kontakt
@@ -557,6 +566,11 @@ class Pdf(PDF):
         self.print_kontakt(
             self.stammdaten["Kontakt"] + "\n\n" + self.stammdaten["Umsatzsteuer"]
         )
+        kleinunternehmen = self.stammdaten["Kleinunternehmen"] == "Ja"
+        steuerbefreiungsgrund = None
+        if kleinunternehmen:
+            steuerbefreiungsgrund = "Gemäß § 19 UStG wird keine Umsatzsteuer berechnet."
+            self.print_kleinunternehmerregelung(steuerbefreiungsgrund)
 
         if self.create_xml:
             txt = (
@@ -610,14 +624,15 @@ class Pdf(PDF):
         df = self.daten.get_invoice_positions() if self.daten else []
         if df is not None:
             self.print_positions(df)
+        the_tax = "0.00" if kleinunternehmen else "19.00"
         if self.create_xml:
-            self.zugferd.add_items(df)
+            self.zugferd.add_items(df, the_tax)
 
         summen = self.daten.get_invoice_sums() if self.daten else []
         brutto = summen[-1][-1]
         self.print_summen(summen)
         if self.create_xml:
-            self.zugferd.add_gesamtsummen(summen)
+            self.zugferd.add_gesamtsummen(summen, the_tax, steuerbefreiungsgrund)
             self.zugferd.add_zahlungsziel(
                 f"Bitte überweisen Sie den Betrag von {brutto} bis zum",
                 today
