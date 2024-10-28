@@ -104,7 +104,7 @@ dessen, was geleistet wurde.",
                     "75,00 €",
                     "75,00 €",
                 ),
-            ]
+            ], "19.0"
         )
 
         self.zugferd.add_gesamtsummen(
@@ -112,7 +112,7 @@ dessen, was geleistet wurde.",
                 ("Summe Netto:", "1540,00 €"),
                 ("zzgl. Umsatzsteuer 19%:", "84,98 €"),
                 ("Gesamt:", "1690,98 €"),
-            ]
+            ], "19.0"
         )
 
         self.zugferd.add_zahlungsziel(

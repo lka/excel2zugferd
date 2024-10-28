@@ -130,7 +130,7 @@ class TestExcelContent(TestCase):
         """
         Teste, ob der Inhalt einer Excel-Datei gelesen werden kann
         """
-        expected = ["Tabelle1", "Rechnung2"]
+        expected = ["Tabelle1", "Rechnung2", "Rechnung für Kleinunternehmen"]
         retval = self.xlsx.read_sheet_list()
         # print (retval)
         self.assertEqual(retval, expected, "Excel File should contain expected sheets")
