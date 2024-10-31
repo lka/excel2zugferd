@@ -3,7 +3,7 @@ Module excel2zugferd
 """
 
 import tkinter as tk
-from tkinter import messagebox, filedialog, Button, ttk
+from tkinter import messagebox, filedialog, Button, ttk, Frame
 import json
 import tempfile
 import os
@@ -156,9 +156,11 @@ class OberflaecheIniFile(Oberflaeche):
     Oberflaeche for Ini File Inputs
     """
 
-    def __init__(self, thefields, myini_file=None):
-        super().__init__(window=tk.Toplevel())
+    def __init__(self, thefields, myini_file=None, window=None):
+        if window:
+            self.destroy_children(window)
 
+        super().__init__(window=window) #tk.Toplevel())
         self.fields = thefields
         self.menuvars = {}
         self.ini_file = myini_file
@@ -198,6 +200,15 @@ class OberflaecheIniFile(Oberflaeche):
         self.save_button = tk.Button(self.root, text="Speichern", command=self.fetch)
         self.save_button.pack(side=tk.LEFT, padx=PADX, pady=PADY, expand=False)
         self.save_button.bind("<Return>", (lambda event: self.fetch()))
+
+    def destroy_children(self, parent):
+        """
+        recursive destroy all children of current window
+        """
+        for child in parent.winfo_children():
+            if child.winfo_children():
+                self.destroy_children(child)
+            child.destroy()
 
     def fetch(self):
         """
@@ -405,7 +416,8 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         """
         Open Stammdaten for editing
         """
-        s_oberfl = OberflaecheIniFile(self.fields, self.ini_file)
+        self.root.quit()
+        s_oberfl = OberflaecheIniFile(self.fields, self.ini_file, self.root)
         s_oberfl.loop()
 
     def open_file(self):
@@ -507,9 +519,9 @@ if __name__ == "__main__":
         except IOError as e:
             msg = f"Ich kann das Verzeichnis {dir} nicht erstellen.\n{format_ioerr(e)}"
             messagebox.showerror("Fehler", msg)
+    oberfl = None
     if ini.exists_ini_file() is None:
         oberfl = OberflaecheIniFile(fields, ini)
-        oberfl.loop()
     else:
         oberfl = OberflaecheExcel2Zugferd(fields, ini)
-        oberfl.loop()
+    oberfl.loop()

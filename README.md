@@ -44,6 +44,7 @@ Als Vorlage benutzen Sie bitte die Datei TestRechnung.xlsx.
 
 ### 0.8.0
 
+- fix: 0.8.1 Wenn die Stammdaten aus dem Haupt-Fenster heraus aufgerufen werden, wird das Haupt-Fenster durch die Stammdaten ersetzt. Nach Beendigung der Stammdateneingabe wird das gesamte Programm geschlossen. Der erneute Aufruf liest die "neuen" Stammdaten ein.
 - Der Verzicht auf die Erhebung der Umsatzsteuer nach § 19 UStG nach der Kleinuntehmerregelung kann in den Stammdaten eingestellt werden und wird in der Rechnung und im XML ausgewiesen. Zusätzlich muss im Excel die Umsatzsteuer 19% auf den Wert 0.00 € gesetzt werden.
 - Die Validierung des erzeugten ZUGFeRD Dokuments auf https://www.portinvoice.com ist erfolgreich (Ohne Fehler und Warnungen).
 
