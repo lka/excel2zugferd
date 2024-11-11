@@ -32,7 +32,7 @@ class ExcelContent:
 
     def search_cell_right_of(self, column_name, search_value):
         """
-        Search in row with column_name for search_value, 
+        Search in row with column_name for search_value,
             return array with values right of the search_value
             until next empty cell
         """
@@ -49,7 +49,7 @@ class ExcelContent:
 
     def _search_anschrift(self, search):
         """
-        Search in specified column until next NaN, 
+        Search in specified column until next NaN,
         return string with \\n joined values
         """
         if self.daten is None:

@@ -205,7 +205,7 @@ class PDF(FPDF):
         else:
             self.set_draw_color(255, 0, 255)
         self.set_line_width(0.3)
-        # headings_style = FontFace(emphasis="BOLD", color=255, 
+        # headings_style = FontFace(emphasis="BOLD", color=255,
         # fill_color=self.table_head
         # if hasattr(self, "table_head")
         # else (255, 100, 0))
@@ -342,13 +342,13 @@ class Pdf(PDF):
 
         #
         self.table_head = (
-            255  # white fill-color of Table Header (30, 144, 255)  
+            255  # white fill-color of Table Header (30, 144, 255)
             # DodgerBlue1
         )
         self.table_head_color = 0  # black text-color of Table Header
         self.table_lines = 0  # black (0, 0, 255)  # Blue
         self.table_fill_color = 220  # lightgrey
-        self.table_widths = (10, 21, 68, 16, 15, 16, 19) 
+        self.table_widths = (10, 21, 68, 16, 15, 16, 19)
         # (11, 22, 61, 16, 20, 21, 21)
         self.table_lines = 120  # darkgrey
 
@@ -547,9 +547,9 @@ class Pdf(PDF):
 
         self.output("hello_world.pdf")
 
-    def fill_pdf(self) -> None:
+    def fill_header(self) -> None:
         """
-        set own data
+        populate header with data
         """
         self.set_title(self.stammdaten["Betriebsbezeichnung"])
         tmp_str = self.stammdaten["Konto"].replace("\n", ", ")
@@ -583,13 +583,11 @@ class Pdf(PDF):
             self.stammdaten["Kontakt"] + "\n\n" +
             self.stammdaten["Umsatzsteuer"]
         )
-        kleinunternehmen = self.stammdaten["Kleinunternehmen"] == "Ja"
-        steuerbefreiungsgrund = None
-        if kleinunternehmen:
-            steuerbefreiungsgrund = "Gemäß § 19 UStG wird keine \
-Umsatzsteuer berechnet."
-            self.print_kleinunternehmerregelung(steuerbefreiungsgrund)
 
+    def fill_adressen(self) -> None:
+        """
+        populate Adressfelder
+        """
         if self.create_xml:
             txt = (
                 self.stammdaten["Anschrift"]
@@ -613,9 +611,25 @@ Umsatzsteuer berechnet."
                 ),
             )
 
+    def fill_pdf(self) -> None:
+        """
+        set own data
+        """
+        self.fill_header()
+
+        kleinunternehmen = self.stammdaten["Kleinunternehmen"] == "Ja"
+        steuerbefreiungsgrund = None
+        if kleinunternehmen:
+            steuerbefreiungsgrund = "Gemäß § 19 UStG wird keine \
+Umsatzsteuer berechnet."
+            self.print_kleinunternehmerregelung(steuerbefreiungsgrund)
+
+        self.fill_adressen()
+
         an = self.daten.get_address_of_customer() if self.daten else ""
         if an:
             self.print_adress(an)
+
         rg_nr = self.daten.get_invoice_number() if self.daten else {}
 
         today = datetime.now()
