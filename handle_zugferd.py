@@ -108,7 +108,8 @@ class ZugFeRD:
 
         arr = kontakt.split("\n")
         self.doc.trade.agreement.seller.contact.telephone.number = (
-            arr[0].split(" ", 1)[1] if len(arr) > 0 and len(arr[0]) > 0 else " "
+            arr[0].split(" ", 1)[1] if len(arr) > 0 and len(arr[0]) > 0
+            else " "
         )
         self.doc.trade.agreement.seller.contact.email.address = (
             arr[1].split(" ", 1)[1]
@@ -142,14 +143,14 @@ class ZugFeRD:
                 einzelpreisnetto = float(item[5].split()[0].replace(",", "."))
                 # einzelpreisbrutto = round(einzelpreisnetto * 1.19, 2)
                 li.agreement.net.amount = Decimal(f"{einzelpreisnetto:.2f}")
-                # li.agreement.gross.amount = 
+                # li.agreement.gross.amount =
                 # Decimal(f"{einzelpreisnetto:.2f}")
                 li.delivery.billed_quantity = (
                     Decimal(f"{menge:.4f}"),
                     "HUR" if item[4] == "h" else "MIN",
                 )  # C62 == pieces
                 if item[1] and len(item[1]) == 10:
-                    the_date = datetime.strptime(item[1], '%d.%m.%Y') 
+                    the_date = datetime.strptime(item[1], '%d.%m.%Y')
                     # tatsächlicher Zeitpunkt der Tätigkeit
                     li.delivery.event.occurrence = the_date
                     if self.first_date is None:
