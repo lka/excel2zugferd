@@ -163,7 +163,8 @@ class PDF(FPDF):
         with self.table(
             borders_layout="NO_HORIZONTAL_LINES",
             cell_fill_color=(
-                self.table_fill_color if self.table_fill_color else (244, 235, 255)
+                self.table_fill_color if self.table_fill_color
+                else (244, 235, 255)
             ),
             cell_fill_mode=TableCellFillMode.ROWS,
             col_widths=(
@@ -183,7 +184,8 @@ class PDF(FPDF):
             align="RIGHT",
             headings_style=headings_style,
             line_height=5.5,
-            width=min(sum(self.table_widths) if self.table_widths else 165, 165),
+            width=min(sum(self.table_widths) if self.table_widths
+                      else 165, 165),
             padding=(2, 0, 2, 0),
             v_align="TOP",
         ) as table:
@@ -203,7 +205,8 @@ class PDF(FPDF):
         else:
             self.set_draw_color(255, 0, 255)
         self.set_line_width(0.3)
-        # headings_style = FontFace(emphasis="BOLD", color=255, fill_color=self.table_head
+        # headings_style = FontFace(emphasis="BOLD", color=255, 
+        # fill_color=self.table_head
         # if hasattr(self, "table_head")
         # else (255, 100, 0))
         with self.table(
@@ -214,7 +217,8 @@ class PDF(FPDF):
                 else (244, 235, 255)
             ),
             cell_fill_mode=TableCellFillMode.ROWS,
-            col_widths=(self.sum_table_widths if self.sum_table_widths else (50, 22)),
+            col_widths=(self.sum_table_widths if self.sum_table_widths
+                        else (50, 22)),
             text_align=(
                 "RIGHT",
                 "RIGHT",
@@ -248,7 +252,8 @@ class Pdf(PDF):
     Klasse Pdf
     """
 
-    def __init__(self, daten, stammdaten, create_xml=False, logo_fn=None) -> None:
+    def __init__(self, daten, stammdaten, create_xml=False, logo_fn=None)\
+            -> None:
         super().__init__()
         # print(daten)
         # print("----------")
@@ -264,7 +269,8 @@ class Pdf(PDF):
         import and embed TTF Font to use € in text
         """
         self.add_font(
-            "dejavu-sans", style="", fname="./_internal/Fonts/DejaVuSansCondensed.ttf"
+            "dejavu-sans", style="",
+            fname="./_internal/Fonts/DejaVuSansCondensed.ttf"
         )
         self.add_font(
             "dejavu-sans",
@@ -292,7 +298,8 @@ class Pdf(PDF):
             "IEC 61966-2-1:1999",
             "http://www.color.org",
             FPDF.dest_output_profile(
-                fn=os.path.join("_internal", "sRGB2014.icc"), N=3, alternate="DeviceRGB"
+                fn=os.path.join("_internal", "sRGB2014.icc"), N=3,
+                alternate="DeviceRGB"
             ),
             "sRGB2014 (v2)",
         )
@@ -335,40 +342,47 @@ class Pdf(PDF):
 
         #
         self.table_head = (
-            255  # white fill-color of Table Header (30, 144, 255)  # DodgerBlue1
+            255  # white fill-color of Table Header (30, 144, 255)  
+            # DodgerBlue1
         )
         self.table_head_color = 0  # black text-color of Table Header
         self.table_lines = 0  # black (0, 0, 255)  # Blue
         self.table_fill_color = 220  # lightgrey
-        self.table_widths = (10, 21, 68, 16, 15, 16, 19)  # (11, 22, 61, 16, 20, 21, 21)
+        self.table_widths = (10, 21, 68, 16, 15, 16, 19) 
+        # (11, 22, 61, 16, 20, 21, 21)
         self.table_lines = 120  # darkgrey
 
         self.set_title("Max Mustermann - Softwareentwicklung")
         self.footer_txt = (
-            "Max Mustermann, IBAN: DE 6472482348234234248794, BIC: BICOFINSTITUTE"
+            "Max Mustermann, IBAN: DE 6472482348234234248794, \
+                BIC: BICOFINSTITUTE"
         )
         self.set_author("M. Mustermann")
         self.add_page()
         self.print_faltmarken()
         self.print_absender(
-            "Max Mustermann\nSoftwareentwicklung\nDorfstr. 712\n65432 Musterdorf"
+            "Max Mustermann\nSoftwareentwicklung\nDorfstr. 712\n\
+                65432 Musterdorf"
         )
         self.print_kontakt(
-            "Tel.: 0813-12345678\nEMail: max@mustermann.de\n\nSteuer-Nr: 081519/987543\nFinanzamt Musterdorf"
+            "Tel.: 0813-12345678\nEMail: max@mustermann.de\n\nSteuer-Nr: \
+                081519/987543\nFinanzamt Musterdorf"
         )
         self.print_adress(
-            "Empfängerfirma GmbH\nFrau Anette Musterfrau\nDorfstr. 10\n65432 Musterdorf"
+            "Empfängerfirma GmbH\nFrau Anette Musterfrau\nDorfstr. 10\n\
+                65432 Musterdorf"
         )
         self.print_bezug(f"Rechnung Nr. 123456 vom {datum}")
 
         self.print_positions(
             [
-                ("Pos.", "Datum", "Tätigkeit", "Menge", "Typ", "Einzel €", "Gesamt €"),
+                ("Pos.", "Datum", "Tätigkeit", "Menge", "Typ", "Einzel €",
+                 "Gesamt €"),
                 (
                     "1",
                     "01.01.2024",
-                    "Irgendwas, das länger ist als zwei Zeilen in der Ausgabe mit einer Dokumentation dessen,\
-                          was geleistet wurde.",
+                    "Irgendwas, das länger ist als zwei Zeilen in der Ausgabe \
+                        mit einer Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "10 Min.",
                     "22.00",
@@ -377,8 +391,8 @@ class Pdf(PDF):
                 (
                     "2",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
-                        was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer \
+                        Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "h",
                     "75.00",
@@ -387,8 +401,8 @@ class Pdf(PDF):
                 (
                     "3",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
-                        was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer \
+                        Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "h",
                     "75.00",
@@ -397,8 +411,8 @@ class Pdf(PDF):
                 (
                     "4",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
-                        was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer \
+                        Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "h",
                     "75.00",
@@ -407,8 +421,8 @@ class Pdf(PDF):
                 (
                     "5",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
-                        was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer \
+                        Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "h",
                     "75.00",
@@ -417,8 +431,8 @@ class Pdf(PDF):
                 (
                     "6",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
-                        was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer \
+                        Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "h",
                     "75.00",
@@ -427,8 +441,8 @@ class Pdf(PDF):
                 (
                     "7",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
-                        was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer \
+                        Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "h",
                     "75.00",
@@ -437,8 +451,8 @@ class Pdf(PDF):
                 (
                     "8",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
-                        was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer \
+                        Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "h",
                     "75.00",
@@ -447,8 +461,8 @@ class Pdf(PDF):
                 (
                     "9",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
-                        was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer\
+                          Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "h",
                     "75.00",
@@ -457,8 +471,8 @@ class Pdf(PDF):
                 (
                     "10",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
-                        was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer \
+                        Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "h",
                     "75.00",
@@ -467,8 +481,8 @@ class Pdf(PDF):
                 (
                     "11",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
-                        was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer \
+                        Dokumentation dessen, was geleistet wurde.",
                     "2",
                     "10 Min.",
                     "22.00",
@@ -477,8 +491,8 @@ class Pdf(PDF):
                 (
                     "12",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
-                        was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer \
+                        Dokumentation dessen, was geleistet wurde.",
                     "2",
                     "10 Min.",
                     "22.00",
@@ -487,8 +501,8 @@ class Pdf(PDF):
                 (
                     "13",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
-                        was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer \
+                        Dokumentation dessen, was geleistet wurde.",
                     "2",
                     "10 Min.",
                     "22.00",
@@ -497,8 +511,8 @@ class Pdf(PDF):
                 (
                     "14",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
-                        was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer \
+                        Dokumentation dessen, was geleistet wurde.",
                     "2",
                     "10 Min.",
                     "22.00",
@@ -507,8 +521,8 @@ class Pdf(PDF):
                 (
                     "15",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation dessen, \
-                        was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer \
+                        Dokumentation dessen, was geleistet wurde.",
                     "2",
                     "10 Min.",
                     "22.00",
@@ -527,8 +541,8 @@ class Pdf(PDF):
 
         self.print_abspann(
             f"Bitte überweisen Sie den Betrag von 1.690,98 € bis zum \
-                {ueberweisungsdatum} auf u.a. Konto.\
-                \n\nMit freundlichen Grüßen\nMax Mustermann",
+{ueberweisungsdatum} auf u.a. Konto.\
+\n\nMit freundlichen Grüßen\nMax Mustermann",
         )
 
         self.output("hello_world.pdf")
@@ -546,12 +560,14 @@ class Pdf(PDF):
             self.zugferd.add_zahlungsempfaenger(self.stammdaten["Konto"])
 
         self.table_head = (
-            255  # white fill-color of Table Header (30, 144, 255)  # DodgerBlue1
+            255  # white fill-color of Table Header (30, 144, 255)
+            # DodgerBlue1
         )
-        self.table_head_color = 10 #0  # black text-color of Table Header
+        self.table_head_color = 10  # 0  # black text-color of Table Header
         self.table_lines = 0  # black (0, 0, 255)  # Blue
         self.table_fill_color = 220  # lightgrey
-        self.table_widths = (10, 21, 68, 16, 15, 16, 19)  # (11, 22, 61, 16, 20, 21, 21)
+        self.table_widths = (10, 21, 68, 16, 15, 16, 19)
+        # (11, 22, 61, 16, 20, 21, 21)
         self.table_lines = 120  # darkgrey
 
         self.add_page()
@@ -564,12 +580,14 @@ class Pdf(PDF):
             if self.create_xml:
                 self.zugferd.add_bundesland(bundesland)
         self.print_kontakt(
-            self.stammdaten["Kontakt"] + "\n\n" + self.stammdaten["Umsatzsteuer"]
+            self.stammdaten["Kontakt"] + "\n\n" +
+            self.stammdaten["Umsatzsteuer"]
         )
         kleinunternehmen = self.stammdaten["Kleinunternehmen"] == "Ja"
         steuerbefreiungsgrund = None
         if kleinunternehmen:
-            steuerbefreiungsgrund = "Gemäß § 19 UStG wird keine Umsatzsteuer berechnet."
+            steuerbefreiungsgrund = "Gemäß § 19 UStG wird keine \
+Umsatzsteuer berechnet."
             self.print_kleinunternehmerregelung(steuerbefreiungsgrund)
 
         if self.create_xml:
@@ -589,7 +607,8 @@ class Pdf(PDF):
                     self.stammdaten["Umsatzsteuer"].split("\n")[0].split()[1]
                     if len(self.stammdaten["Umsatzsteuer"]) > 0
                     and len(self.stammdaten["Umsatzsteuer"].split("\n")) > 1
-                    and len(self.stammdaten["Umsatzsteuer"].split("\n")[0].split()) > 0
+                    and len(self.stammdaten["Umsatzsteuer"].split("\n")[0]
+                            .split()) > 0
                     else ""
                 ),
             )
@@ -617,7 +636,8 @@ class Pdf(PDF):
             self.zugferd.add_rechnungsempfaenger(an)
 
         self.print_bezug(
-            f"{list(rg_nr.keys())[0]} {rg_nr[list(rg_nr.keys())[0]]} vom {datum}"
+            f"{list(rg_nr.keys())[0]} \
+{rg_nr[list(rg_nr.keys())[0]]} vom {datum}"
         )
 
         # print(self.split_dataframe_by_SearchValue(AN, "Pos."))
@@ -632,7 +652,8 @@ class Pdf(PDF):
         brutto = summen[-1][-1]
         self.print_summen(summen)
         if self.create_xml:
-            self.zugferd.add_gesamtsummen(summen, the_tax, steuerbefreiungsgrund)
+            self.zugferd.add_gesamtsummen(summen, the_tax,
+                                          steuerbefreiungsgrund)
             self.zugferd.add_zahlungsziel(
                 f"Bitte überweisen Sie den Betrag von {brutto} bis zum",
                 today
@@ -651,5 +672,6 @@ class Pdf(PDF):
             else "Mit freundlichen Grüßen\n" + self.stammdaten["Name"]
         )
         self.print_abspann(
-            f"Bitte überweisen Sie den Betrag von {brutto} bis zum {ueberweisungsdatum} auf u.a. Konto.\n\n{abspann}"
+            f"Bitte überweisen Sie den Betrag von {brutto} bis zum \
+{ueberweisungsdatum} auf u.a. Konto.\n\n{abspann}"
         )

@@ -58,7 +58,8 @@ POSITIONS_EXPECTED = np.array(
         [
             "5",
             "04.01.2024",
-            "Email wg. Herrn R Anmeldung im AWS (hat versucht sich anzumelden mehr als \
+            "Email wg. Herrn R Anmeldung im AWS \
+(hat versucht sich anzumelden mehr als \
 120 Tage vor Beginn der Reha, steht in der Logdatei im W2k19-fs)",
             "1",
             "10 Min.",
@@ -78,7 +79,8 @@ MassnahmeID verbessert. Gemäß Email Fr. S.",
         [
             "7",
             "11.01.2024",
-            "Änderung Rehaziele im AWS und KVS-React gemäß Besprechung mit Frau S vom 01.12.2023",
+            "Änderung Rehaziele im AWS und KVS-React gemäß \
+Besprechung mit Frau S vom 01.12.2023",
             "7",
             "h",
             "75,00 €",
@@ -87,7 +89,8 @@ MassnahmeID verbessert. Gemäß Email Fr. S.",
         [
             "8",
             "11.01.2024",
-            "Email von Hrn F. bezüglich Anpassung Rechnungsnummern: An Herrn K verwiesen",
+            "Email von Hrn F. bezüglich Anpassung Rechnungsnummern: \
+An Herrn K verwiesen",
             "1",
             "10 Min.",
             "22,00 €",
@@ -96,7 +99,8 @@ MassnahmeID verbessert. Gemäß Email Fr. S.",
         [
             "9",
             "18.01.2024",
-            "Prüfung der Anmeldungen im AWS nach Email vom 17.01.2024 von Hrn. F",
+            "Prüfung der Anmeldungen im AWS nach Email vom 17.01.2024 \
+von Hrn. F",
             "1",
             "h",
             "75,00 €",
@@ -133,7 +137,8 @@ class TestExcelContent(TestCase):
         expected = ["Tabelle1", "Rechnung2", "Rechnung für Kleinunternehmen"]
         retval = self.xlsx.read_sheet_list()
         # print (retval)
-        self.assertEqual(retval, expected, "Excel File should contain expected sheets")
+        self.assertEqual(retval, expected,
+                         "Excel File should contain expected sheets")
 
     def test_read_sheet(self):
         """
@@ -142,7 +147,8 @@ class TestExcelContent(TestCase):
         self.xlsx.read_sheet("Rechnung2")
         # print(retval)
         if self.xlsx and self.xlsx.daten is not None:
-            self.assertGreater(len(self.xlsx.daten), 0, "Should contain any content")
+            self.assertGreater(len(self.xlsx.daten), 0,
+                               "Should contain any content")
 
     def test_get_invoice_number(self):
         """Lies die Rechnungsnummer aus dem Excel Sheet aus"""
@@ -150,7 +156,8 @@ class TestExcelContent(TestCase):
         expected = 20240001
         retval = self.xlsx.get_invoice_number()
         # print(retval)
-        self.assertEqual(retval[list(retval.keys())[0]], expected, "should be equal")
+        self.assertEqual(retval[list(retval.keys())[0]], expected,
+                         "should be equal")
 
     def test_get_address_of_customer(self):
         """
@@ -168,7 +175,8 @@ class TestExcelContent(TestCase):
         """
         self.xlsx.read_sheet("Rechnung2")
         expected = ADDRESS_EXPECTED
-        value = self.xlsx._search_anschrift("An:")  # pylint: disable=protected-access
+        value = self.xlsx\
+            ._search_anschrift("An:")  # pylint: disable=protected-access
         # print(value)
         self.assertEqual(value, expected, "should be equal")
 
@@ -180,9 +188,10 @@ class TestExcelContent(TestCase):
         expected = ADDRESS_EXPECTED
         if self.xlsx.daten is not None:
             an = self.xlsx.daten["An:"]
-            nan_idx = self.xlsx._get_index_of_nan(  # pylint: disable=protected-access
-                an
-            )
+            nan_idx = self.xlsx\
+                ._get_index_of_nan(  # pylint: disable=protected-access
+                    an
+                )
             value = "\n".join(an[0:nan_idx])
             # print(value)
             self.assertEqual(value, expected, "should be equal")
@@ -195,19 +204,21 @@ class TestExcelContent(TestCase):
         value = self.xlsx.get_invoice_positions()
         # print(value)
         # self.assertEqual(value.ndim, expected.ndim, "should be equal")
-        self.assertTrue(np.array_equiv(value, expected), "should be equal")  # type: ignore
+        self.assertTrue(np.array_equiv(value, expected), "should be equal")
+        # type: ignore
 
     def test__split_dataframe_by_search_value(self):
         """Lies den Inhalt der Positionen"""
 
         self.xlsx.read_sheet("Rechnung2")
         expected = POSITIONS_EXPECTED
-        value = self.xlsx._split_dataframe_by_search_value(  # pylint: disable=protected-access
-            "An:", "Pos."
-        )
+        value = self.xlsx._split_dataframe_by_search_value(
+                "An:", "Pos."
+            )  # pylint: disable=protected-access
         # print(value)
         # self.assertEqual(value.ndim, expected.ndim, "should be equal")
-        self.assertTrue(np.array_equiv(value, expected), "should be equal")  # type: ignore
+        self.assertTrue(np.array_equiv(value, expected), "should be equal")
+        # type: ignore
 
     def test_get_invoice_sums(self):
         """Lies die Summen aus dem Excel Sheet"""
@@ -222,9 +233,9 @@ class TestExcelContent(TestCase):
         sums = "Unnamed: 5"
         self.xlsx.read_sheet("Rechnung2")
         expected = "1138,83 €"
-        retval = f"{float(self.xlsx.search_cell_right_of(sums, 'Bruttobetrag')):.2f} €".replace(
-            ".", ","
-        )
+        _brutto = float(self.xlsx
+                        .search_cell_right_of(sums, 'Bruttobetrag'))
+        retval = f"{_brutto:.2f} €".replace(".", ",")
         # print(retval)
         self.assertEqual(retval, expected, "should be equal")
 

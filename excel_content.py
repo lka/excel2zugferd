@@ -32,28 +32,34 @@ class ExcelContent:
 
     def search_cell_right_of(self, column_name, search_value):
         """
-        Search in row with column_name for search_value, return array with values
-            right of the search_value until next empty cell
+        Search in row with column_name for search_value, 
+            return array with values right of the search_value
+            until next empty cell
         """
         if self.daten is None:
             return ""
         arr = self.daten.loc[self.daten[column_name] == search_value]
         # print(arr, arr.iat[0, -1], np.NaN, math.isnan(arr.iat[0, -1]))
-        return arr.iat[0, -1] if not math.isnan(arr.iat[0, -1]) else arr.iat[0, 1]
+        return arr.iat[0, -1] if not math.isnan(arr.iat[0, -1]) else \
+            arr.iat[0, 1]
 
     def _get_index_of_nan(self, df) -> int:
         """get first index of next NaN"""
         return next((i for i, v in enumerate(df) if v != v), -1)
 
     def _search_anschrift(self, search):
-        """Search in specified column until next NaN, return string with \\n joined values"""
+        """
+        Search in specified column until next NaN, 
+        return string with \\n joined values
+        """
         if self.daten is None:
             return None
         an = self.daten[search]
         nan_idx = self._get_index_of_nan(an)  # get first index of NaN in an
         return "\n".join(an[0:nan_idx])
 
-    def _split_dataframe_by_search_value(self, column_name: str, search_value: str):
+    def _split_dataframe_by_search_value(self, column_name: str,
+                                         search_value: str):
         """
         Search in specified column for search_value return rows until next NaN
         as numpy dataFrame with all cells as strings
@@ -73,9 +79,8 @@ class ExcelContent:
         retval.columns = line.loc[int(line.index[0])]
         # retval.style.format({"Datum": lambda t: t.strftime("%d.%m.%Y")})
         # print (retval["Datum"])
-        retval["Datum"] = pd.to_datetime(retval["Datum"], errors="coerce").dt.strftime(
-            "%d.%m.%Y"
-        )
+        retval["Datum"] = pd.to_datetime(retval["Datum"], errors="coerce").dt\
+            .strftime("%d.%m.%Y")
         # print (retval["Datum"])
         # pattern = "{:.2f} €".format
         # retval.to_string(formatters={'Preis': pattern, 'Summe': pattern})
@@ -99,7 +104,8 @@ class ExcelContent:
 
     def get_invoice_number(self):
         """returns tuple ('InvoiceNumberText', invoiceNumber)"""
-        return {"Rechnungs-Nr:": self.search_cell_right_of("An:", "Rechnungs-Nr:")}
+        return {"Rechnungs-Nr:": self.search_cell_right_of("An:",
+                                                           "Rechnungs-Nr:")}
 
     def get_invoice_positions(self):
         """return array of array of positions for invoice"""
@@ -108,16 +114,17 @@ class ExcelContent:
     def get_invoice_sums(self):
         """return array of invoice sums"""
         sums = "Unnamed: 5"
-        netto = f"{float(self.search_cell_right_of(sums, 'Summe')):.2f} €".replace(
-            ".", ","
+        netto = (
+            f"{float(self.search_cell_right_of(sums, 'Summe')):.2f} €"
+            .replace(".", ",")
         )
-        umsatzsteuer = f"{float(self.search_cell_right_of(sums, 'Umsatzsteuer 19%')):.2f} €".replace(
-            ".", ","
+        _mwst = float(self.search_cell_right_of(sums, 'Umsatzsteuer 19%'))
+        umsatzsteuer = (
+            f"{_mwst:.2f} €".replace(".", ",")
         )
         brutto = (
-            f"{float(self.search_cell_right_of(sums, 'Bruttobetrag')):.2f} €".replace(
-                ".", ","
-            )
+            f"{float(self.search_cell_right_of(sums, 'Bruttobetrag')):.2f} €"
+            .replace(".", ",")
         )
         return [
             ("Summe netto:", f"{netto}"),

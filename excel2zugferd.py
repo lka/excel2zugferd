@@ -3,7 +3,7 @@ Module excel2zugferd
 """
 
 import tkinter as tk
-from tkinter import messagebox, filedialog, Button, ttk, Frame
+from tkinter import messagebox, filedialog, Button, ttk
 import json
 import tempfile
 import os
@@ -31,14 +31,18 @@ fields = [
         "Type": "String",
     },
     {"Text": "Anschrift", "Label": "Anschrift", "Lines": 5, "Type": "String"},
-    {"Text": "Bundesland", "Label": "Bundesland", "Lines": 1, "Type": "String"},
+    {"Text": "Bundesland", "Label": "Bundesland", "Lines": 1,
+        "Type": "String"},
     {"Text": "Name", "Label": "Name", "Lines": 1, "Type": "String"},
     {"Text": "Kontakt", "Label": "Kontakt", "Lines": 5, "Type": "String"},
-    {"Text": "Umsatzsteuer", "Label": "Umsatzsteuer", "Lines": 2, "Type": "String"},
+    {"Text": "Umsatzsteuer", "Label": "Umsatzsteuer", "Lines": 2,
+        "Type": "String"},
     {"Text": "Konto", "Label": "Konto", "Lines": 3, "Type": "String"},
-    {"Text": "Zahlungsziel", "Label": "Zahlungsziel", "Lines": 1, "Type": "String"},
+    {"Text": "Zahlungsziel", "Label": "Zahlungsziel", "Lines": 1,
+        "Type": "String"},
     {"Text": "Abspann", "Label": "Abspann", "Lines": 5, "Type": "String"},
-    {"Text": "Verzeichnis", "Label": "Verzeichnis", "Lines": 1, "Type": "String"},
+    {"Text": "Verzeichnis", "Label": "Verzeichnis", "Lines": 1,
+        "Type": "String"},
     {
         "Text": "Kleinunternehmen",
         "Label": "Kleinunternehmen",
@@ -59,6 +63,7 @@ LABELWIDTH = 22
 TEXTWIDTH = 40
 PADX = 5
 PADY = 5
+
 
 class Oberflaeche:
     """
@@ -123,7 +128,8 @@ class Oberflaeche:
         """
         Quit window
         """
-        confirm = messagebox.askokcancel("Beenden?", "Möchten Sie wirklich Beenden ?")
+        confirm = messagebox.askokcancel("Beenden?",
+                                         "Möchten Sie wirklich Beenden ?")
         if confirm:
             self.root.destroy()
 
@@ -133,11 +139,12 @@ class Oberflaeche:
         """
         try:
             with open(
-                os.path.join("_internal", "version.json"), "r", encoding="utf-16"
+                os.path.join("_internal", "version.json"), "r",
+                    encoding="utf-16"
             ) as f_in:
                 version = json.load(f_in)
                 my_msg = f"Copyright © H.Lischka, 2024\n\
-                Version {version['version'] if version is not None else 'unbekannt'}"
+        Version {version['version'] if version is not None else 'unbekannt'}"
         except IOError as ex:
             my_msg = f"IOError ({0}): {1}".format(ex.errno, ex.strerror)
 
@@ -160,7 +167,7 @@ class OberflaecheIniFile(Oberflaeche):
         if window:
             self.destroy_children(window)
 
-        super().__init__(window=window) #tk.Toplevel())
+        super().__init__(window=window)  # tk.Toplevel())
         self.fields = thefields
         self.menuvars = {}
         self.ini_file = myini_file
@@ -174,10 +181,12 @@ class OberflaecheIniFile(Oberflaeche):
         row = tk.Frame(self.root)
         row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
         self.logo_button = tk.Button(
-            row, text="Logo auswählen...", anchor="w", command=self.handle_file_button
+            row, text="Logo auswählen...", anchor="w",
+            command=self.handle_file_button
         )
         self.logo_button.pack(side=tk.LEFT, padx=PADX)
-        self.logo_button.bind("<Return>", (lambda event: self.handle_file_button))
+        self.logo_button.bind("<Return>",
+                              (lambda event: self.handle_file_button))
         self.logo_delete = tk.Button(
             row, text="Logo löschen", command=self.handle_logo_delete_button
         )
@@ -193,11 +202,14 @@ class OberflaecheIniFile(Oberflaeche):
         self.make_logo(self.logo_fn)
 
         self.ents = self.makeform()
-        # self.root.bind('<Return>', (lambda event, e=self.ents: self.fetch(e)))
-        self.quit_button = tk.Button(self.root, text="Beenden", command=self.quit_cmd)
+        # self.root.bind('<Return>', (lambda event,
+        # e=self.ents: self.fetch(e)))
+        self.quit_button = tk.Button(self.root, text="Beenden",
+                                     command=self.quit_cmd)
         self.quit_button.pack(side=tk.LEFT, padx=PADX, pady=PADY, expand=False)
         self.quit_button.bind("<Return>", (lambda event: self.quit_cmd()))
-        self.save_button = tk.Button(self.root, text="Speichern", command=self.fetch)
+        self.save_button = tk.Button(self.root, text="Speichern",
+                                     command=self.fetch)
         self.save_button.pack(side=tk.LEFT, padx=PADX, pady=PADY, expand=False)
         self.save_button.bind("<Return>", (lambda event: self.fetch()))
 
@@ -229,7 +241,8 @@ class OberflaecheIniFile(Oberflaeche):
                 if self.ini_file:
                     self.ini_file.create_ini_file(content)
             except IOError as ex:
-                mymsg = f"Erstellen der Ini-Datei fehlgeschlagen.\n{format_ioerr(ex)}"
+                mymsg = f"Erstellen der Ini-Datei fehlgeschlagen.\n\
+                {format_ioerr(ex)}"
                 messagebox.showerror("Fehler:", mymsg)
         self.root.destroy()
 
@@ -247,7 +260,10 @@ class OberflaecheIniFile(Oberflaeche):
         for field in self.fields:
             row = tk.Frame(self.root)
             if field["Type"] == "String":
-                lab = tk.Label(row, width=LABELWIDTH, text=field["Label"] + ": ", anchor="w")
+                lab = tk.Label(
+                    row, width=LABELWIDTH, text=field["Label"] + ": ",
+                    anchor="w"
+                )
                 # ent = Entry(row)
                 # ent.insert(0, "")
                 ent = tk.Text(row, width=TEXTWIDTH, height=field["Lines"])
@@ -262,14 +278,19 @@ class OberflaecheIniFile(Oberflaeche):
             if field["Type"] == "Boolean":
                 self.menuvars[field["Variable"]] = tk.StringVar()
                 ent = ttk.Checkbutton(
-                    row, text=field["Label"], variable=self.menuvars[field["Variable"]]
+                    row, text=field["Label"], variable=self.menuvars[
+                                                        field["Variable"]]
                 )
                 self.menuvars[field["Variable"]].set(
                     "1"
-                    if (len(content) > 0) and field["Text"] in content and
-                    ((content[field["Text"]] == "Ja")
-                    or (content[field["Text"]] == "1"))
-                    else "0")
+                    if (len(content) > 0)
+                    and field["Text"] in content
+                    and (
+                        (content[field["Text"]] == "Ja")
+                        or (content[field["Text"]] == "1")
+                    )
+                    else "0"
+                )
                 lab = tk.Label(row, width=LABELWIDTH, text=" ", anchor="w")
                 row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
                 lab.pack(side=tk.LEFT)
@@ -300,7 +321,8 @@ class OberflaecheIniFile(Oberflaeche):
         ask for deletion with really?
         """
         resp = messagebox.askyesno(
-            "Löschen des Logos", "Sind Sie sicher, dass Sie das Logo löschen möchten?"
+            "Löschen des Logos",
+            "Sind Sie sicher, dass Sie das Logolöschen möchten?"
         )
         print(resp)
         if resp is True:
@@ -338,8 +360,10 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
             ]
         )
         self.makeform()
-        # self.root.bind('<Return>', (lambda event, e=self.ents: self.fetch(e)))
-        self.quit_button = tk.Button(self.root, text="Beenden", command=self.quit_cmd)
+        # self.root.bind('<Return>', (lambda event,
+        # e=self.ents: self.fetch(e)))
+        self.quit_button = tk.Button(self.root, text="Beenden",
+                                     command=self.quit_cmd)
         self.quit_button.pack(side=tk.LEFT, padx=PADX, pady=PADY)
         self.quit_button.bind("<Return>", (lambda event: self.quit_cmd()))
         self.save_button = tk.Button(
@@ -363,7 +387,8 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
             self.excel_file.read_sheet(self.selected_lb_item)
         create_xml = contentini_file["ZugFeRD"].split("\n")[0] == "Ja"
 
-        #        msg = f"Ausgewählt wurde das Excel Sheet: {self.selected_lb_item}"
+        #        msg = f"Ausgewählt wurde das Excel Sheet: \
+        #               {self.selected_lb_item}"
         #        messagebox.showinfo("Information", msg)
 
         self.pdf = Pdf(
@@ -379,7 +404,8 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         if self.selected_lb_item:
             fn = self.selected_lb_item + ".pdf"
             # print(contentini_file["Verzeichnis"], fn)
-            tmpfn = os.path.join(Path(contentini_file["Verzeichnis"]).absolute(), fn)
+            tmpfn = os.path.join(Path(contentini_file["Verzeichnis"])
+                                 .absolute(), fn)
             outfile = self.pdf.uniquify(tmpfn)
 
         #        msg = f"Die Datei {outfile} wurde vorgesehen"
@@ -388,18 +414,21 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         if create_xml and fn:
             try:
                 # tmp = tempfile.gettempdir()
-                with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+                with tempfile.TemporaryDirectory(ignore_cleanup_errors=True)\
+                     as tmp:
                     file_name = os.path.join(
                         Path(tmp), fn
                     )  # doesn't matter, cannot exist twice
                     self.pdf.output(file_name)
-                    #                msg = f"Die Datei {fileName} wurde erstellt"
-                    #                messagebox.showinfo("Debug-Information", msg)
+                    # msg = f"Die Datei {fileName} wurde erstellt"
+                    # messagebox.showinfo("Debug-Information", msg)
                     try:
                         self.pdf.zugferd.add_xml2pdf(file_name, outfile)
                     except IOError as ex:
-                        mymsg = f"Konnte {outfile} aus {file_name} nicht erstellen, \
-                                da ein Problem aufgetreten ist.\n{format_ioerr(ex)}"
+                        mymsg = f"Konnte {outfile} aus {file_name} \
+                                    nicht erstellen, \
+                                    da ein Problem aufgetreten ist.\n\
+                                    {format_ioerr(ex)}"
                         messagebox.showerror("Fehler:", mymsg)
                         return
             except IOError as ex:
@@ -480,7 +509,8 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         # get selected indices
         selected_indices = self.lb.curselection()
         # get selected items
-        self.selected_lb_item = ",".join([self.lb.get(i) for i in selected_indices])
+        self.selected_lb_item = ",".join([self.lb.get(i)
+                                         for i in selected_indices])
         if self.double_clicked_flag:
             # messagebox.showinfo("Info", "Double-Clicked")
             self.create_pdf()
@@ -499,7 +529,8 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         self.file_name_button.pack(anchor="nw")
         self.file_name_label = tk.Label(
             self.root,
-            text="Bitte erst die Excel Datei auswählen (über Datei -> Öffnen...).",
+            text="Bitte erst die Excel Datei auswählen\
+                 (über Datei -> Öffnen...).",
         )
         self.file_name_label.pack()
         self.lb = tk.Listbox(self.root, height=20)
@@ -510,14 +541,15 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
 
 if __name__ == "__main__":
     thedir = Path.joinpath(
-        Path(os.getenv("APPDATA")).resolve(), Path("excel2zugferd")  # type: ignore
+        Path(os.getenv("APPDATA")).resolve(), Path("excel2zugferd")
     )
     ini = IniFile("config.ini", thedir)
     if not Path.exists(thedir):
         try:
             os.mkdir(thedir)
         except IOError as e:
-            msg = f"Ich kann das Verzeichnis {dir} nicht erstellen.\n{format_ioerr(e)}"
+            msg = f"Ich kann das Verzeichnis {dir} nicht erstellen.\n\
+                    {format_ioerr(e)}"
             messagebox.showerror("Fehler", msg)
     oberfl = None
     if ini.exists_ini_file() is None:

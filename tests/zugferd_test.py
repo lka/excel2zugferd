@@ -27,13 +27,16 @@ class TestZugFerd(unittest.TestCase):
 
         self.zugferd.add_rgnr("2024000000000123")
         self.zugferd.add_note(
-            "Max Mustermann - Softwareentwicklung\nMusterstr. 1\n12345 Musterstadt"
+            "Max Mustermann - Softwareentwicklung\nMusterstr. 1\n\
+                12345 Musterstadt"
         )
         self.zugferd.add_rechnungsempfaenger(
-            "Musterfrauen GmbH & CoKG\nAnette Musterfrau\nAm Bild 19\n98766 Unterschleißheim"
+            "Musterfrauen GmbH & CoKG\nAnette Musterfrau\nAm Bild 19\n\
+                98766 Unterschleißheim"
         )
         self.zugferd.add_zahlungsempfaenger(
-            "Max Mustermann\nIBAN: DE97 xxx xxx xxx xxx xxx xxx\nBIC: SOLADES1XYZ"
+            "Max Mustermann\nIBAN: DE97 xxx xxx xxx xxx xxx xxx\n\
+                BIC: SOLADES1XYZ"
         )
         self.zugferd.add_my_company(
             "Max Mustermann\nMusterstr. 1\n12345 Musterstadt",
@@ -43,12 +46,13 @@ class TestZugFerd(unittest.TestCase):
         )
         self.zugferd.add_items(
             [
-                ("Pos.", "Datum", "Tätigkeit", "Menge", "Typ", "Einzel €", "Gesamt €"),
+                ("Pos.", "Datum", "Tätigkeit", "Menge", "Typ", "Einzel €",
+                 "Gesamt €"),
                 (
                     "1",
                     "01.01.2024",
-                    "Irgendwas, das länger ist als zwei Zeilen in der Ausgabe mit \
-einer Dokumentation dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als zwei Zeilen in der Ausgabe \
+                        mit einer Dokumentation dessen, was geleistet wurde.",
                     "3",
                     "10 Min.",
                     "22,00",
@@ -57,8 +61,8 @@ einer Dokumentation dessen, was geleistet wurde.",
                 (
                     "2",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation \
-dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer \
+                        Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "h",
                     "75,00",
@@ -67,8 +71,8 @@ dessen, was geleistet wurde.",
                 (
                     "3",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation \
-dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer \
+                        Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "h",
                     "75,00",
@@ -77,8 +81,8 @@ dessen, was geleistet wurde.",
                 (
                     "4",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation \
-dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer \
+                        Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "h",
                     "75,00",
@@ -87,8 +91,8 @@ dessen, was geleistet wurde.",
                 (
                     "5",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation \
-dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer \
+                        Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "h",
                     "75,00",
@@ -97,8 +101,8 @@ dessen, was geleistet wurde.",
                 (
                     "6",
                     "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer Dokumentation \
-dessen, was geleistet wurde.",
+                    "Irgendwas, das länger ist als eine Zeilen und einer \
+                        Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "h",
                     "75,00 €",
@@ -116,7 +120,8 @@ dessen, was geleistet wurde.",
         )
 
         self.zugferd.add_zahlungsziel(
-            "Zahlbar ohne Abschlag bis", datetime.now() + timedelta(days=int(14))
+            "Zahlbar ohne Abschlag bis", datetime.now() +
+            timedelta(days=int(14))
         )
         self.zugferd.add_xml2pdf("hello_world.pdf", "hello_world_zugferd.pdf")
         self.assertTrue(os.path.isfile("hello_world_zugferd.pdf"))

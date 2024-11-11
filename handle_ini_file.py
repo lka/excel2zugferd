@@ -31,7 +31,8 @@ class IniFile:
         """
         self.content = content
         with open(self.path, 'w', encoding='utf-8') as f_out:
-            json.dump(content, f_out, sort_keys=True, ensure_ascii=False, indent=4)
+            json.dump(content, f_out, sort_keys=True, ensure_ascii=False,
+                      indent=4)
 
     def read_ini_file(self):
         """
