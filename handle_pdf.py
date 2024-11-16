@@ -11,11 +11,13 @@ from fpdf.fonts import FontFace
 from fpdf.enums import TableCellFillMode, OutputIntentSubType
 from excel_content import ExcelContent
 import handle_zugferd
+import handle_girocode as gc
+from handle_other_objects import Adresse, Konto, Steuerung
 
 
 class PDF(FPDF):
     """
-    Klassendeklaration
+    Base Class for my PDF
     """
 
     def __init__(self, footer_txt: str = ""):
@@ -246,6 +248,48 @@ class PDF(FPDF):
         self.multi_cell(0, None, text)
         self.ln()
 
+    def print_logo(self, fn: str) -> None:
+        """
+        print Logo
+        """
+        if fn is None:
+            return
+        self.start_section("Logo", 0)
+        rect1 = 27, 30, 20, 20
+        self.set_draw_color(255)
+        self.rect(*rect1)
+        self.image(fn, *rect1, keep_aspect_ratio=True)
+        self.set_draw_color(0)
+
+    def print_qrcode(self, img: object) -> None:
+        """
+        print qrcode
+        """
+        if img is None:
+            return
+        # rect1 = 27, 30, 20, 20
+        self.start_section("GiroCode", 0)
+        self.set_draw_color(255)
+        # self.rect(*rect1)
+        self.image(img.get_image(), w=30, h=30,
+                   keep_aspect_ratio=True)
+        self.set_draw_color(0)
+        self.set_x(28)
+        self.set_font(None, "B", size=10)
+        self.cell(80, 1, 'Bezahlen via GiroCode')
+
+    def uniquify(self, path: str) -> str:
+        """
+        make unique Path from filename
+        """
+        fn, ext = os.path.splitext(path)
+        counter = 1
+
+        while os.path.exists(path):
+            path = f"{fn} ({str(counter)})" + ext
+            counter += 1
+        return path
+
 
 class Pdf(PDF):
     """
@@ -261,7 +305,14 @@ class Pdf(PDF):
         self.logo_fn = logo_fn
         self.daten = daten if isinstance(daten, ExcelContent) else None
         self.stammdaten = stammdaten if stammdaten is not None else {}
-        self.create_xml = create_xml
+        self.qrcode_img = None
+        self.lieferant = Adresse()
+        self.lieferantenkonto = Konto()
+        self.lieferantensteuerung = Steuerung()
+        self.empfaenger = Adresse()
+        self.lieferant.fill_lieferant(stammdaten)
+        self.lieferantensteuerung.fill_steuerung(stammdaten)
+        self.lieferantenkonto.fill_konto(stammdaten)
         self.set_fonts_and_other_stuff()
 
     def set_fonts_and_other_stuff(self) -> None:
@@ -303,32 +354,8 @@ class Pdf(PDF):
             ),
             "sRGB2014 (v2)",
         )
-        if self.create_xml:
+        if self.lieferantensteuerung.create_xml:
             self.zugferd = handle_zugferd.ZugFeRD()
-
-    def print_logo(self) -> None:
-        """
-        print Logo
-        """
-        if self.logo_fn is None:
-            return
-        rect1 = 27, 30, 20, 20
-        self.set_draw_color(255)
-        self.rect(*rect1)
-        self.image(self.logo_fn, *rect1, keep_aspect_ratio=True)
-        self.set_draw_color(0)
-
-    def uniquify(self, path: str) -> str:
-        """
-        make unique Path from filename
-        """
-        fn, ext = os.path.splitext(path)
-        counter = 1
-
-        while os.path.exists(path):
-            path = f"{fn} ({str(counter)})" + ext
-            counter += 1
-        return path
 
     def demo(self) -> None:
         """
@@ -551,13 +578,13 @@ class Pdf(PDF):
         """
         populate header with data
         """
-        self.set_title(self.stammdaten["Betriebsbezeichnung"])
-        tmp_str = self.stammdaten["Konto"].replace("\n", ", ")
-        self.footer_txt = f"{tmp_str}"
-        self.set_author(self.stammdaten["Name"])
+        self.set_title(self.lieferant.betriebsbezeichnung)
+        self.footer_txt = self.lieferantenkonto.oneliner()
+        self.set_author(self.lieferant.name)
 
-        if self.create_xml:
-            self.zugferd.add_zahlungsempfaenger(self.stammdaten["Konto"])
+        if self.lieferantensteuerung.create_xml:
+            self.zugferd.add_zahlungsempfaenger(
+                self.lieferantenkonto.multiliner())
 
         self.table_head = (
             255  # white fill-color of Table Header (30, 144, 255)
@@ -572,43 +599,36 @@ class Pdf(PDF):
 
         self.add_page()
         self.print_faltmarken()
-        self.print_logo()
-        self.print_absender(self.stammdaten["Anschrift"])
-        bundesland = self.stammdaten["Bundesland"]
+        self.print_logo(self.logo_fn)
+        self.print_absender(self.lieferant.get_anschrift())
+        bundesland = self.lieferant.bundesland
         if len(bundesland) > 0:
             self.print_bundesland(bundesland)
-            if self.create_xml:
+            if self.lieferantensteuerung.create_xml:
                 self.zugferd.add_bundesland(bundesland)
         self.print_kontakt(
-            self.stammdaten["Kontakt"] + "\n\n" +
-            self.stammdaten["Umsatzsteuer"]
+            self.lieferant.get_kontakt() + "\n\n" +
+            self.lieferant.get_umsatzsteuer()
         )
 
     def fill_adressen(self) -> None:
         """
         populate Adressfelder
         """
-        if self.create_xml:
+        if self.lieferantensteuerung.create_xml:
             txt = (
-                self.stammdaten["Anschrift"]
+                self.lieferant.get_anschrift()
                 + "\n"
-                + self.stammdaten["Kontakt"]
+                + self.lieferant.get_kontakt()
                 + "\n"
-                + self.stammdaten["Umsatzsteuer"]
+                + self.lieferant.get_umsatzsteuer()
             )
             self.zugferd.add_note(txt)
             self.zugferd.add_my_company(
-                self.stammdaten["Anschrift"],
-                self.stammdaten["Betriebsbezeichnung"],
-                self.stammdaten["Kontakt"],
-                (
-                    self.stammdaten["Umsatzsteuer"].split("\n")[0].split()[1]
-                    if len(self.stammdaten["Umsatzsteuer"]) > 0
-                    and len(self.stammdaten["Umsatzsteuer"].split("\n")) > 1
-                    and len(self.stammdaten["Umsatzsteuer"].split("\n")[0]
-                            .split()) > 0
-                    else ""
-                ),
+                self.lieferant.get_anschrift(),
+                self.lieferant.betriebsbezeichnung,
+                self.lieferant.get_kontakt(),
+                self.lieferant.steuernr or "",
             )
 
     def fill_pdf(self) -> None:
@@ -616,15 +636,16 @@ class Pdf(PDF):
         set own data
         """
         self.fill_header()
+        self.fill_adressen()
 
-        kleinunternehmen = self.stammdaten["Kleinunternehmen"] == "Ja"
+        kleinunternehmen = self.lieferantensteuerung.is_kleinunternehmen
         steuerbefreiungsgrund = None
         if kleinunternehmen:
             steuerbefreiungsgrund = "Gemäß § 19 UStG wird keine \
 Umsatzsteuer berechnet."
             self.print_kleinunternehmerregelung(steuerbefreiungsgrund)
 
-        self.fill_adressen()
+        create_girocode = self.lieferantensteuerung.create_girocode
 
         an = self.daten.get_address_of_customer() if self.daten else ""
         if an:
@@ -639,13 +660,13 @@ Umsatzsteuer berechnet."
             today
             + timedelta(
                 days=int(
-                    self.stammdaten["Zahlungsziel"]
-                    if self.stammdaten["Zahlungsziel"] > ""
+                    self.lieferant.zahlungsziel
+                    if self.lieferant.zahlungsziel > ""
                     else "0"
                 )
             )
-        ).strftime(german_date)
-        if self.create_xml:
+        )
+        if self.lieferantensteuerung.create_xml:
             self.zugferd.add_rgnr(f"{rg_nr[list(rg_nr.keys())[0]]}")
             self.zugferd.add_rechnungsempfaenger(an)
 
@@ -659,33 +680,36 @@ Umsatzsteuer berechnet."
         if df is not None:
             self.print_positions(df)
         the_tax = "0.00" if kleinunternehmen else "19.00"
-        if self.create_xml:
+        if self.lieferantensteuerung.create_xml:
             self.zugferd.add_items(df, the_tax)
 
         summen = self.daten.get_invoice_sums() if self.daten else []
         brutto = summen[-1][-1]
         self.print_summen(summen)
-        if self.create_xml:
+        if self.lieferantensteuerung.create_xml:
             self.zugferd.add_gesamtsummen(summen, the_tax,
                                           steuerbefreiungsgrund)
             self.zugferd.add_zahlungsziel(
                 f"Bitte überweisen Sie den Betrag von {brutto} bis zum",
-                today
-                + timedelta(
-                    days=int(
-                        self.stammdaten["Zahlungsziel"]
-                        if self.stammdaten["Zahlungsziel"] > ""
-                        else "0"
-                    )
-                ),
+                ueberweisungsdatum,
             )
 
         abspann = (
-            self.stammdaten["Abspann"]
-            if len(self.stammdaten["Abspann"]) > 1
-            else "Mit freundlichen Grüßen\n" + self.stammdaten["Name"]
+            self.lieferantensteuerung.abspann
+            if len(self.lieferantensteuerung.abspann) > 1
+            else "Mit freundlichen Grüßen\n" + self.lieferant.name
         )
         self.print_abspann(
             f"Bitte überweisen Sie den Betrag von {brutto} bis zum \
-{ueberweisungsdatum} auf u.a. Konto.\n\n{abspann}"
+{ueberweisungsdatum.strftime(german_date)} auf u.a. Konto.\n\n{abspann}"
         )
+
+        if create_girocode:
+            girocode = gc.Handle_Girocode(self.lieferantenkonto.bic,
+                                          self.lieferantenkonto.iban,
+                                          self.lieferantenkonto.name)
+            self.qrcode_img = girocode.girocodegen(
+                float(brutto.split(' ')[0].replace(',', '.')),
+                f"{list(rg_nr.keys())[0]} {rg_nr[list(rg_nr.keys())[0]]} \
+vom {datum}")
+            self.print_qrcode(self.qrcode_img)

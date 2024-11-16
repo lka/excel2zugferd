@@ -42,6 +42,11 @@ Als Vorlage benutzen Sie bitte die Datei TestRechnung.xlsx.
 
 ## Versionen
 
+### 0.9.0
+
+- Die Erstellung eines GiroCode's im Dokument kann jetzt in den Stammdaten eingestellt werden.
+- Die Validierung des erzeugten ZUGFeRD Dokuments auf https://www.portinvoice.com ist erfolgreich (Ohne Fehler und Warnungen).
+
 ### 0.8.0
 
 - fix: 0.8.1 Wenn die Stammdaten aus dem Haupt-Fenster heraus aufgerufen werden, wird das Haupt-Fenster durch die Stammdaten ersetzt. Nach Beendigung der Stammdateneingabe wird das gesamte Programm geschlossen. Der erneute Aufruf liest die "neuen" Stammdaten ein.

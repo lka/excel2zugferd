@@ -57,6 +57,13 @@ fields = [
         "Type": "Boolean",
         "Variable": "ZugFeRD",
     },
+    {
+        "Text": "GiroCode",
+        "Label": "GiroCode erzeugen und einblenden",
+        "Lines": 1,
+        "Type": "Boolean",
+        "Variable": "GiroCode",
+    },
 ]
 
 LABELWIDTH = 22
@@ -411,7 +418,7 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         #        msg = f"Die Datei {outfile} wurde vorgesehen"
         #        messagebox.showinfo("Debug-Information", msg)
 
-        if create_xml and fn:
+        if create_xml and fn is not None:
             try:
                 # tmp = tempfile.gettempdir()
                 with tempfile.TemporaryDirectory(ignore_cleanup_errors=True)\
