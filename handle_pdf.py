@@ -593,7 +593,7 @@ class Pdf(PDF):
         self.table_head_color = 10  # 0  # black text-color of Table Header
         self.table_lines = 0  # black (0, 0, 255)  # Blue
         self.table_fill_color = 220  # lightgrey
-        self.table_widths = (10, 21, 68, 16, 15, 16, 19)
+        self.table_widths = (10, 21, 61, 16, 15, 21, 21)
         # (11, 22, 61, 16, 20, 21, 21)
         self.table_lines = 120  # darkgrey
 
