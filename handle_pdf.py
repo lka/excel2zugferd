@@ -173,6 +173,7 @@ class PDF(FPDF):
                 self.table_widths
                 if hasattr(self, "table_widths")
                 else (10, 21, 68, 16, 15, 16, 19)
+                # wird in der abgeleiteten Klasse Pdf gesetzt !!!
             ),
             text_align=(
                 "CENTER",
@@ -277,6 +278,7 @@ class PDF(FPDF):
         self.set_x(28)
         self.set_font(None, "B", size=10)
         self.cell(80, 1, 'Bezahlen via GiroCode')
+        self.set_font(None, "", size=10)
 
     def uniquify(self, path: str) -> str:
         """

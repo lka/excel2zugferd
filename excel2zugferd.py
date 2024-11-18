@@ -244,6 +244,18 @@ class OberflaecheIniFile(Oberflaeche):
                 )
                 content[key] = text
                 # print('%s:%s "%s"' % (key, field, text))
+            # Start: check only content of Stammdaten
+            try:
+                Pdf(
+                    None,
+                    content,
+                    False,
+                    None,
+                )
+            except ValueError as e:
+                messagebox.showerror("Fehler in den Stammdaten", e)
+                return
+            # Ende: check only content of Stammdaten
             try:
                 if self.ini_file:
                     self.ini_file.create_ini_file(content)
@@ -397,13 +409,16 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         #        msg = f"Ausgewählt wurde das Excel Sheet: \
         #               {self.selected_lb_item}"
         #        messagebox.showinfo("Information", msg)
-
-        self.pdf = Pdf(
-            self.excel_file,
-            contentini_file,
-            create_xml,
-            self.logo_fn if Path(self.logo_fn).exists() else None,
-        )
+        try:
+            self.pdf = Pdf(
+                self.excel_file,
+                contentini_file,
+                create_xml,
+                self.logo_fn if Path(self.logo_fn).exists() else None,
+            )
+        except ValueError as e:
+            messagebox.showerror("Fehler in den Stammdaten", e)
+            return
 
         self.pdf.fill_pdf()
         outfile = None

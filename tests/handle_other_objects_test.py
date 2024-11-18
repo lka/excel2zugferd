@@ -161,22 +161,16 @@ class TestAdresse(unittest.TestCase):
         """
         MSG = 'Should be equal'
         daten = {
-                    "Abspann": "Mit freundlichen Grüßen\nMax Mustermann",
                     "Anschrift": "Max Mustermann\nSoftware\nMusterstr. 17a\
 \n12345 Musterstadt",
                     "Betriebsbezeichnung": "Max Mustermann - Software",
                     "Bundesland": "Baden-Württemberg",
-                    "GiroCode": "Nein",
-                    "Kleinunternehmen": "Nein",
                     "Kontakt": "Tel.: 01234-1234567\nEmail: max@mustermann.de",
-                    "Konto": "Max Mustermann\
-\nIBAN: DEXX YYYY ZZZZ AAAA BBBB CC\nBIC: XYZBCAY",
                     "Name": "Max Mustermann",
                     "Umsatzsteuer": "Steuernummer: 12345/12345\
 \nFinanzamt Musterstadt",
                     "Verzeichnis": "C:/Users/xxx/Documents",
                     "Zahlungsziel": "14",
-                    "ZugFeRD": "Ja"
                 }
         lieferant = Adresse()
         lieferant.fill_lieferant(daten)
@@ -196,6 +190,118 @@ class TestAdresse(unittest.TestCase):
         self.assertEqual(lieferant.strasse, "Musterstr.", MSG)
         self.assertEqual(lieferant.telefon, "01234-1234567", MSG)
         self.assertEqual(lieferant.zahlungsziel, "14", MSG)
+
+    def test_fill_lieferant_throws_cond(self):
+        """
+        Tests that wrong Stammdaten throws ValueError
+        """
+        daten = {
+                    "Anschrift": "Max Mustermann\nSoftware\nMusterstr. 17a\
+\n12345 Musterstadt",
+                    "Betriebsbezeichnung": "Max Mustermann - Software",
+                    "Bundesland": "Baden-Württemberg",
+                    "Kontakt": "Tel.: 01234-1234567\nEmail: max@mustermann.de",
+                    "Name": "Max Mustermann",
+                    "Umsatzsteuer": "Steuernummer: 12345/12345\
+\nFinanzamt Musterstadt",
+                    "Verzeichnis": "C:/Users/xxx/Documents",
+                    "Zahlungsziel": "14",
+                }
+        lieferant = Adresse()
+        daten["Anschrift"] = None
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Anschrift"] = ""
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Anschrift"] = "Max\nMusterstr.\nMusterstadt"
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Anschrift"] = "Max\nMusterstr. 17a\nMusterstadt"
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Anschrift"] = "Max\nMusterstr. 17a\n12345 Musterstadt"
+        try:
+            lieferant.fill_lieferant(daten)
+        except ValueError:
+            self.fail("raised ValueError unexpectedly!")
+        daten["Betriebsbezeichnung"] = None
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Betriebsbezeichnung"] = "Max Mustermann\nSoftware"
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Betriebsbezeichnung"] = "Max Mustermann - Software"
+        try:
+            lieferant.fill_lieferant(daten)
+        except ValueError:
+            self.fail("raised ValueError unexpectedly!")
+        daten["Kontakt"] = None
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Kontakt"] = ""
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Kontakt"] = "Tel.: 01234-1234567"
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Kontakt"] = "Tel.: \nEmail: max@mustermann.de"
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Kontakt"] = "Tel.: 01234-1234567\nE-Mail: max@mustermann.de"
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Kontakt"] = "Tel.: 01234-1234567\nEmail: max@mustermann.de"
+        try:
+            lieferant.fill_lieferant(daten)
+        except ValueError:
+            self.fail("raised ValueError unexpectedly!")
+        daten["Name"] = None
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Name"] = ""
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Name"] = "Max\nMustermann"
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Name"] = "Max Mustermann"
+        try:
+            lieferant.fill_lieferant(daten)
+        except ValueError:
+            self.fail("raised ValueError unexpectedly!")
+        daten["Umsatzsteuer"] = None
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Umsatzsteuer"] = ""
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Umsatzsteuer"] = "\n"
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Umsatzsteuer"] = "12345/12345\nFinanzamt"
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Umsatzsteuer"] = "Steuernummer: 12345/12345\
+\nFinanzamt Musterstadt"
+        try:
+            lieferant.fill_lieferant(daten)
+        except ValueError:
+            self.fail("raised ValueError unexpectedly!")
+        daten["Zahlungsziel"] = None
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Zahlungsziel"] = ""
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Zahlungsziel"] = "\n"
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Zahlungsziel"] = "14"
+        try:
+            lieferant.fill_lieferant(daten)
+        except ValueError:
+            self.fail("raised ValueError unexpectedly!")
 
 
 class TestKonto(unittest.TestCase):
@@ -238,7 +344,6 @@ class TestKonto(unittest.TestCase):
         """
         MSG = 'Should be equal'
         daten = {
-                    "Abspann": "Mit freundlichen Grüßen\nMax Mustermann",
                     "Anschrift": "Max Mustermann\nSoftware\nMusterstr. 17a\
 \n12345 Musterstadt",
                     "Betriebsbezeichnung": "Max Mustermann - Software",
@@ -260,6 +365,43 @@ class TestKonto(unittest.TestCase):
         self.assertEqual(konto.name, "Max Mustermann", MSG)
         self.assertEqual(konto.iban, "DEXX YYYY ZZZZ AAAA BBBB CC", MSG)
         self.assertEqual(konto.bic, "XYZBCAY", MSG)
+
+    def test_fill_konto_raise_cond(self):
+        """
+        Tests that wrong init values throw ValueErrors
+        """
+        konto = Konto()
+        daten = {
+            "Konto": "IBAN: DEXX YYYY ZZZZ AAAA BBBB CC\nBIC: XYZBCAY",
+        }
+        with self.assertRaises(ValueError):
+            konto.fill_konto(daten)
+        daten["Konto"] = None
+        with self.assertRaises(ValueError):
+            konto.fill_konto(daten)
+        daten["Konto"] = ""
+        with self.assertRaises(ValueError):
+            konto.fill_konto(daten)
+        daten["Konto"] = "\n"
+        with self.assertRaises(ValueError):
+            konto.fill_konto(daten)
+        daten["Konto"] = "\n\n"
+        with self.assertRaises(ValueError):
+            konto.fill_konto(daten)
+        daten["Konto"] = "Max M\n\nBIC: XYZBCAY"
+        with self.assertRaises(ValueError):
+            konto.fill_konto(daten)
+        daten["Konto"] = "Max M\nIBAN: xxxxxxxxxxx yyyyy\nBIC:"
+        with self.assertRaises(ValueError):
+            konto.fill_konto(daten)
+        daten["Konto"] = "Max M\nIBAN: xxxxxxxxxxx yyyyy\nBIC: "
+        with self.assertRaises(ValueError):
+            konto.fill_konto(daten)
+        daten["Konto"] = "Max\nIBAN: DEXX YYYY ZZZZ AAAA BBBB CC\nBIC: XYZBCAY"
+        try:
+            konto.fill_konto(daten)
+        except ValueError:
+            self.fail("raised ValueError unexpectedly!")
 
 
 class TestSteuerung(unittest.TestCase):
@@ -303,21 +445,9 @@ class TestSteuerung(unittest.TestCase):
         MSG = 'Should be equal'
         daten = {
                     "Abspann": "Mit freundlichen Grüßen\nMax Mustermann",
-                    "Anschrift": "Max Mustermann\nSoftware\nMusterstr. 17a\
-\n12345 Musterstadt",
-                    "Betriebsbezeichnung": "Max Mustermann - Software",
-                    "Bundesland": "Baden-Württemberg",
                     "GiroCode": "Nein",
                     "Kleinunternehmen": "Nein",
-                    "Kontakt": "Tel.: 01234-1234567\nEmail: max@mustermann.de",
-                    "Konto": "Max Mustermann\
-\nIBAN: DEXX YYYY ZZZZ AAAA BBBB CC\nBIC: XYZBCAY",
-                    "Name": "Max Mustermann",
-                    "Umsatzsteuer": "Steuernummer: 12345/12345\
-\nFinanzamt Musterstadt",
-                    "Verzeichnis": "C:/Users/xxx/Documents",
-                    "Zahlungsziel": "14",
-                    "ZugFeRD": "Ja"
+                    "ZugFeRD": "Ja",
                 }
         steuerung = Steuerung()
         steuerung.fill_steuerung(daten)
@@ -325,3 +455,9 @@ class TestSteuerung(unittest.TestCase):
                          "Mit freundlichen Grüßen\nMax Mustermann", MSG)
         self.assertEqual(steuerung.create_girocode, False, MSG)
         self.assertEqual(steuerung.create_xml, True, MSG)
+        daten["ZugFeRD"] = None
+        steuerung.fill_steuerung(daten)
+        self.assertFalse(steuerung.create_xml, MSG)
+        daten["ZugFeRD"] = ""
+        steuerung.fill_steuerung(daten)
+        self.assertFalse(steuerung.create_xml, MSG)

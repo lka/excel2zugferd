@@ -1,6 +1,17 @@
 """
 Module handles Classes Adresse and Konto
 """
+KONTAKT_ERROR = ValueError("'Kontakt': mindestens 1, maximal 3 Zeilen\n\
+Tel.: 012345-1234\nFax: 012345-1235 (optional)\nEmail: xyz@abcdef.de")
+ANSCHRIFT_ERROR = ValueError("'Anschrift': mindestens 3, maximal 4 Zeilen\n\
+Adresszeile 1\nAdresszeile 2 (optional)\nStrasse Hausnummer\nPLZ Ortsname")
+USTID_ERROR = ValueError("'Umsatzsteuer': 2 Zeilen\n\
+Steuernummer: 12345/12345\nFinanzamt Ortsname")
+KONTO_ERROR = ValueError("'Konto': 3 Zeilen\n\
+Kontoinhaber\nIBAN: DE12345678901\nBIC: XYZABCDEF")
+BETRIEB_ERROR = ValueError("'Betriebsbezeichnung' muss ausgefüllt sein.")
+NAME_ERROR = ValueError("'Name' muss ausgefüllt sein.")
+ZZIEL_ERROR = ValueError("'Zahlungsziel' muss ausgefüllt sein.")
 
 
 class Adresse(object):
@@ -193,9 +204,15 @@ class Adresse(object):
         self.plz = sub[0]
         if len(sub) > 1:
             self.ort = sub[1]
+        else:
+            raise ANSCHRIFT_ERROR
 
     def _fill_anschrift(self, daten):
+        if daten["Anschrift"] is None:
+            raise ANSCHRIFT_ERROR
         arr = daten["Anschrift"].split('\n')
+        if len(arr) < 3 or len(arr) > 4:
+            raise ANSCHRIFT_ERROR
         self.anschrift_line1 = arr[0]
         if len(arr) > 3:
             self.anschrift_line2 = arr[1]
@@ -204,33 +221,67 @@ class Adresse(object):
             self._fill_str_hnr_plz_ort(arr[1], arr[2])
 
     def _fill_tel_fax_email(self, elem, value):
+        if len(value) == 0:
+            raise KONTAKT_ERROR
         if 'Tel' in elem:
             self.telefon = value
-        if 'Fax' in elem:
+        elif 'Fax' in elem:
             self.fax = value
-        if 'Email' in elem:
+        elif 'Email' in elem:
             self.email = value
+        else:
+            raise KONTAKT_ERROR
 
     def _fill_kontakt(self, daten):
+        if daten["Kontakt"] is None:
+            raise ANSCHRIFT_ERROR
         arr = daten["Kontakt"].split('\n')
+        if len(arr) < 2 or len(arr) > 3:
+            raise KONTAKT_ERROR
         for elem in arr:
             sub = elem.split()
-            if len(sub) > 1:
+            if len(sub) != 2:
+                raise KONTAKT_ERROR
+            else:
                 self._fill_tel_fax_email(elem, sub[1])
+
+    def _fill_umsatzsteuer(self, daten):
+        if daten["Umsatzsteuer"] is None:
+            raise USTID_ERROR
+        arr = daten["Umsatzsteuer"].split('\n')
+        if len(arr) != 2:
+            raise USTID_ERROR
+        sub = arr[0].split()
+        if len(sub) != 2:
+            raise USTID_ERROR
+        self.steuernr = sub[1]
+        self.finanzamt = arr[1]
 
     def fill_lieferant(self, daten=None) -> None:
         """fills Adresse of Lieferant from stammdaten"""
         if daten:
-            self.betriebsbezeichnung =\
-                daten['Betriebsbezeichnung']
-            self.name = daten['Name']
+            betrieb = daten['Betriebsbezeichnung']
+            if (betrieb is not None) and (len(betrieb) > 0) and\
+                    ('\n' not in betrieb):
+                self.betriebsbezeichnung = betrieb
+            else:
+                raise BETRIEB_ERROR
+            name = daten['Name']
+            if name is not None and len(name) > 0 and\
+                    '\n' not in name:
+                self.name = name
+            else:
+                raise NAME_ERROR
             self._fill_anschrift(daten)
             self.bundesland = daten["Bundesland"]
             self._fill_kontakt(daten)
-            arr = daten["Umsatzsteuer"].split('\n')
-            self.steuernr = arr[0].split()[1]
-            self.finanzamt = arr[1]
-            self.zahlungsziel = daten["Zahlungsziel"]
+            self._fill_umsatzsteuer(daten)
+            ziel = daten["Zahlungsziel"]
+            if ziel is not None and len(ziel) > 0 and\
+                '\n' not in ziel:
+                self.zahlungsziel = ziel
+            else:
+                raise ZZIEL_ERROR
             # print(repr(self))
 
 
@@ -279,16 +330,31 @@ class Konto(object):
         """get Konto Information as Multi Lines"""
         return self.name + '\nIBAN: ' + self.iban + '\nBIC: ' + self.bic
 
+    def _fill_iban_bic(self, key, value):
+        if len(value) == 0:
+            raise KONTO_ERROR
+        if 'IBAN' in key:
+            self.iban = value
+        elif 'BIC' in key:
+            self.bic = value
+        else:
+            raise KONTO_ERROR
+
     def fill_konto(self, daten=None) -> None:
         """fills Konto of Lieferant from stammdaten"""
-        """ToDo: check for IBAN, BIC and size of Array"""
         if daten:
+            if daten["Konto"] is None:
+                raise KONTAKT_ERROR
             arr = daten['Konto'].split('\n')
+            if len(arr) != 3:
+                raise KONTO_ERROR
             self.name = arr[0]
-            self.iban =\
-                arr[1].split(" ", 1)[1]
-            self.bic =\
-                arr[2].split(" ", 1)[1]
+            for elem in arr[1:]:
+                sub = elem.split(' ', 1)
+                if len(sub) != 2:
+                    raise KONTO_ERROR
+                else:
+                    self._fill_iban_bic(sub[0], sub[1])
         # print(repr(self))
 
 
@@ -342,15 +408,18 @@ class Steuerung(object):
     def _fill_bools(self, thekeys, daten) -> None:
         self.create_girocode = (
             (daten["GiroCode"] == "Ja")
-            if "GiroCode" in thekeys else False
+            if "GiroCode" in thekeys and
+            daten["GiroCode"] is not None else False
         )
         self.create_xml = (
             (daten["ZugFeRD"] == "Ja")
-            if "ZugFeRD" in thekeys else False
+            if (("ZugFeRD" in thekeys) and
+                (daten["ZugFeRD"] is not None)) else False
         )
         self.is_kleinunternehmen = (
             (daten["Kleinunternehmen"] == "Ja")
-            if "Kleinunternehmen" in thekeys else False
+            if "Kleinunternehmen" in thekeys and
+            daten["Kleinunternehmen"] is not None else False
         )
 
     def fill_steuerung(self, daten=None) -> None:

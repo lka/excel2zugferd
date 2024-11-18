@@ -6,6 +6,7 @@ import unittest
 import os
 from datetime import datetime, timedelta
 import handle_zugferd
+import handle_pdf
 
 
 class TestZugFerd(unittest.TestCase):
@@ -13,6 +14,7 @@ class TestZugFerd(unittest.TestCase):
 
     def setUp(self) -> None:
         self.zugferd = handle_zugferd.ZugFeRD()
+        self.pdf = handle_pdf.Pdf(None, None)
         self.mydebug = None
         return super().setUp()
 
@@ -24,6 +26,14 @@ class TestZugFerd(unittest.TestCase):
             os.remove("hello_world_zugferd.pdf")
         except OSError:
             pass
+        try:
+            os.remove("hello_world.pdf")
+        except OSError:
+            pass
+
+        # create pdf infile
+        self.pdf.demo()
+        self.assertTrue(os.path.isfile("hello_world.pdf"))
 
         self.zugferd.add_rgnr("2024000000000123")
         self.zugferd.add_note(
@@ -125,7 +135,6 @@ class TestZugFerd(unittest.TestCase):
         )
         self.zugferd.add_xml2pdf("hello_world.pdf", "hello_world_zugferd.pdf")
         self.assertTrue(os.path.isfile("hello_world_zugferd.pdf"))
-        self.assertTrue(os.path.isfile("hello_world.pdf"))
 
         if self.mydebug is None:
             try:
