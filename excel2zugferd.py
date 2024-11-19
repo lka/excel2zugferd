@@ -10,10 +10,10 @@ import os
 from pathlib import Path
 import shutil
 from PIL import Image, ImageTk
-from handle_pdf import Pdf
+from src.handle_pdf import Pdf
 
-from handle_ini_file import IniFile
-from excel_content import ExcelContent
+from src.handle_ini_file import IniFile
+from src.excel_content import ExcelContent
 
 
 def format_ioerr(err: IOError) -> str:

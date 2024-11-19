@@ -9,10 +9,10 @@ import os
 from fpdf import FPDF
 from fpdf.fonts import FontFace
 from fpdf.enums import TableCellFillMode, OutputIntentSubType
-from excel_content import ExcelContent
-import handle_zugferd
-import handle_girocode as gc
-from handle_other_objects import Adresse, Konto, Steuerung
+from src.excel_content import ExcelContent
+import src.handle_zugferd as handle_zugferd
+import src.handle_girocode as gc
+from src.handle_other_objects import Adresse, Konto, Steuerung
 
 
 class PDF(FPDF):

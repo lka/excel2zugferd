@@ -3,7 +3,7 @@ Module for handle_ini_file_test
 """
 
 import unittest
-import handle_girocode as gc
+import src.handle_girocode as gc
 import qrcode
 
 

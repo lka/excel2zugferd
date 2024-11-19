@@ -4,7 +4,7 @@ Module for handle_ini_file_test
 
 import os
 import unittest
-import handle_ini_file
+import src.handle_ini_file as handle_ini_file
 
 
 class TestIniFile(unittest.TestCase):

@@ -5,7 +5,7 @@ Modul excel_content_test
 from unittest import TestCase
 import os
 import numpy as np
-from excel_content import ExcelContent
+from src.excel_content import ExcelContent
 
 ADDRESS_EXPECTED = "\n".join(
     [

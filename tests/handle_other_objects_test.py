@@ -3,7 +3,7 @@ Module for test of handle_other_objects
 """
 
 import unittest
-from handle_other_objects import Adresse, Konto, Steuerung
+from src.handle_other_objects import Adresse, Konto, Steuerung
 
 
 class TestAdresse(unittest.TestCase):

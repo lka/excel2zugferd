@@ -5,8 +5,8 @@ Modul zugferd_test
 import unittest
 import os
 from datetime import datetime, timedelta
-import handle_zugferd
-import handle_pdf
+import src.handle_zugferd as handle_zugferd
+import src.handle_pdf as handle_pdf
 
 
 class TestZugFerd(unittest.TestCase):
