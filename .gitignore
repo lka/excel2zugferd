@@ -8,4 +8,4 @@ junit
 .venv
 .pytest_cache
 node_modules
-excel2zugferd.wiki
+excel2zugferd.code-workspace
