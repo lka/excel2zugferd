@@ -1,7 +1,7 @@
 """
 Module handles Classes Adresse and Konto
 """
-KONTAKT_ERROR = ValueError("'Kontakt': mindestens 1, maximal 3 Zeilen\n\
+KONTAKT_ERROR = ValueError("'Kontakt': mindestens 2, maximal 3 Zeilen\n\
 Tel.: 012345-1234\nFax: 012345-1235 (optional)\nEmail: xyz@abcdef.de")
 ANSCHRIFT_ERROR = ValueError("'Anschrift': mindestens 3, maximal 4 Zeilen\n\
 Adresszeile 1\nAdresszeile 2 (optional)\nStrasse Hausnummer\nPLZ Ortsname")

@@ -235,6 +235,7 @@ class OberflaecheIniFile(Oberflaeche):
         """
         # print('entries:', entries)
         content = {}
+        ini_has_failure = False
         if self.ents:
             for key, field in self.ents.items():
                 text = (
@@ -254,7 +255,7 @@ class OberflaecheIniFile(Oberflaeche):
                 )
             except ValueError as e:
                 messagebox.showerror("Fehler in den Stammdaten", e)
-                return
+                ini_has_failure = True
             # Ende: check only content of Stammdaten
             try:
                 if self.ini_file:
@@ -263,6 +264,8 @@ class OberflaecheIniFile(Oberflaeche):
                 mymsg = f"Erstellen der Ini-Datei fehlgeschlagen.\n\
                 {format_ioerr(ex)}"
                 messagebox.showerror("Fehler:", mymsg)
+            if ini_has_failure:
+                return
         self.root.destroy()
 
     def makeform(self) -> dict:
