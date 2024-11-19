@@ -191,9 +191,9 @@ class TestAdresse(unittest.TestCase):
         self.assertEqual(lieferant.telefon, "01234-1234567", MSG)
         self.assertEqual(lieferant.zahlungsziel, "14", MSG)
 
-    def test_fill_lieferant_throws_cond(self):
+    def test_fill_lieferant_throws_cond1(self):
         """
-        Tests that wrong Stammdaten throws ValueError
+        Tests that wrong Anschrift in Stammdaten throws ValueError
         """
         daten = {
                     "Anschrift": "Max Mustermann\nSoftware\nMusterstr. 17a\
@@ -225,6 +225,24 @@ class TestAdresse(unittest.TestCase):
             lieferant.fill_lieferant(daten)
         except ValueError:
             self.fail("raised ValueError unexpectedly!")
+
+    def test_fill_lieferant_throws_cond2(self):
+        """
+        Tests that wrong Betriebsbezeichnung in Stammdaten throws ValueError
+        """
+        daten = {
+                    "Anschrift": "Max Mustermann\nSoftware\nMusterstr. 17a\
+\n12345 Musterstadt",
+                    "Betriebsbezeichnung": "Max Mustermann - Software",
+                    "Bundesland": "Baden-Württemberg",
+                    "Kontakt": "Tel.: 01234-1234567\nEmail: max@mustermann.de",
+                    "Name": "Max Mustermann",
+                    "Umsatzsteuer": "Steuernummer: 12345/12345\
+\nFinanzamt Musterstadt",
+                    "Verzeichnis": "C:/Users/xxx/Documents",
+                    "Zahlungsziel": "14",
+                }
+        lieferant = Adresse()
         daten["Betriebsbezeichnung"] = None
         with self.assertRaises(ValueError):
             lieferant.fill_lieferant(daten)
@@ -236,6 +254,24 @@ class TestAdresse(unittest.TestCase):
             lieferant.fill_lieferant(daten)
         except ValueError:
             self.fail("raised ValueError unexpectedly!")
+
+    def test_fill_lieferant_throws_cond3(self):
+        """
+        Tests that wrong Kontakt in Stammdaten throws ValueError
+        """
+        daten = {
+                    "Anschrift": "Max Mustermann\nSoftware\nMusterstr. 17a\
+\n12345 Musterstadt",
+                    "Betriebsbezeichnung": "Max Mustermann - Software",
+                    "Bundesland": "Baden-Württemberg",
+                    "Kontakt": "Tel.: 01234-1234567\nEmail: max@mustermann.de",
+                    "Name": "Max Mustermann",
+                    "Umsatzsteuer": "Steuernummer: 12345/12345\
+\nFinanzamt Musterstadt",
+                    "Verzeichnis": "C:/Users/xxx/Documents",
+                    "Zahlungsziel": "14",
+                }
+        lieferant = Adresse()
         daten["Kontakt"] = None
         with self.assertRaises(ValueError):
             lieferant.fill_lieferant(daten)
@@ -256,6 +292,24 @@ class TestAdresse(unittest.TestCase):
             lieferant.fill_lieferant(daten)
         except ValueError:
             self.fail("raised ValueError unexpectedly!")
+
+    def test_fill_lieferant_throws_cond4(self):
+        """
+        Tests that wrong Name in Stammdaten throws ValueError
+        """
+        daten = {
+                    "Anschrift": "Max Mustermann\nSoftware\nMusterstr. 17a\
+\n12345 Musterstadt",
+                    "Betriebsbezeichnung": "Max Mustermann - Software",
+                    "Bundesland": "Baden-Württemberg",
+                    "Kontakt": "Tel.: 01234-1234567\nEmail: max@mustermann.de",
+                    "Name": "Max Mustermann",
+                    "Umsatzsteuer": "Steuernummer: 12345/12345\
+\nFinanzamt Musterstadt",
+                    "Verzeichnis": "C:/Users/xxx/Documents",
+                    "Zahlungsziel": "14",
+                }
+        lieferant = Adresse()
         daten["Name"] = None
         with self.assertRaises(ValueError):
             lieferant.fill_lieferant(daten)
@@ -270,6 +324,24 @@ class TestAdresse(unittest.TestCase):
             lieferant.fill_lieferant(daten)
         except ValueError:
             self.fail("raised ValueError unexpectedly!")
+
+    def test_fill_lieferant_throws_cond5(self):
+        """
+        Tests that wrong Umsatzsteuer in Stammdaten throws ValueError
+        """
+        daten = {
+                    "Anschrift": "Max Mustermann\nSoftware\nMusterstr. 17a\
+\n12345 Musterstadt",
+                    "Betriebsbezeichnung": "Max Mustermann - Software",
+                    "Bundesland": "Baden-Württemberg",
+                    "Kontakt": "Tel.: 01234-1234567\nEmail: max@mustermann.de",
+                    "Name": "Max Mustermann",
+                    "Umsatzsteuer": "Steuernummer: 12345/12345\
+\nFinanzamt Musterstadt",
+                    "Verzeichnis": "C:/Users/xxx/Documents",
+                    "Zahlungsziel": "14",
+                }
+        lieferant = Adresse()
         daten["Umsatzsteuer"] = None
         with self.assertRaises(ValueError):
             lieferant.fill_lieferant(daten)
@@ -288,6 +360,24 @@ class TestAdresse(unittest.TestCase):
             lieferant.fill_lieferant(daten)
         except ValueError:
             self.fail("raised ValueError unexpectedly!")
+
+    def test_fill_lieferant_throws_cond6(self):
+        """
+        Tests that wrong Zahlungsziel in Stammdaten throws ValueError
+        """
+        daten = {
+                    "Anschrift": "Max Mustermann\nSoftware\nMusterstr. 17a\
+\n12345 Musterstadt",
+                    "Betriebsbezeichnung": "Max Mustermann - Software",
+                    "Bundesland": "Baden-Württemberg",
+                    "Kontakt": "Tel.: 01234-1234567\nEmail: max@mustermann.de",
+                    "Name": "Max Mustermann",
+                    "Umsatzsteuer": "Steuernummer: 12345/12345\
+\nFinanzamt Musterstadt",
+                    "Verzeichnis": "C:/Users/xxx/Documents",
+                    "Zahlungsziel": "14",
+                }
+        lieferant = Adresse()
         daten["Zahlungsziel"] = None
         with self.assertRaises(ValueError):
             lieferant.fill_lieferant(daten)

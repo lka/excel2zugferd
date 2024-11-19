@@ -394,42 +394,14 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         self.save_button.pack(side=tk.LEFT, padx=PADX, pady=PADY)
         self.save_button.bind("<Return>", (lambda event: self.create_pdf()))
 
-    def create_pdf(self):
-        """
-        create the pdf
-        """
-        # print('entries:', entries)
-        if self.selected_lb_item is None:
-            mymsg = "Bitte erst ein Excel Tabellenblatt auswählen."
-            messagebox.showinfo("Information", mymsg)
-            return
-        if self.ini_file:
-            contentini_file = self.ini_file.read_ini_file()
-        if self.excel_file:
-            self.excel_file.read_sheet(self.selected_lb_item)
-        create_xml = contentini_file["ZugFeRD"].split("\n")[0] == "Ja"
-
-        #        msg = f"Ausgewählt wurde das Excel Sheet: \
-        #               {self.selected_lb_item}"
-        #        messagebox.showinfo("Information", msg)
-        try:
-            self.pdf = Pdf(
-                self.excel_file,
-                contentini_file,
-                create_xml,
-                self.logo_fn if Path(self.logo_fn).exists() else None,
-            )
-        except ValueError as e:
-            messagebox.showerror("Fehler in den Stammdaten", e)
-            return
-
+    def _fill_pdf(self, directory, create_xml):
         self.pdf.fill_pdf()
         outfile = None
         fn = None
         if self.selected_lb_item:
             fn = self.selected_lb_item + ".pdf"
             # print(contentini_file["Verzeichnis"], fn)
-            tmpfn = os.path.join(Path(contentini_file["Verzeichnis"])
+            tmpfn = os.path.join(Path(directory)
                                  .absolute(), fn)
             outfile = self.pdf.uniquify(tmpfn)
 
@@ -465,6 +437,37 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
             self.pdf.output(outfile)
         mymsg = f"Die Datei {outfile} wurde erstellt."
         messagebox.showinfo("Information", mymsg)
+
+    def create_pdf(self):
+        """
+        create the pdf
+        """
+        # print('entries:', entries)
+        if self.selected_lb_item is None:
+            mymsg = "Bitte erst ein Excel Tabellenblatt auswählen."
+            messagebox.showinfo("Information", mymsg)
+            return
+        if self.ini_file:
+            contentini_file = self.ini_file.read_ini_file()
+        if self.excel_file:
+            self.excel_file.read_sheet(self.selected_lb_item)
+        create_xml = contentini_file["ZugFeRD"].split("\n")[0] == "Ja"
+
+        #        msg = f"Ausgewählt wurde das Excel Sheet: \
+        #               {self.selected_lb_item}"
+        #        messagebox.showinfo("Information", msg)
+        try:
+            self.pdf = Pdf(
+                self.excel_file,
+                contentini_file,
+                create_xml,
+                self.logo_fn if Path(self.logo_fn).exists() else None,
+            )
+        except ValueError as e:
+            messagebox.showerror("Fehler in den Stammdaten", e)
+            return
+        directory = contentini_file["Verzeichnis"]
+        self._fill_pdf(directory, create_xml)
 
     def open_stammdaten(self):
         """

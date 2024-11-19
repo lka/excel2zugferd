@@ -278,7 +278,7 @@ class Adresse(object):
             self._fill_umsatzsteuer(daten)
             ziel = daten["Zahlungsziel"]
             if ziel is not None and len(ziel) > 0 and\
-                '\n' not in ziel:
+                    '\n' not in ziel:
                 self.zahlungsziel = ziel
             else:
                 raise ZZIEL_ERROR
