@@ -22,7 +22,7 @@ class TestAdresse(unittest.TestCase):
                           'should be None on init')
         self.assertIsNone(adresse.anschrift_line1,
                           'should be None on init')
-        self.assertIsNone(adresse.anschrift_line2,
+        self.assertIsNone(adresse.adresszusatz,
                           'should be None on init')
         self.assertIsNone(adresse.strasse,
                           'should be None on init')
@@ -105,7 +105,7 @@ class TestAdresse(unittest.TestCase):
         BEZ = "Software AG"
         NAME = 'Max Mustermann'
         AN1 = 'Maximilian Mustermann'
-        AN2 = 'Softwareentwicklung'
+        ZUS = 'z.H. Herrn Müller'
         ORT = 'Musterstadt'
         PLZ = '12345'
         STR = 'Musterstrasse'
@@ -127,9 +127,9 @@ class TestAdresse(unittest.TestCase):
         adr.bundesland = COUNTY
         self.assertEqual(adr.get_anschrift(),
                          f"{AN1}\n{STR} {HNR}\n{PLZ} {ORT}", MSG)
-        adr.anschrift_line2 = AN2
+        adr.adresszusatz = ZUS
         self.assertEqual(adr.get_anschrift(),
-                         f"{AN1}\n{AN2}\n{STR} {HNR}\n{PLZ} {ORT}", MSG)
+                         f"{AN1}\n{ZUS}\n{STR} {HNR}\n{PLZ} {ORT}", MSG)
 
     def test_get_kontakt(self):
         """Tests get_kontakt"""
@@ -175,7 +175,7 @@ class TestAdresse(unittest.TestCase):
         lieferant = Adresse()
         lieferant.fill_lieferant(daten)
         self.assertEqual(lieferant.anschrift_line1, "Max Mustermann", MSG)
-        self.assertEqual(lieferant.anschrift_line2, "Software", MSG)
+        self.assertEqual(lieferant.adresszusatz, "Software", MSG)
         self.assertEqual(lieferant.betriebsbezeichnung,
                          "Max Mustermann - Software", MSG)
         self.assertEqual(lieferant.bundesland, "Baden-Württemberg", MSG)

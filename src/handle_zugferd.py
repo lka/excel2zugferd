@@ -15,6 +15,8 @@ from drafthorse.models.party import TaxRegistration
 from drafthorse.pdf import attach_xml
 from drafthorse.models import NS_QDT
 
+from src.handle_other_objects import Adresse
+
 
 class ZugFeRD:
     """Class ZugFeRD"""
@@ -87,40 +89,54 @@ class ZugFeRD:
                 .city_name = arr[-1].split(" ", 1)[1]
             self.doc.trade.agreement.buyer.address.country_id = "DE"
 
-    def add_my_company(self, adr, company, kontakt, ustid):
+    def _add_my_adresse(self, lieferant: Adresse):
+        self.doc.trade.agreement.seller.id = lieferant.betriebsbezeichnung
+
+        self.doc.trade.agreement.seller.name = lieferant.betriebsbezeichnung
+        if lieferant.adresszusatz:
+            self.doc.trade.agreement.\
+                seller.address.line_three = lieferant.adresszusatz
+        if lieferant.postfach:
+            self.doc.trade.agreement.seller.address\
+                .line_two = lieferant.postfach
+        else:
+            self.doc.trade.agreement.\
+                seller.address.line_one = (
+                    lieferant.strasse + ' ' + lieferant.hausnummer
+                )
+        self.doc.trade.agreement.seller.address\
+            .postcode = lieferant.plz
+        self.doc.trade.agreement.seller.address\
+            .city_name = lieferant.ort
+        self.doc.trade.agreement.seller.address.country_id = "DE"
+
+    def _add_my_kontakt(self, lieferant: Adresse):
+        if lieferant.name:
+            self.doc.trade.agreement.seller.\
+                contact.person_name = lieferant.name
+        if lieferant.telefon:
+            self.doc.trade.agreement.seller.\
+                contact.telephone.number = lieferant.telefon
+        if lieferant.fax:
+            self.doc.trade.agreement.seller.\
+                contact.telephone.fax.number = lieferant.fax
+        if lieferant.email:
+            self.doc.trade.agreement.seller.\
+                contact.email.address = lieferant.email
+
+    def add_my_company(self, lieferant: Adresse):
         """Add Address of my company to zugferd"""
-        self.doc.trade.agreement.seller.id = company
-
-        arr = adr.split("\n")
-        self.doc.trade.agreement.seller.name = (
-            arr[0] if len(arr) > 1 else adr if len(adr) > 0 else "unbekannt"
-        )
-        if len(arr) > 2:
-            self.doc.trade.agreement.seller.address.line_one = arr[1]
-        if len(arr) > 3:
-            self.doc.trade.agreement.seller.address.line_one = arr[-2]
-        if len(arr) > 1:
-            self.doc.trade.agreement.seller.address\
-                .postcode = arr[-1].split(" ", 1)[0]
-            self.doc.trade.agreement.seller.address\
-                .city_name = arr[-1].split(" ", 1)[1]
-            self.doc.trade.agreement.seller.address.country_id = "DE"
-
-        arr = kontakt.split("\n")
-        self.doc.trade.agreement.seller.contact.telephone.number = (
-            arr[0].split(" ", 1)[1] if len(arr) > 0 and len(arr[0]) > 0
-            else " "
-        )
-        self.doc.trade.agreement.seller.contact.email.address = (
-            arr[1].split(" ", 1)[1]
-            if len(arr) > 1 and len(arr[1]) > 0 and
-            len(arr[1].split(" ", 1)) > 0
-            else " "
-        )
+        self._add_my_adresse(lieferant)
+        self._add_my_kontakt(lieferant)
         taxreg = TaxRegistration()
-        taxreg.id = ("FC", ustid)
+        taxreg.id = ("FC", lieferant.steuernr)
         self.doc.trade.agreement.seller.tax_registrations.add(taxreg)
         # self.doc.trade.agreement.seller.tax = ustid
+
+    def add_verwendungszweck(self, rg_nr: str, datum: str) -> None:
+        """Add Verwendungszweck to zugferd BT-83"""
+        self.doc.trade.settlement.payment_reference =\
+            f"{rg_nr['key']} {rg_nr['value']} vom {datum}"
 
     def add_items(self, dat, the_tax: str):
         """add items to invoice"""
@@ -249,8 +265,8 @@ class ZugFeRD:
         # print(searchstr)
         nsmap = searchstr.split(' ')
         _QDT = 'xmlns:qdt='
-        if _QDT not in nsmap:
-            QDT = _QDT + '\"' + NS_QDT + '\"'
+        QDT = _QDT + '\"' + NS_QDT + '\"'
+        if QDT not in nsmap:
             nsmap.insert(1, QDT)
             decoded = decoded.replace(searchstr, ' '.join(nsmap))
         # print ('MAP:', nsmap)

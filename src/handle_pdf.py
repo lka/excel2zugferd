@@ -14,6 +14,8 @@ import src.handle_zugferd as handle_zugferd
 import src.handle_girocode as gc
 from src.handle_other_objects import Adresse, Konto, Steuerung
 
+GERMAN_DATE = "%d.%m.%Y"
+
 
 class PDF(FPDF):
     """
@@ -626,39 +628,27 @@ class Pdf(PDF):
                 + self.lieferant.get_umsatzsteuer()
             )
             self.zugferd.add_note(txt)
-            self.zugferd.add_my_company(
-                self.lieferant.get_anschrift(),
-                self.lieferant.betriebsbezeichnung,
-                self.lieferant.get_kontakt(),
-                self.lieferant.steuernr or "",
-            )
+            self.zugferd.add_my_company(self.lieferant)
 
-    def fill_pdf(self) -> None:
-        """
-        set own data
-        """
-        self.fill_header()
-        self.fill_adressen()
+    def _fill_girocode(self, brutto, rg_nr, datum):
+        girocode = gc.Handle_Girocode(self.lieferantenkonto.bic,
+                                      self.lieferantenkonto.iban,
+                                      self.lieferantenkonto.name)
+        self.qrcode_img = girocode.girocodegen(
+            float(brutto.split(' ')[0].replace(',', '.')),
+            f"{rg_nr['key']} {rg_nr['value']} vom {datum}")
+        self.print_qrcode(self.qrcode_img)
 
-        kleinunternehmen = self.lieferantensteuerung.is_kleinunternehmen
+    def _fill_kleinunternehmen(self, kleinunternehmen) -> str:
         steuerbefreiungsgrund = None
         if kleinunternehmen:
             steuerbefreiungsgrund = "Gemäß § 19 UStG wird keine \
 Umsatzsteuer berechnet."
             self.print_kleinunternehmerregelung(steuerbefreiungsgrund)
+        return steuerbefreiungsgrund
 
-        create_girocode = self.lieferantensteuerung.create_girocode
-
-        an = self.daten.get_address_of_customer() if self.daten else ""
-        if an:
-            self.print_adress(an)
-
-        rg_nr = self.daten.get_invoice_number() if self.daten else {}
-
-        today = datetime.now()
-        german_date = "%d.%m.%Y"
-        datum = today.strftime(german_date)
-        ueberweisungsdatum = (
+    def _get_ueberweisungsdatum(self, today: datetime) -> datetime:
+        return (
             today
             + timedelta(
                 days=int(
@@ -668,34 +658,25 @@ Umsatzsteuer berechnet."
                 )
             )
         )
-        if self.lieferantensteuerung.create_xml:
-            self.zugferd.add_rgnr(f"{rg_nr[list(rg_nr.keys())[0]]}")
-            self.zugferd.add_rechnungsempfaenger(an)
 
-        self.print_bezug(
-            f"{list(rg_nr.keys())[0]} \
-{rg_nr[list(rg_nr.keys())[0]]} vom {datum}"
-        )
+    def _get_rg_nr(self) -> list:
+        rg_nr = self.daten.get_invoice_number() if self.daten else {}
+        return {'key': list(rg_nr.keys())[0],
+                'value': rg_nr[list(rg_nr.keys())[0]]}
 
+    def _get_the_tax(self, kleinunternehmen: bool) -> str:
+        return "0.00" if kleinunternehmen else "19.00"
+
+    def _fill_positions(self, kleinunternehmen: bool) -> None:
         # print(self.split_dataframe_by_SearchValue(AN, "Pos."))
         df = self.daten.get_invoice_positions() if self.daten else []
         if df is not None:
             self.print_positions(df)
-        the_tax = "0.00" if kleinunternehmen else "19.00"
+        the_tax = self._get_the_tax(kleinunternehmen)
         if self.lieferantensteuerung.create_xml:
             self.zugferd.add_items(df, the_tax)
 
-        summen = self.daten.get_invoice_sums() if self.daten else []
-        brutto = summen[-1][-1]
-        self.print_summen(summen)
-        if self.lieferantensteuerung.create_xml:
-            self.zugferd.add_gesamtsummen(summen, the_tax,
-                                          steuerbefreiungsgrund)
-            self.zugferd.add_zahlungsziel(
-                f"Bitte überweisen Sie den Betrag von {brutto} bis zum",
-                ueberweisungsdatum,
-            )
-
+    def _fill_abspann(self, brutto: str, ueberweisungsdatum: datetime) -> None:
         abspann = (
             self.lieferantensteuerung.abspann
             if len(self.lieferantensteuerung.abspann) > 1
@@ -703,15 +684,54 @@ Umsatzsteuer berechnet."
         )
         self.print_abspann(
             f"Bitte überweisen Sie den Betrag von {brutto} bis zum \
-{ueberweisungsdatum.strftime(german_date)} auf u.a. Konto.\n\n{abspann}"
+{ueberweisungsdatum.strftime(GERMAN_DATE)} auf u.a. Konto.\n\n{abspann}"
         )
 
-        if create_girocode:
-            girocode = gc.Handle_Girocode(self.lieferantenkonto.bic,
-                                          self.lieferantenkonto.iban,
-                                          self.lieferantenkonto.name)
-            self.qrcode_img = girocode.girocodegen(
-                float(brutto.split(' ')[0].replace(',', '.')),
-                f"{list(rg_nr.keys())[0]} {rg_nr[list(rg_nr.keys())[0]]} \
-vom {datum}")
-            self.print_qrcode(self.qrcode_img)
+    def fill_pdf(self) -> None:
+        """
+        set own data
+        """
+        self.fill_header()
+        self.fill_adressen()
+
+        kleinunternehmen = self.lieferantensteuerung.is_kleinunternehmen
+        steuerbefreiungsgrund = self._fill_kleinunternehmen(kleinunternehmen)
+
+        an = self.daten.get_address_of_customer() if self.daten else ""
+        if an:
+            self.print_adress(an)
+
+        rg_nr = self._get_rg_nr()
+        # self.daten.get_invoice_number() if self.daten else {}
+
+        today = datetime.now()
+        datum = today.strftime(GERMAN_DATE)
+
+        ueberweisungsdatum = self._get_ueberweisungsdatum(today)
+        if self.lieferantensteuerung.create_xml:
+            self.zugferd.add_rgnr(f"{rg_nr['value']}")
+            self.zugferd.add_rechnungsempfaenger(an)
+
+        self.print_bezug(
+            f"{rg_nr['key']} {rg_nr['value']} vom {datum}"
+        )
+
+        self._fill_positions(kleinunternehmen)
+
+        summen = self.daten.get_invoice_sums() if self.daten else []
+        brutto = summen[-1][-1]
+        self.print_summen(summen)
+        if self.lieferantensteuerung.create_xml:
+            self.zugferd.add_gesamtsummen(summen,
+                                          self._get_the_tax(kleinunternehmen),
+                                          steuerbefreiungsgrund)
+            self.zugferd.add_zahlungsziel(
+                f"Bitte überweisen Sie den Betrag von {brutto} bis zum",
+                ueberweisungsdatum,
+            )
+            self.zugferd.add_verwendungszweck(rg_nr, datum)
+
+        self._fill_abspann(brutto, ueberweisungsdatum)
+
+        if self.lieferantensteuerung.create_girocode:
+            self._fill_girocode(brutto, rg_nr, datum)

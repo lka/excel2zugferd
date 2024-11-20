@@ -42,6 +42,12 @@ Als Vorlage benutzen Sie bitte die Datei TestRechnung.xlsx.
 
 ## Versionen
 
+### 0.10.0
+
+- Verwendungszweck im XML Part eingebaut.
+- Die Stammdateneingabe bei Fehleingaben um Fehlermeldungen erweitert.
+- Die Validierung des erzeugten ZUGFeRD Dokuments auf https://www.portinvoice.com ist erfolgreich (Ohne Fehler und Warnungen).
+
 ### 0.9.0
 
 - Die Erstellung eines GiroCode's im Dokument kann jetzt in den Stammdaten eingestellt werden.

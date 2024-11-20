@@ -477,23 +477,7 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         s_oberfl = OberflaecheIniFile(self.fields, self.ini_file, self.root)
         s_oberfl.loop()
 
-    def open_file(self):
-        """
-        Open File
-        """
-        if self.ini_file:
-            contentini_file = self.ini_file.read_ini_file()
-        doc_dir = Path.home()
-        if Path(Path.joinpath(doc_dir, "Documents")).is_dir():
-            doc_dir = Path.joinpath(doc_dir, "Documents")
-        init_dir = (
-            contentini_file["Verzeichnis"]
-            if contentini_file
-            and "Verzeichnis" in contentini_file
-            and len(contentini_file["Verzeichnis"]) > 0
-            else doc_dir
-        )
-
+    def _open_file(self, init_dir, contentini_file):
         # print(init_dir, "Verzeichnis" in contentini_file, contentini_file)
         self.filename = filedialog.askopenfilename(
             title="Bitte die Excel Datei auswählen",
@@ -517,6 +501,25 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
                 mymsg = f"Ini-File kann nicht beschrieben werden.\n\
                     {format_ioerr(ex)}"
                 messagebox.showerror("Fehler", mymsg)
+
+    def open_file(self):
+        """
+        Open File
+        """
+        if self.ini_file:
+            contentini_file = self.ini_file.read_ini_file()
+        doc_dir = Path.home()
+        if Path(Path.joinpath(doc_dir, "Documents")).is_dir():
+            doc_dir = Path.joinpath(doc_dir, "Documents")
+        init_dir = (
+            contentini_file["Verzeichnis"]
+            if contentini_file
+            and "Verzeichnis" in contentini_file
+            and len(contentini_file["Verzeichnis"]) > 0
+            else doc_dir
+        )
+
+        self._open_file(init_dir, contentini_file)
 
     def mouse_click(self, event):  # pylint: disable=unused-argument
         """

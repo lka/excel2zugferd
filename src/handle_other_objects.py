@@ -4,7 +4,8 @@ Module handles Classes Adresse and Konto
 KONTAKT_ERROR = ValueError("'Kontakt': mindestens 2, maximal 3 Zeilen\n\
 Tel.: 012345-1234\nFax: 012345-1235 (optional)\nEmail: xyz@abcdef.de")
 ANSCHRIFT_ERROR = ValueError("'Anschrift': mindestens 3, maximal 4 Zeilen\n\
-Adresszeile 1\nAdresszeile 2 (optional)\nStrasse Hausnummer\nPLZ Ortsname")
+Adresszeile 1\nAdresszusatz (optional)\nStrasse Hausnummer\n\
+PLZ Ortsname oder Postfach 1234")
 USTID_ERROR = ValueError("'Umsatzsteuer': 2 Zeilen\n\
 Steuernummer: 12345/12345\nFinanzamt Ortsname")
 KONTO_ERROR = ValueError("'Konto': 3 Zeilen\n\
@@ -20,9 +21,10 @@ class Adresse(object):
         self._betriebsbezeichnung = None
         self._name = None
         self._anschrift_line1 = None
-        self._anschrift_line2 = None
+        self._postfach = None
         self._strasse = None
         self._hausnummer = None
+        self._adresszusatz = None
         self._plz = None
         self._ort = None
         self._bundesland = None
@@ -68,12 +70,12 @@ class Adresse(object):
         self._anschrift_line1 = value
 
     @property
-    def anschrift_line2(self):
-        return self._anschrift_line2
+    def postfach(self):
+        return self._postfach
 
-    @anschrift_line2.setter
-    def anschrift_line2(self, value):
-        self._anschrift_line2 = value
+    @postfach.setter
+    def postfach(self, value):
+        self._postfach = value
 
     @property
     def strasse(self):
@@ -90,6 +92,14 @@ class Adresse(object):
     @hausnummer.setter
     def hausnummer(self, value):
         self._hausnummer = value
+
+    @property
+    def adresszusatz(self):
+        return self._adresszusatz
+
+    @adresszusatz.setter
+    def adresszusatz(self, value):
+        self._adresszusatz = value
 
     @property
     def plz(self):
@@ -168,8 +178,11 @@ class Adresse(object):
             filter(None,
                    [
                             self.anschrift_line1,
-                            self.anschrift_line2,
-                            ' '.join([self.strasse, self.hausnummer]),
+                            self.adresszusatz,
+                            ' '.join(['Postfach:', self.postfach])
+                            if self.postfach else None,
+                            ' '.join([self.strasse, self.hausnummer])
+                            if not self.postfach else None,
                             ' '.join([self.plz, self.ort]),
                     ]
                    )
@@ -195,14 +208,28 @@ class Adresse(object):
                    ])
         )
 
-    def _fill_str_hnr_plz_ort(self, strasse, ort):
-        sub = strasse.split(' ', -1)
-        self.strasse = sub[0]
-        if len(sub) > 1:
-            self.hausnummer = sub[1]
+    def _fill_postfach(self, postfach):
+        sub = postfach.split(' ', -1)
+        if len(sub) == 2:
+            self.postfach = sub[1]
+        else:
+            raise ANSCHRIFT_ERROR
+
+    def _fill_str_hnr(self, strasse):
+        if 'Postfach' in strasse:
+            self._fill_postfach(strasse)
+        else:
+            sub = strasse.split(' ', -1)
+            self.strasse = sub[0]
+            if len(sub) == 2:
+                self.hausnummer = sub[1]
+            else:
+                raise ANSCHRIFT_ERROR
+
+    def _fill_plz_ort(self, ort):
         sub = ort.split(' ', 1)
         self.plz = sub[0]
-        if len(sub) > 1:
+        if len(sub) == 2:
             self.ort = sub[1]
         else:
             raise ANSCHRIFT_ERROR
@@ -215,10 +242,12 @@ class Adresse(object):
             raise ANSCHRIFT_ERROR
         self.anschrift_line1 = arr[0]
         if len(arr) > 3:
-            self.anschrift_line2 = arr[1]
-            self._fill_str_hnr_plz_ort(arr[2], arr[3])
+            self.adresszusatz = arr[1]
+            self._fill_str_hnr(arr[2])
+            self._fill_plz_ort(arr[3])
         else:
-            self._fill_str_hnr_plz_ort(arr[1], arr[2])
+            self._fill_str_hnr(arr[1])
+            self._fill_plz_ort(arr[2])
 
     def _fill_tel_fax_email(self, elem, value):
         if len(value) == 0:
@@ -257,31 +286,40 @@ class Adresse(object):
         self.steuernr = sub[1]
         self.finanzamt = arr[1]
 
+    def _fill_betrieb(self, daten):
+        betrieb = daten['Betriebsbezeichnung']
+        if (betrieb is not None) and (len(betrieb) > 0) and\
+                ('\n' not in betrieb):
+            self.betriebsbezeichnung = betrieb
+        else:
+            raise BETRIEB_ERROR
+
+    def _fill_name(self, daten):
+        name = daten['Name']
+        if name is not None and len(name) > 0 and\
+                '\n' not in name:
+            self.name = name
+        else:
+            raise NAME_ERROR
+
+    def _fill_zahlungsziel(self, daten):
+        ziel = daten["Zahlungsziel"]
+        if ziel is not None and len(ziel) > 0 and\
+                '\n' not in ziel:
+            self.zahlungsziel = ziel
+        else:
+            raise ZZIEL_ERROR
+
     def fill_lieferant(self, daten=None) -> None:
         """fills Adresse of Lieferant from stammdaten"""
         if daten:
-            betrieb = daten['Betriebsbezeichnung']
-            if (betrieb is not None) and (len(betrieb) > 0) and\
-                    ('\n' not in betrieb):
-                self.betriebsbezeichnung = betrieb
-            else:
-                raise BETRIEB_ERROR
-            name = daten['Name']
-            if name is not None and len(name) > 0 and\
-                    '\n' not in name:
-                self.name = name
-            else:
-                raise NAME_ERROR
+            self._fill_betrieb(daten)
+            self._fill_name(daten)
             self._fill_anschrift(daten)
             self.bundesland = daten["Bundesland"]
             self._fill_kontakt(daten)
             self._fill_umsatzsteuer(daten)
-            ziel = daten["Zahlungsziel"]
-            if ziel is not None and len(ziel) > 0 and\
-                    '\n' not in ziel:
-                self.zahlungsziel = ziel
-            else:
-                raise ZZIEL_ERROR
+            self._fill_zahlungsziel(daten)
             # print(repr(self))
 
 
