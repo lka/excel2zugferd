@@ -42,6 +42,11 @@ Als Vorlage benutzen Sie bitte die Datei TestRechnung.xlsx.
 
 ## Versionen
 
+### 0.11.0
+
+- Eingabe einer Umsatzsteuer-ID ermöglicht.
+- Die Validierung des erzeugten ZUGFeRD Dokuments auf https://www.portinvoice.com ist erfolgreich (Ohne Fehler und Warnungen).
+
 ### 0.10.0
 
 - Verwendungszweck im XML Part eingebaut.

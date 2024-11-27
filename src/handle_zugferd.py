@@ -129,7 +129,8 @@ class ZugFeRD:
         self._add_my_adresse(lieferant)
         self._add_my_kontakt(lieferant)
         taxreg = TaxRegistration()
-        taxreg.id = ("FC", lieferant.steuernr)
+        taxreg.id = ("VA", lieferant.steuerid)\
+            if lieferant.steuerid else ("FC", lieferant.steuernr)
         self.doc.trade.agreement.seller.tax_registrations.add(taxreg)
         # self.doc.trade.agreement.seller.tax = ustid
 

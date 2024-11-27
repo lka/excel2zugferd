@@ -6,8 +6,9 @@ Tel.: 012345-1234\nFax: 012345-1235 (optional)\nEmail: xyz@abcdef.de")
 ANSCHRIFT_ERROR = ValueError("'Anschrift': mindestens 3, maximal 4 Zeilen\n\
 Adresszeile 1\nAdresszusatz (optional)\nStrasse Hausnummer\n\
 PLZ Ortsname oder Postfach 1234")
-USTID_ERROR = ValueError("'Umsatzsteuer': 2 Zeilen\n\
-Steuernummer: 12345/12345\nFinanzamt Ortsname")
+USTID_ERROR = ValueError("'Umsatzsteuer': 1-2 Zeilen\n\
+Steuernummer: 12345/12345\nFinanzamt Ortsname\n\noder\n\n\
+Umsatzsteuer-ID: DE999999999")
 KONTO_ERROR = ValueError("'Konto': 3 Zeilen\n\
 Kontoinhaber\nIBAN: DE12345678901\nBIC: XYZABCDEF")
 BETRIEB_ERROR = ValueError("'Betriebsbezeichnung' muss ausgefüllt sein.")
@@ -32,6 +33,7 @@ class Adresse(object):
         self._fax = None
         self._email = None
         self._steuernr = None
+        self._steuerid = None
         self._finanzamt = None
         self._zahlungsziel = None
 
@@ -43,7 +45,8 @@ class Adresse(object):
  plz: '{self.plz}', ort: {self.ort}',\
  bundesland: '{self.bundesland}', telefon: '{self.telefon}',\
  fax: '{self.fax}', email: '{self.email}', steuernr: '{self.steuernr}',\
- finanzamt: '{self.finanzamt}', zahlungsziel: '{self.zahlungsziel}')"
+ finanzamt: '{self.finanzamt}', steuerid: '{self.steuerid}',\
+ zahlungsziel: '{self.zahlungsziel}')"
 
     @property
     def betriebsbezeichnung(self):
@@ -166,6 +169,14 @@ class Adresse(object):
         self._finanzamt = value
 
     @property
+    def steuerid(self):
+        return self._steuerid
+
+    @steuerid.setter
+    def steuerid(self, value):
+        self._steuerid = value
+
+    @property
     def zahlungsziel(self):
         return self._zahlungsziel
 
@@ -202,9 +213,11 @@ class Adresse(object):
         return '\n'.join(
             filter(None,
                    [
-                       'Steuernummer: ' +
-                       self.steuernr if self.steuernr else None,
-                       self.finanzamt,
+                       ('Steuernummer: ' + self.steuernr)
+                       if self.steuernr else None,
+                       self.finanzamt if self.steuernr else None,
+                       ('Umsatzsteuer-ID: ' + self.steuerid)
+                       if self.steuerid else None,
                    ])
         )
 
@@ -278,13 +291,17 @@ class Adresse(object):
         if daten["Umsatzsteuer"] is None:
             raise USTID_ERROR
         arr = daten["Umsatzsteuer"].split('\n')
-        if len(arr) != 2:
-            raise USTID_ERROR
         sub = arr[0].split()
         if len(sub) != 2:
             raise USTID_ERROR
-        self.steuernr = sub[1]
-        self.finanzamt = arr[1]
+        if len(arr) >= 1 and 'Umsatzsteuer-ID' in sub[0]:
+            self.steuerid = sub[1]
+            self.finanzamt = None
+        else:
+            if len(arr) != 2:
+                raise USTID_ERROR
+            self.steuernr = sub[1]
+            self.finanzamt = arr[1]
 
     def _fill_betrieb(self, daten):
         betrieb = daten['Betriebsbezeichnung']

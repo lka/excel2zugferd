@@ -155,6 +155,38 @@ class TestAdresse(unittest.TestCase):
         self.assertEqual(adr.get_umsatzsteuer(),
                          f"Steuernummer: {USTNR}\n{AMT}")
 
+    def test_get_umsatzsteuer_ID(self):
+        """Tests get_umsatzsteuer with Umsatzsteuer-ID"""
+        adr = Adresse()
+        USTNR = 'DE123456789'
+        adr.steuerid = USTNR
+        self.assertEqual(adr.get_umsatzsteuer(),
+                         f"Umsatzsteuer-ID: {USTNR}")
+
+    def test__fill_umsatzsteuer(self):
+        """Tests _fill_umsatzsteuer with Steuernummer"""
+        MSG = "should be equal"
+        adr = Adresse()
+        AMT = 'Finanzamt Musterstadt'
+        USTNR = '12345/12345'
+        adr._fill_umsatzsteuer({'Umsatzsteuer':
+                                f"Steuernummer: {USTNR}\n{AMT}"})
+        self.assertEqual(adr.steuernr, USTNR, MSG)
+        self.assertEqual(adr.finanzamt, AMT, MSG)
+        self.assertIsNone(adr.steuerid)
+
+    def test__fill_umsatzsteuer_ID(self):
+        """Tests _fill_umsatzsteuer with Umsatzsteuer-ID"""
+        MSG = "should be equal"
+        adr = Adresse()
+        AMT = 'Finanzamt Musterstadt'
+        USTNR = 'DE123456789'
+        adr._fill_umsatzsteuer({'Umsatzsteuer':
+                                f"Umsatzsteuer-ID: {USTNR}\n{AMT}"})
+        self.assertEqual(adr.steuerid, USTNR, MSG)
+        self.assertIsNone(adr.finanzamt)
+        self.assertIsNone(adr.steuernr)
+
     def test_fill_lieferant(self):
         """
         Tests that procedure fill_lieferant works
