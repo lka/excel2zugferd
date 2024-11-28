@@ -220,6 +220,34 @@ class TestExcelContent(TestCase):
         self.assertTrue(np.array_equiv(value, expected), "should be equal")
         # type: ignore
 
+    def test__split_dataframe_by_search_value_unknown_column(self):
+        """soll einen ValueError liefern"""
+        self.xlsx.read_sheet("Rechnung2")
+        with self.assertRaises(ValueError):
+            self.xlsx._split_dataframe_by_search_value(
+                "Daneben", "Pos."
+            )
+        try:
+            self.xlsx._split_dataframe_by_search_value(
+                "An:", "Pos."
+            )
+        except ValueError:
+            self.fail('raised ValueError unexpectedly!')
+
+    def test__split_dataframe_by_search_value_unknown_search(self):
+        """soll einen ValueError liefern"""
+        self.xlsx.read_sheet("Rechnung2")
+        with self.assertRaises(ValueError):
+            self.xlsx._split_dataframe_by_search_value(
+                "An:", "Falscher Suchstring"
+            )
+        try:
+            self.xlsx._split_dataframe_by_search_value(
+                "An:", "Pos."
+            )
+        except ValueError:
+            self.fail('raised ValueError unexpectedly!')
+
     def test_get_invoice_sums(self):
         """Lies die Summen aus dem Excel Sheet"""
         self.xlsx.read_sheet("Rechnung2")
@@ -239,6 +267,34 @@ class TestExcelContent(TestCase):
         # print(retval)
         self.assertEqual(retval, expected, "should be equal")
 
+    def test_search_cell_right_of_unknown_search_value(self):
+        """Lies die Summen aus dem Excel Sheet"""
+        sums = "Unnamed: 5"
+        self.xlsx.read_sheet("Rechnung2")
+        # print(retval)
+        with self.assertRaises(ValueError):
+            float(self.xlsx
+                  .search_cell_right_of(sums, 'Bruttobeträgli'))
+        try:
+            float(self.xlsx
+                  .search_cell_right_of(sums, 'Bruttobetrag'))
+        except ValueError:
+            self.fail("raised ValueError unexpectedly!")
+
+    def test_search_cell_right_of_unknown_column(self):
+        """Lies die Summen aus dem Excel Sheet"""
+        sums = "Falsche Spalte"
+        self.xlsx.read_sheet("Rechnung2")
+        # print(retval)
+        with self.assertRaises(ValueError):
+            float(self.xlsx
+                  .search_cell_right_of(sums, 'Bruttobetrag'))
+        sums = "Unnamed: 5"
+        try:
+            float(self.xlsx
+                  .search_cell_right_of(sums, 'Bruttobetrag'))
+        except ValueError:
+            self.fail("raised ValueError unexpectedly!")
 
 # if __name__ == "__main__":
 #     unittest.main()

@@ -395,7 +395,12 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         self.save_button.bind("<Return>", (lambda event: self.create_pdf()))
 
     def _fill_pdf(self, directory, create_xml):
-        self.pdf.fill_pdf()
+        try:
+            self.pdf.fill_pdf()
+        except ValueError as e:
+            messagebox.showerror("Fehler in den Daten", e)
+            return
+
         outfile = None
         fn = None
         if self.selected_lb_item:

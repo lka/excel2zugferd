@@ -38,10 +38,25 @@ class ExcelContent:
         """
         if self.daten is None:
             return ""
-        arr = self.daten.loc[self.daten[column_name] == search_value]
-        # print(arr, arr.iat[0, -1], np.NaN, math.isnan(arr.iat[0, -1]))
-        return arr.iat[0, -1] if not math.isnan(arr.iat[0, -1]) else \
-            arr.iat[0, 1]
+        SEARCH_ERR = ValueError(f"Ich konnte '{search_value}'\
+ in Spalte '{column_name}' nicht finden.")
+        COL_ERR = ValueError(f"Ich konnte\
+ die Spalte '{column_name}' nicht finden.")
+        try:
+            arr = self.daten.loc[self.daten[column_name] == search_value]
+        except IndexError:
+            raise SEARCH_ERR
+        except KeyError:
+            raise COL_ERR
+        retval = []
+        try:
+            retval = arr.iat[0, -1] if not math.isnan(arr.iat[0, -1]) else \
+                arr.iat[0, 1]
+        except TypeError:
+            raise SEARCH_ERR
+        except IndexError:
+            raise SEARCH_ERR
+        return retval
 
     def _get_index_of_nan(self, df) -> int:
         """get first index of next NaN"""
@@ -59,7 +74,10 @@ class ExcelContent:
         return "\n".join(an[0:nan_idx])
 
     def _split_dataframe_by_search_value(self, column_name: str,
-                                         search_value: str):
+                                         search_value: str,
+                                         datum: str = "Datum",
+                                         preis: str = "Preis",
+                                         summe: str = "Summe"):
         """
         Search in specified column for search_value return rows until next NaN
         as numpy dataFrame with all cells as strings
@@ -68,9 +86,22 @@ class ExcelContent:
         """
         if self.daten is None:
             return None
-        line = self.daten[self.daten[column_name] == search_value]
+        SEARCH_ERR = ValueError(f"Ich konnte '{search_value}'\
+ in Spalte '{column_name}' nicht finden.")
+        COL_ERR = ValueError(f"Ich konnte\
+ die Spalte '{column_name}' nicht finden.")
+        try:
+            line = self.daten[self.daten[column_name] == search_value]
+        except KeyError:
+            raise COL_ERR
+        except IndexError:
+            raise SEARCH_ERR
         # print(line)
-        start_index = int(line.index[0]) + 1
+        try:
+            start_index = int(line.index[0]) + 1
+        except IndexError:
+            raise SEARCH_ERR
+
         tmpdf = self.daten.iloc[
             start_index : len(self.daten), :  # noqa: E203
         ]
@@ -79,51 +110,54 @@ class ExcelContent:
         retval.columns = line.loc[int(line.index[0])]
         # retval.style.format({"Datum": lambda t: t.strftime("%d.%m.%Y")})
         # print (retval["Datum"])
-        retval["Datum"] = pd.to_datetime(retval["Datum"], errors="coerce").dt\
+        retval[datum] = pd.to_datetime(retval[datum], errors="coerce").dt\
             .strftime("%d.%m.%Y")
         # print (retval["Datum"])
         # pattern = "{:.2f} €".format
         # retval.to_string(formatters={'Preis': pattern, 'Summe': pattern})
         # print(retval)
-        retval["Preis"] = (
-            retval["Preis"]
+        retval[preis] = (
+            retval[preis]
             .apply("{:.2f} €".format)
             .apply(lambda x: x.replace(".", ","))
         )
-        retval["Summe"] = (
-            retval["Summe"]
+        retval[summe] = (
+            retval[summe]
             .apply("{:.2f} €".format)
             .apply(lambda x: x.replace(".", ","))
         )
 
         return np.r_[line.values, retval.astype(str).values]
 
-    def get_address_of_customer(self):
+    def get_address_of_customer(self, anschrift: str = "An:"):
         """returns address of customer in Excel Sheet with \\n joined values"""
-        return self._search_anschrift("An:")
+        return self._search_anschrift(anschrift)
 
-    def get_invoice_number(self):
+    def get_invoice_number(self, spalte: str = "An:",
+                           rg_nr: str = "Rechnungs-Nr:"):
         """returns tuple ('InvoiceNumberText', invoiceNumber)"""
-        return {"Rechnungs-Nr:": self.search_cell_right_of("An:",
-                                                           "Rechnungs-Nr:")}
+        return {rg_nr: self.search_cell_right_of(spalte, rg_nr)}
 
-    def get_invoice_positions(self):
+    def get_invoice_positions(self, spalte: str = "An:", search: str = "Pos."):
         """return array of array of positions for invoice"""
-        return self._split_dataframe_by_search_value("An:", "Pos.")
+        return self._split_dataframe_by_search_value(spalte, search)
 
-    def get_invoice_sums(self):
+    def get_invoice_sums(self,
+                         spalte: str = "Unnamed: 5",
+                         sum: str = "Summe",
+                         USt: str = "Umsatzsteuer 19%",
+                         bruttobetr: str = "Bruttobetrag"):
         """return array of invoice sums"""
-        sums = "Unnamed: 5"
         netto = (
-            f"{float(self.search_cell_right_of(sums, 'Summe')):.2f} €"
+            f"{float(self.search_cell_right_of(spalte, sum)):.2f} €"
             .replace(".", ",")
         )
-        _mwst = float(self.search_cell_right_of(sums, 'Umsatzsteuer 19%'))
+        _mwst = float(self.search_cell_right_of(spalte, USt))
         umsatzsteuer = (
             f"{_mwst:.2f} €".replace(".", ",")
         )
         brutto = (
-            f"{float(self.search_cell_right_of(sums, 'Bruttobetrag')):.2f} €"
+            f"{float(self.search_cell_right_of(spalte, bruttobetr)):.2f} €"
             .replace(".", ",")
         )
         return [
