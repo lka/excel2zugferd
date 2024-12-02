@@ -1,5 +1,5 @@
 """
-Module handles Classes Adresse and Konto
+Module handles Classes Adresse, Konto and Steuerung
 """
 KONTAKT_ERROR = ValueError("'Kontakt': mindestens 2, maximal 3 Zeilen\n\
 Tel.: 012345-1234\nFax: 012345-1235 (optional)\nEmail: xyz@abcdef.de")
@@ -422,11 +422,14 @@ class Steuerung(object):
         self._create_girocode = None
         self._is_kleinunternehmen = None
         self._abspann = None
+        self._BYOPdf = None
 
     def __repr__(self) -> str:
         return f"Steuerung('create_xml: {self.create_xml}', \
  create_girocode: '{self.create_girocode}',\
- is_kleinunternehmen: '{self.is_kleinunternehmen}', abspann: '{self.abspann}')"
+ is_kleinunternehmen: '{self.is_kleinunternehmen}', abspann: '{self.abspann}',\
+ BYOPdf: '{BYOPdf}'\
+)"
 
     @property
     def create_xml(self):
@@ -460,6 +463,14 @@ class Steuerung(object):
     def abspann(self, value):
         self._abspann = value
 
+    @property
+    def BYOPdf(self):
+        return self._BYOPdf
+
+    @BYOPdf.setter
+    def BYOPdf(self, value):
+        self._BYOPdf = value
+
     def _fill_bools(self, thekeys, daten) -> None:
         self.create_girocode = (
             (daten["GiroCode"] == "Ja")
@@ -475,6 +486,11 @@ class Steuerung(object):
             (daten["Kleinunternehmen"] == "Ja")
             if "Kleinunternehmen" in thekeys and
             daten["Kleinunternehmen"] is not None else False
+        )
+        self.BYOPdf = (
+            (daten["BYOPdf"] == "Ja")
+            if "BYOPdf" in thekeys and
+            daten["BYOPdf"] is not None else False
         )
 
     def fill_steuerung(self, daten=None) -> None:

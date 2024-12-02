@@ -64,6 +64,13 @@ fields = [
         "Type": "Boolean",
         "Variable": "GiroCode",
     },
+    {
+        "Text": "BYOPdf",
+        "Label": "anderweitig erzeugtes PDF verwenden",
+        "Lines": 1,
+        "Type": "Boolean",
+        "Variable": "BYOPdf",
+    }
 ]
 
 LABELWIDTH = 22
@@ -394,6 +401,14 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         self.save_button.pack(side=tk.LEFT, padx=PADX, pady=PADY)
         self.save_button.bind("<Return>", (lambda event: self.create_pdf()))
 
+    def _get_own_pdf(self):
+        fn = filedialog.askopenfilename(
+            title="Bitte die anderweitig erstellte PDF auswählen",
+            # initialdir=Path(init_dir).resolve(),
+            filetypes=(("PDF Datei", "*.pdf"), ("Alle Dateien", "*.*")),
+        )
+        return fn
+
     def _fill_pdf(self, directory, create_xml):
         try:
             self.pdf.fill_pdf()
@@ -421,7 +436,11 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
                     file_name = os.path.join(
                         Path(tmp), fn
                     )  # doesn't matter, cannot exist twice
-                    self.pdf.output(file_name)
+                    if self.pdf.lieferantensteuerung.BYOPdf:
+                        theFile = self._get_own_pdf()
+                        shutil.copyfile(theFile, file_name)
+                    else:
+                        self.pdf.output(file_name)
                     # msg = f"Die Datei {fileName} wurde erstellt"
                     # messagebox.showinfo("Debug-Information", msg)
                     try:
