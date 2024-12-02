@@ -428,7 +428,7 @@ class Steuerung(object):
         return f"Steuerung('create_xml: {self.create_xml}', \
  create_girocode: '{self.create_girocode}',\
  is_kleinunternehmen: '{self.is_kleinunternehmen}', abspann: '{self.abspann}',\
- BYOPdf: '{BYOPdf}'\
+ BYOPdf: '{self.BYOPdf}'\
 )"
 
     @property
