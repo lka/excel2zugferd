@@ -5,6 +5,7 @@ Modul excel_content_test
 from unittest import TestCase
 import os
 import numpy as np
+import pandas as pd
 from src.excel_content import ExcelContent
 
 ADDRESS_EXPECTED = "\n".join(
@@ -202,9 +203,10 @@ class TestExcelContent(TestCase):
         self.xlsx.read_sheet("Rechnung2")
         expected = POSITIONS_EXPECTED
         value = self.xlsx.get_invoice_positions()
+        MSG = "should be equal"
         # print(value)
         # self.assertEqual(value.ndim, expected.ndim, "should be equal")
-        self.assertTrue(np.array_equiv(value, expected), "should be equal")
+        self.assertTrue(np.array_equiv(value['daten'], expected), MSG)
         # type: ignore
 
     def test__split_dataframe_by_search_value(self):
@@ -214,7 +216,7 @@ class TestExcelContent(TestCase):
         expected = POSITIONS_EXPECTED
         value = self.xlsx._split_dataframe_by_search_value(
                 "An:", "Pos."
-            )  # pylint: disable=protected-access
+            )['daten']  # pylint: disable=protected-access
         # print(value)
         # self.assertEqual(value.ndim, expected.ndim, "should be equal")
         self.assertTrue(np.array_equiv(value, expected), "should be equal")
@@ -295,6 +297,16 @@ class TestExcelContent(TestCase):
                   .search_cell_right_of(sums, 'Bruttobetrag'))
         except ValueError:
             self.fail("raised ValueError unexpectedly!")
+
+    def test_get_maxLengths(self):
+        """
+        teste die Maximalen Längen eines DataFrames
+        """
+        lenArr = self.xlsx.get_maxlengths(
+            pd.DataFrame(data=POSITIONS_EXPECTED[1:],
+                         columns=POSITIONS_EXPECTED[0]))
+        MSG = 'should be equal'
+        self.assertEqual(lenArr, [4, 10, 138, 6, 7, 7, 8], MSG)
 
 # if __name__ == "__main__":
 #     unittest.main()

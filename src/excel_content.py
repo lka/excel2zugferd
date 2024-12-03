@@ -73,14 +73,26 @@ class ExcelContent:
         nan_idx = self._get_index_of_nan(an)  # get first index of NaN in an
         return "\n".join(an[0:nan_idx])
 
+    def get_maxlengths(self, df: pd.DataFrame) -> list:
+        """
+        get array with max string length of each column in pandas DataFrame
+        """
+        lenArr = []
+        for c in df:
+            theLength = max(df[c].astype(str).map(len).max(), len(c))
+            # print('Max length of column %s: %s' % (c, theLength))
+            lenArr.append(theLength)
+        return lenArr
+
     def _split_dataframe_by_search_value(self, column_name: str,
                                          search_value: str,
                                          datum: str = "Datum",
                                          preis: str = "Preis",
-                                         summe: str = "Summe"):
+                                         summe: str = "Summe") -> dict:
         """
         Search in specified column for search_value return rows until next NaN
-        as numpy dataFrame with all cells as strings
+        as numpy dataFrame with all cells as strings, append
+        maxlengths of columns to dict as {'daten': np.r_[], 'maxlengths': []}
         replace column Datum with german date %d.%m.%Y and columns Preis and
         Summe as float values with Komma separated
         """
@@ -126,8 +138,12 @@ class ExcelContent:
             .apply("{:.2f} €".format)
             .apply(lambda x: x.replace(".", ","))
         )
+        # print(retval)
+        lenArr = self.get_maxlengths(retval)
+        # print(lenArr)
 
-        return np.r_[line.values, retval.astype(str).values]
+        return {'daten': np.r_[line.values, retval.astype(str).values],
+                'maxlengths': lenArr}
 
     def get_address_of_customer(self, anschrift: str = "An:"):
         """returns address of customer in Excel Sheet with \\n joined values"""
@@ -138,8 +154,13 @@ class ExcelContent:
         """returns tuple ('InvoiceNumberText', invoiceNumber)"""
         return {rg_nr: self.search_cell_right_of(spalte, rg_nr)}
 
-    def get_invoice_positions(self, spalte: str = "An:", search: str = "Pos."):
-        """return array of array of positions for invoice"""
+    def get_invoice_positions(self, spalte: str = "An:",
+                              search: str = "Pos.") -> dict:
+        """
+        return dict with array of array of positions for invoice
+        and maxlengths of columns
+        {'daten': np.r_[], 'maxlengths': []}
+        """
         return self._split_dataframe_by_search_value(spalte, search)
 
     def get_invoice_sums(self,

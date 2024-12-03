@@ -139,53 +139,54 @@ class ZugFeRD:
         self.doc.trade.settlement.payment_reference =\
             f"{rg_nr['key']} {rg_nr['value']} vom {datum}"
 
+    def _fillPosAndNameOfLi(self, li: LineItem, item: list) -> None:
+        li.document.line_id = item[0]  # Pos.
+        # Datum + ': ' + Tätigkeit
+        li.product.name = item[1] + ": " + item[2]
+
+    def _replaceCommaWithDot(self, item: str) -> float:
+        return float(item.split()[0].replace(",", "."))
+
+    def _setTaxInLi(self, li: LineItem, item: str, the_tax: str) -> None:
+        li.settlement.trade_tax.type_code = "VAT"
+        li.settlement.trade_tax\
+            .category_code = "E" if the_tax == "0.00" else "S"
+        li.settlement.trade_tax\
+            .rate_applicable_percent = Decimal(the_tax)
+        gesamt = self._replaceCommaWithDot(item)
+        li.settlement.monetary_summation\
+            .total_amount = Decimal(f"{gesamt:.2f}")
+
+    def _setOccurrenceInLi(self, li: LineItem, item: str) -> None:
+        if item and len(item) == 10:
+            the_date = datetime.strptime(item, '%d.%m.%Y')
+            # tatsächlicher Zeitpunkt der Tätigkeit
+            li.delivery.event.occurrence = the_date
+            if self.first_date is None:
+                self.first_date = the_date
+            else:
+                self.last_date = the_date
+                # ich benutze nur den ersten Leistungsbezug,
+                # keinen Bereich
+
     def add_items(self, dat, the_tax: str):
         """add items to invoice"""
-        i = 0
         # ("Pos.", "Datum", "Tätigkeit", "Menge", "Typ",
         #  "Einzel €", "Gesamt €")
-        for item in dat:
+        for i, item in enumerate(dat):
             if i > 0:
                 li = LineItem()
-                li.document.line_id = item[0]  # Pos.
-                li.product.name = item[1] + ": " + item[2]
-                # Datum ' ' Tätigkeit
+                self._fillPosAndNameOfLi(li, item)
                 menge = float(item[3])
-                # li.agreement.gross.basis_quantity = (
-                #     Decimal("1.0000"),
-                #     item[4],
-                # )  # C62 == pieces
-                # li.agreement.net.basis_quantity = (Decimal("1.0000"),
-                # item[4])
-                einzelpreisnetto = float(item[5].split()[0].replace(",", "."))
-                # einzelpreisbrutto = round(einzelpreisnetto * 1.19, 2)
+                einzelpreisnetto = self._replaceCommaWithDot(item[5])
                 li.agreement.net.amount = Decimal(f"{einzelpreisnetto:.2f}")
-                # li.agreement.gross.amount =
-                # Decimal(f"{einzelpreisnetto:.2f}")
                 li.delivery.billed_quantity = (
                     Decimal(f"{menge:.4f}"),
                     "HUR" if item[4] == "h" else "MIN",
                 )  # C62 == pieces
-                if item[1] and len(item[1]) == 10:
-                    the_date = datetime.strptime(item[1], '%d.%m.%Y')
-                    # tatsächlicher Zeitpunkt der Tätigkeit
-                    li.delivery.event.occurrence = the_date
-                    if self.first_date is None:
-                        self.first_date = the_date
-                    else:
-                        self.last_date = the_date
-                        # ich benutze nur den ersten Leistungsbezug,
-                        # keinen Bereich
-                li.settlement.trade_tax.type_code = "VAT"
-                li.settlement.trade_tax\
-                    .category_code = "E" if the_tax == "0.00" else "S"
-                li.settlement.trade_tax\
-                    .rate_applicable_percent = Decimal(the_tax)
-                gesamt = float(item[6].split()[0].replace(",", "."))
-                li.settlement.monetary_summation\
-                    .total_amount = Decimal(f"{gesamt:.2f}")
+                self._setOccurrenceInLi(li, item[1])
+                self._setTaxInLi(li, item[6], the_tax)
                 self.doc.trade.items.add(li)
-            i = i + 1
 
     def add_gesamtsummen(self, dat, the_tax: str,
                          steuerbefreiungsgrund: str = None) -> None:

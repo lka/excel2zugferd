@@ -484,7 +484,6 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
             self.pdf = Pdf(
                 self.excel_file,
                 contentini_file,
-                create_xml,
                 self.logo_fn if Path(self.logo_fn).exists() else None,
             )
         except ValueError as e:

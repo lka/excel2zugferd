@@ -6,6 +6,7 @@ junit
 *.ini
 *.pdf
 .venv
+.tox
 .pytest_cache
 node_modules
 excel2zugferd.code-workspace

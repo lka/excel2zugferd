@@ -13,6 +13,7 @@ from src.excel_content import ExcelContent
 import src.handle_zugferd as handle_zugferd
 import src.handle_girocode as gc
 from src.handle_other_objects import Adresse, Konto, Steuerung
+import math
 
 GERMAN_DATE = "%d.%m.%Y"
 
@@ -147,10 +148,8 @@ class PDF(FPDF):
         self.cell(None, None, text)
         self.ln()
 
-    def print_positions(self, arr: list) -> None:
-        """
-        prints Table with Positions
-        """
+    def _printTableHeader(self):
+        """set table Header"""
         self.start_section("Rechnungspositionen", 0)
         self.set_xy(25, 110)
         self.set_font(None, "", size=10)
@@ -159,24 +158,65 @@ class PDF(FPDF):
         else:
             self.set_draw_color(0, 0, 255)
         self.set_line_width(0.3)
-        headings_style = FontFace(
+
+    def _getHeadingsStyle(self):
+        """return headings_style"""
+        return FontFace(
             emphasis="BOLD",
             color=self.table_head_color if self.table_head_color else 255,
             fill_color=self.table_head if self.table_head else (255, 100, 0),
         )
-        with self.table(
-            borders_layout="NO_HORIZONTAL_LINES",
-            cell_fill_color=(
+
+    def _getCellFillColor(self):
+        return (
                 self.table_fill_color if self.table_fill_color
                 else (244, 235, 255)
-            ),
+            )
+
+    def _calcColWidths(self, lengths: list) -> list:
+        retval = None
+        if lengths:
+            arr = []
+            for index, val in enumerate(lengths):
+                # index 2 ist die Spalte
+                # Bezeichnung, die ich als
+                # eine variable Spalte haben möchte
+                if index != 2:
+                    arr.append(math.ceil(val * 2.4))
+            fixeBreite = sum(arr)
+            variableBreite = self._getTableWidth() - fixeBreite
+            if variableBreite > 1:
+                arr.insert(2, variableBreite)
+                retval = arr
+        return retval
+
+    def _getColWidths(self, lengths: list) -> tuple:
+        default = (10, 21, 68, 16, 15, 16, 19)
+        arr = self._calcColWidths(lengths)
+        return tuple(arr) if arr else default
+        # return (
+        #         self.table_widths
+        #         if hasattr(self, "table_widths")
+        #         else
+        #           return (10, 21, 68, 16, 15, 16, 19)
+        #         # wird in der abgeleiteten Klasse Pdf gesetzt !!!
+        #     )
+
+    def _getTableWidth(self) -> int:
+        return 165
+        # return (sum(self.table_widths) if self.table_widths
+        #         else 165)
+
+    def print_positions(self, arr: list, lengths: list = None) -> None:
+        """
+        prints Table with Positions
+        """
+        self._printTableHeader()
+        with self.table(
+            borders_layout="NO_HORIZONTAL_LINES",
+            cell_fill_color=self._getCellFillColor(),
             cell_fill_mode=TableCellFillMode.ROWS,
-            col_widths=(
-                self.table_widths
-                if hasattr(self, "table_widths")
-                else (10, 21, 68, 16, 15, 16, 19)
-                # wird in der abgeleiteten Klasse Pdf gesetzt !!!
-            ),
+            col_widths=self._getColWidths(lengths),
             text_align=(
                 "CENTER",
                 "LEFT",
@@ -187,20 +227,16 @@ class PDF(FPDF):
                 "RIGHT",
             ),
             align="RIGHT",
-            headings_style=headings_style,
+            headings_style=self._getHeadingsStyle(),
             line_height=5.5,
-            width=min(sum(self.table_widths) if self.table_widths
-                      else 165, 165),
+            width=self._getTableWidth(),
             padding=(2, 0, 2, 0),
             v_align="TOP",
         ) as table:
             for data_row in arr:
                 table.row(data_row)
 
-    def print_summen(self, arr: list) -> None:
-        """
-        print Summen
-        """
+    def _printSummenHeader(self) -> None:
         self.start_section("Rechnungssumme", 0)
         self.set_x(153)
         self.ln()
@@ -210,20 +246,35 @@ class PDF(FPDF):
         else:
             self.set_draw_color(255, 0, 255)
         self.set_line_width(0.3)
+
+    def _getTableFillColor(self) -> tuple:
+        return (
+                self.table_fill_color
+                if hasattr(self, "table_fill_color")
+                else (244, 235, 255)
+            )
+
+    def _getSummenColWidths(self) -> tuple:
+        return (self.sum_table_widths if self.sum_table_widths
+                else (50, 22))
+
+    def _getSummenTableWidth(self) -> int:
+        return sum(self.sum_table_widths) if self.sum_table_widths else 72
+
+    def print_summen(self, arr: list) -> None:
+        """
+        print Summen
+        """
+        self._printSummenHeader()
         # headings_style = FontFace(emphasis="BOLD", color=255,
         # fill_color=self.table_head
         # if hasattr(self, "table_head")
         # else (255, 100, 0))
         with self.table(
             borders_layout="NO_HORIZONTAL_LINES",
-            cell_fill_color=(
-                self.table_fill_color
-                if hasattr(self, "table_fill_color")
-                else (244, 235, 255)
-            ),
+            cell_fill_color=self._getTableFillColor(),
             cell_fill_mode=TableCellFillMode.ROWS,
-            col_widths=(self.sum_table_widths if self.sum_table_widths
-                        else (50, 22)),
+            col_widths=self._getSummenColWidths(),
             text_align=(
                 "RIGHT",
                 "RIGHT",
@@ -232,7 +283,7 @@ class PDF(FPDF):
             align="RIGHT",
             # headings_style=headings_style,
             line_height=5.5,
-            width=sum(self.sum_table_widths) if self.sum_table_widths else 72,
+            width=self._getSummenTableWidth(),
             padding=(2, 0, 2, 0),
             v_align="TOP",
         ) as table:
@@ -300,7 +351,7 @@ class Pdf(PDF):
     Klasse Pdf
     """
 
-    def __init__(self, daten, stammdaten, create_xml=False, logo_fn=None)\
+    def __init__(self, daten, stammdaten, logo_fn=None)\
             -> None:
         super().__init__()
         # print(daten)
@@ -669,9 +720,10 @@ Umsatzsteuer berechnet."
 
     def _fill_positions(self, kleinunternehmen: bool) -> None:
         # print(self.split_dataframe_by_SearchValue(AN, "Pos."))
-        df = self.daten.get_invoice_positions() if self.daten else []
-        if df is not None:
-            self.print_positions(df)
+        theDict = self.daten.get_invoice_positions() if self.daten else []
+        if theDict is not None:
+            df = theDict['daten']
+            self.print_positions(theDict['daten'], theDict['maxlengths'])
         the_tax = self._get_the_tax(kleinunternehmen)
         if self.lieferantensteuerung.create_xml:
             self.zugferd.add_items(df, the_tax)
@@ -696,21 +748,12 @@ Umsatzsteuer berechnet."
 
         kleinunternehmen = self.lieferantensteuerung.is_kleinunternehmen
         steuerbefreiungsgrund = self._fill_kleinunternehmen(kleinunternehmen)
-
         an = self.daten.get_address_of_customer() if self.daten else ""
-        if an:
-            self.print_adress(an)
-
+        self.print_adress(an)
         rg_nr = self._get_rg_nr()
-        # self.daten.get_invoice_number() if self.daten else {}
-
         today = datetime.now()
         datum = today.strftime(GERMAN_DATE)
-
         ueberweisungsdatum = self._get_ueberweisungsdatum(today)
-        if self.lieferantensteuerung.create_xml:
-            self.zugferd.add_rgnr(f"{rg_nr['value']}")
-            self.zugferd.add_rechnungsempfaenger(an)
 
         self.print_bezug(
             f"{rg_nr['key']} {rg_nr['value']} vom {datum}"
@@ -722,6 +765,8 @@ Umsatzsteuer berechnet."
         brutto = summen[-1][-1]
         self.print_summen(summen)
         if self.lieferantensteuerung.create_xml:
+            self.zugferd.add_rgnr(f"{rg_nr['value']}")
+            self.zugferd.add_rechnungsempfaenger(an)
             self.zugferd.add_gesamtsummen(summen,
                                           self._get_the_tax(kleinunternehmen),
                                           steuerbefreiungsgrund)
