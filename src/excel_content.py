@@ -30,24 +30,36 @@ class ExcelContent:
         """Read the specified sheet content"""
         self.daten = self.xlsx.parse(sheet_name)
 
-    def search_cell_right_of(self, column_name, search_value):
+    def _get_search_err(self, search_value: str, column_name: str) -> str:
+        """return ErrorMessage for search_err"""
+        return f"Ich konnte '{search_value}' in Spalte '{column_name}'\
+ nicht finden."
+
+    def _get_col_err(self, column_name: str) -> str:
+        """return ErrorMessage for col_err"""
+        return f"Ich konnte die Spalte '{column_name}' nicht finden."
+
+    def _search_cell_in_column(self, column_name: str, search_value: str)\
+            -> list:
         """
         Search in row with column_name for search_value,
             return array with values right of the search_value
-            until next empty cell
         """
-        if self.daten is None:
-            return ""
-        SEARCH_ERR = ValueError(f"Ich konnte '{search_value}'\
- in Spalte '{column_name}' nicht finden.")
-        COL_ERR = ValueError(f"Ich konnte\
- die Spalte '{column_name}' nicht finden.")
+        SEARCH_ERR = ValueError(
+            self._get_search_err(search_value, column_name))
+        COL_ERR = ValueError(self._get_col_err(column_name))
         try:
             arr = self.daten.loc[self.daten[column_name] == search_value]
         except IndexError:
             raise SEARCH_ERR
         except KeyError:
             raise COL_ERR
+        return arr
+
+    def _truncate_array_at_next_empty_cell(self, arr: list, error_msg: str)\
+            -> list:
+        """return array truncated at next empty cell"""
+        SEARCH_ERR = ValueError(error_msg)
         retval = []
         try:
             retval = arr.iat[0, -1] if not math.isnan(arr.iat[0, -1]) else \
@@ -57,6 +69,21 @@ class ExcelContent:
         except IndexError:
             raise SEARCH_ERR
         return retval
+
+    def search_cell_right_of(self, column_name: str, search_value: str)\
+            -> list:
+        """
+        Search in row with column_name for search_value,
+            return array with values right of the search_value
+            until next empty cell
+        """
+        if self.daten is None:
+            return ""
+        arr = self._search_cell_in_column(column_name, search_value)
+        return self._truncate_array_at_next_empty_cell(arr,
+                                                       self._get_search_err(
+                                                           search_value,
+                                                           column_name))
 
     def _get_index_of_nan(self, df) -> int:
         """get first index of next NaN"""
