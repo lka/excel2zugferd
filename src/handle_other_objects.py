@@ -274,12 +274,7 @@ class Adresse(object):
         else:
             raise KONTAKT_ERROR
 
-    def _fill_kontakt(self, daten):
-        if daten["Kontakt"] is None:
-            raise ANSCHRIFT_ERROR
-        arr = daten["Kontakt"].split('\n')
-        if len(arr) < 2 or len(arr) > 3:
-            raise KONTAKT_ERROR
+    def _fill_subs(self, arr: list) -> None:
         for elem in arr:
             sub = elem.split()
             if len(sub) != 2:
@@ -287,21 +282,40 @@ class Adresse(object):
             else:
                 self._fill_tel_fax_email(elem, sub[1])
 
-    def _fill_umsatzsteuer(self, daten):
+    def _fill_kontakt(self, daten: list) -> None:
+        if daten["Kontakt"] is None:
+            raise ANSCHRIFT_ERROR
+        arr = daten["Kontakt"].split('\n')
+        if len(arr) < 2 or len(arr) > 3:
+            raise KONTAKT_ERROR
+        self._fill_subs(arr)
+
+    def _fill_umsatzsteuerid(self, arr: list, sub: list) -> None:
+        if len(sub) != 2:
+            raise USTID_ERROR
+        self.steuerid = sub[1]
+        self.finanzamt = None
+
+    def _fill_steuernummer(self, arr: list, sub: list) -> None:
+        if len(sub) != 2:
+            raise USTID_ERROR
+        self.steuernr = sub[1]
+        self.finanzamt = arr[1]
+
+    def _fill_umsatzsteuer_or_id(self, arr: list, sub: list) -> None:
+        if len(arr) >= 1 and 'Umsatzsteuer-ID' in sub[0]:
+            self._fill_umsatzsteuerid(arr, sub)
+        else:
+            self._fill_steuernummer(arr, sub)
+
+    def _fill_umsatzsteuer(self, daten: list) -> None:
         if daten["Umsatzsteuer"] is None:
             raise USTID_ERROR
         arr = daten["Umsatzsteuer"].split('\n')
         sub = arr[0].split()
-        if len(sub) != 2:
+        if len(arr) != 2 or len(sub) != 2:
             raise USTID_ERROR
-        if len(arr) >= 1 and 'Umsatzsteuer-ID' in sub[0]:
-            self.steuerid = sub[1]
-            self.finanzamt = None
-        else:
-            if len(arr) != 2:
-                raise USTID_ERROR
-            self.steuernr = sub[1]
-            self.finanzamt = arr[1]
+        self._fill_umsatzsteuer_or_id(arr, sub)
 
     def _fill_betrieb(self, daten):
         betrieb = daten['Betriebsbezeichnung']
@@ -385,7 +399,7 @@ class Konto(object):
         """get Konto Information as Multi Lines"""
         return self.name + '\nIBAN: ' + self.iban + '\nBIC: ' + self.bic
 
-    def _fill_iban_bic(self, key, value):
+    def _fill_iban_bic(self, key: str, value: str) -> None:
         if len(value) == 0:
             raise KONTO_ERROR
         if 'IBAN' in key:
@@ -395,7 +409,15 @@ class Konto(object):
         else:
             raise KONTO_ERROR
 
-    def fill_konto(self, daten=None) -> None:
+    def _search_iban_bic(self, arr: list) -> None:
+        for elem in arr[1:]:
+            sub = elem.split(' ', 1)
+            if len(sub) != 2:
+                raise KONTO_ERROR
+            else:
+                self._fill_iban_bic(sub[0], sub[1])
+
+    def fill_konto(self, daten: list = None) -> None:
         """fills Konto of Lieferant from stammdaten"""
         if daten:
             if daten["Konto"] is None:
@@ -404,12 +426,7 @@ class Konto(object):
             if len(arr) != 3:
                 raise KONTO_ERROR
             self.name = arr[0]
-            for elem in arr[1:]:
-                sub = elem.split(' ', 1)
-                if len(sub) != 2:
-                    raise KONTO_ERROR
-                else:
-                    self._fill_iban_bic(sub[0], sub[1])
+            self._search_iban_bic(arr)
         # print(repr(self))
 
 
@@ -471,29 +488,28 @@ class Steuerung(object):
     def BYOPdf(self, value):
         self._BYOPdf = value
 
-    def _fill_bools(self, thekeys, daten) -> None:
-        self.create_girocode = (
-            (daten["GiroCode"] == "Ja")
-            if "GiroCode" in thekeys and
-            daten["GiroCode"] is not None else False
-        )
-        self.create_xml = (
-            (daten["ZugFeRD"] == "Ja")
-            if (("ZugFeRD" in thekeys) and
-                (daten["ZugFeRD"] is not None)) else False
-        )
-        self.is_kleinunternehmen = (
-            (daten["Kleinunternehmen"] == "Ja")
-            if "Kleinunternehmen" in thekeys and
-            daten["Kleinunternehmen"] is not None else False
-        )
-        self.BYOPdf = (
-            (daten["BYOPdf"] == "Ja")
-            if "BYOPdf" in thekeys and
-            daten["BYOPdf"] is not None else False
+    def _check_TrueFalse(self, thekeys: list, daten: dict, name: str) -> bool:
+        return (
+            (daten[name] == "Ja")
+            if name in thekeys and
+            daten[name] is not None else False
         )
 
-    def fill_steuerung(self, daten=None) -> None:
+    def _fill_bools(self, thekeys: list, daten: dict) -> None:
+        self.create_girocode = self._check_TrueFalse(thekeys,
+                                                     daten,
+                                                     "GiroCode")
+        self.create_xml = self._check_TrueFalse(thekeys,
+                                                daten,
+                                                "ZugFeRD")
+        self.is_kleinunternehmen = self._check_TrueFalse(thekeys,
+                                                         daten,
+                                                         "Kleinunternehmen")
+        self.BYOPdf = self._check_TrueFalse(thekeys,
+                                            daten,
+                                            "BYOPdf")
+
+    def fill_steuerung(self, daten: dict = None) -> None:
         """fills Steuerung of Lieferant from stammdaten"""
         if daten:
             thekeys = daten.keys()
