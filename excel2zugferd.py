@@ -99,14 +99,7 @@ class Oberflaeche:
         except tk.TclError:
             print("Not supported on your platform")
 
-    def make_menu_bar(self, menu_items=None):
-        """
-        MenuBar for each Oberflaeche
-        """
-        menu_bar = tk.Menu(self.root)
-        # print(menuItems)
-        if menu_items is None:
-            return
+    def _add_items(self, menu_bar, menu_items) -> None:
         for item in menu_items:
             outerkeys = item.keys()
             for outerkey in outerkeys:
@@ -122,6 +115,16 @@ class Oberflaeche:
                             label=innerkey, command=item[outerkey][innerkey]
                         )
                 menu_bar.add_cascade(label=outerkey, menu=menu, underline=0)
+
+    def make_menu_bar(self, menu_items=None):
+        """
+        MenuBar for each Oberflaeche
+        """
+        menu_bar = tk.Menu(self.root)
+        # print(menuItems)
+        if menu_items is None:
+            return
+        self._add_items(menu_bar, menu_items)
         self.root.config(menu=menu_bar)
 
     def make_logo(self, fn):
@@ -236,44 +239,94 @@ class OberflaecheIniFile(Oberflaeche):
                 self.destroy_children(child)
             child.destroy()
 
-    def fetch(self):
-        """
-        get all values for IniFile
-        """
-        # print('entries:', entries)
-        content = {}
-        ini_has_failure = False
-        if self.ents:
-            for key, field in self.ents.items():
-                text = (
+    def _check_content_of_stammdaten(self, content: dict) -> bool:
+        """return whether stammdaten have failures"""
+        try:
+            Pdf(
+                None,
+                content,
+                False,
+                None,
+            )
+        except ValueError as e:
+            messagebox.showerror("Fehler in den Stammdaten", e)
+            return True
+        return False
+
+    def _create_iniFile(self, content: dict) -> bool:
+        try:
+            if self.ini_file:
+                self.ini_file.create_ini_file(content)
+        except IOError as ex:
+            mymsg = f"Erstellen der Ini-Datei fehlgeschlagen.\n\
+            {format_ioerr(ex)}"
+            messagebox.showerror("Fehler:", mymsg)
+            return True
+        return False
+
+    def _get_text_of_field(self, field: any) -> str:
+        return (
                     field.get("1.0", "end-1c")
                     if hasattr(field, "get")
                     else "Ja" if field.instate(["selected"]) else "Nein"
                 )
-                content[key] = text
-                # print('%s:%s "%s"' % (key, field, text))
-            # Start: check only content of Stammdaten
-            try:
-                Pdf(
-                    None,
-                    content,
-                    False,
-                    None,
-                )
-            except ValueError as e:
-                messagebox.showerror("Fehler in den Stammdaten", e)
-                ini_has_failure = True
-            # Ende: check only content of Stammdaten
-            try:
-                if self.ini_file:
-                    self.ini_file.create_ini_file(content)
-            except IOError as ex:
-                mymsg = f"Erstellen der Ini-Datei fehlgeschlagen.\n\
-                {format_ioerr(ex)}"
-                messagebox.showerror("Fehler:", mymsg)
+
+    def fetch(self):
+        """
+        get all values for IniFile
+        """
+        content = {}
+        ini_has_failure = False
+        if self.ents:
+            for key, field in self.ents.items():
+                content[key] = self._get_text_of_field(field)
+            ini_has_failure = self._check_content_of_stammdaten(content)
+            ini_has_failure = ini_has_failure or self._create_iniFile(
+                content)
             if ini_has_failure:
                 return
         self.root.destroy()
+
+    def _add_string(self, row: tk.Frame, field: dict, content: any) -> tk.Text:
+        lab = tk.Label(
+            row, width=LABELWIDTH, text=field["Label"] + ": ",
+            anchor="w"
+        )
+        # ent = Entry(row)
+        # ent.insert(0, "")
+        ent = tk.Text(row, width=TEXTWIDTH, height=field["Lines"])
+        # ent.configure(font=self.myFont)
+        ent.insert(
+            tk.END,
+            content[field["Text"]] if field["Text"] in content else "",
+        )
+        row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
+        lab.pack(side=tk.LEFT)
+        ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
+        return ent
+
+    def _add_boolean(self, row: tk.Frame, field: dict, content: any)\
+            -> tk.Checkbutton:
+        self.menuvars[field["Variable"]] = tk.StringVar()
+        ent = ttk.Checkbutton(
+            row, text=field["Label"], variable=self.menuvars[
+                                                field["Variable"]]
+        )
+        self.menuvars[field["Variable"]].set(
+            "1"
+            if (len(content) > 0)
+            and field["Text"] in content
+            and (
+                (content[field["Text"]] == "Ja")
+                or (content[field["Text"]] == "1")
+            )
+            else "0"
+        )
+        lab = tk.Label(row, width=LABELWIDTH, text=" ", anchor="w")
+        row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
+        lab.pack(side=tk.LEFT)
+        ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
+        return ent
 
     def makeform(self) -> dict:
         """
@@ -289,41 +342,9 @@ class OberflaecheIniFile(Oberflaeche):
         for field in self.fields:
             row = tk.Frame(self.root)
             if field["Type"] == "String":
-                lab = tk.Label(
-                    row, width=LABELWIDTH, text=field["Label"] + ": ",
-                    anchor="w"
-                )
-                # ent = Entry(row)
-                # ent.insert(0, "")
-                ent = tk.Text(row, width=TEXTWIDTH, height=field["Lines"])
-                # ent.configure(font=self.myFont)
-                ent.insert(
-                    tk.END,
-                    content[field["Text"]] if field["Text"] in content else "",
-                )
-                row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
-                lab.pack(side=tk.LEFT)
-                ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
+                ent = self._add_string(row, field, content)
             if field["Type"] == "Boolean":
-                self.menuvars[field["Variable"]] = tk.StringVar()
-                ent = ttk.Checkbutton(
-                    row, text=field["Label"], variable=self.menuvars[
-                                                        field["Variable"]]
-                )
-                self.menuvars[field["Variable"]].set(
-                    "1"
-                    if (len(content) > 0)
-                    and field["Text"] in content
-                    and (
-                        (content[field["Text"]] == "Ja")
-                        or (content[field["Text"]] == "1")
-                    )
-                    else "0"
-                )
-                lab = tk.Label(row, width=LABELWIDTH, text=" ", anchor="w")
-                row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
-                lab.pack(side=tk.LEFT)
-                ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
+                ent = self._add_boolean(row, field, content)
             entries[field["Text"]] = ent
         return entries
 
@@ -409,13 +430,59 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         )
         return fn
 
-    def _fill_pdf(self, directory, create_xml):
+    def _add_xml(self, file_name: str, outfile: str) -> bool:
+        """returns true if failure"""
+        try:
+            self.pdf.zugferd.add_xml2pdf(file_name, outfile)
+        except IOError as ex:
+            mymsg = f"Konnte {outfile} aus {file_name} \
+                        nicht erstellen, \
+                        da ein Problem aufgetreten ist.\n\
+                        {format_ioerr(ex)}"
+            messagebox.showerror("Fehler:", mymsg)
+            return True
+        # msg = f"Die Datei {fileName} wurde erstellt"
+        # messagebox.showinfo("Debug-Information", msg)
+        return False
+
+    def _populate_temp_file(self, file_name: str) -> None:
+        if self.pdf.lieferantensteuerung.BYOPdf:
+            theFile = self._get_own_pdf()
+            shutil.copyfile(theFile, file_name)
+        else:
+            self.pdf.output(file_name)
+
+    def _create_and_add_xml(self, fn: str, outfile: str) -> bool:
+        """returns True if caught 'has_error'"""
+        if fn is None or outfile is None:
+            return True
+        try:
+            # tmp = tempfile.gettempdir()
+            with tempfile.TemporaryDirectory(ignore_cleanup_errors=True)\
+                 as tmp:
+                file_name = os.path.join(
+                    Path(tmp), fn
+                )  # doesn't matter, cannot exist twice
+                self._populate_temp_file(file_name)
+                if self._add_xml(file_name, outfile):
+                    return True
+        except IOError as ex:
+            mymsg = f"Konnte {file_name} nicht erstellen, \
+                da ein Problem aufgetreten ist.\n{format_ioerr(ex)}"
+            messagebox.showerror("Fehler:", mymsg)
+            return True
+        return False
+
+    def _try_to_fill_pdf(self) -> bool:
+        """returns True if Daten have failures"""
         try:
             self.pdf.fill_pdf()
         except ValueError as e:
             messagebox.showerror("Fehler in den Daten", e)
-            return
+            return True
+        return False
 
+    def _get_filenames(self, directory) -> list:
         outfile = None
         fn = None
         if self.selected_lb_item:
@@ -424,43 +491,42 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
             tmpfn = os.path.join(Path(directory)
                                  .absolute(), fn)
             outfile = self.pdf.uniquify(tmpfn)
-
         #        msg = f"Die Datei {outfile} wurde vorgesehen"
         #        messagebox.showinfo("Debug-Information", msg)
+        return [fn, outfile]
 
-        if create_xml and fn is not None:
-            try:
-                # tmp = tempfile.gettempdir()
-                with tempfile.TemporaryDirectory(ignore_cleanup_errors=True)\
-                     as tmp:
-                    file_name = os.path.join(
-                        Path(tmp), fn
-                    )  # doesn't matter, cannot exist twice
-                    if self.pdf.lieferantensteuerung.BYOPdf:
-                        theFile = self._get_own_pdf()
-                        shutil.copyfile(theFile, file_name)
-                    else:
-                        self.pdf.output(file_name)
-                    # msg = f"Die Datei {fileName} wurde erstellt"
-                    # messagebox.showinfo("Debug-Information", msg)
-                    try:
-                        self.pdf.zugferd.add_xml2pdf(file_name, outfile)
-                    except IOError as ex:
-                        mymsg = f"Konnte {outfile} aus {file_name} \
-                                    nicht erstellen, \
-                                    da ein Problem aufgetreten ist.\n\
-                                    {format_ioerr(ex)}"
-                        messagebox.showerror("Fehler:", mymsg)
-                        return
-            except IOError as ex:
-                mymsg = f"Konnte {file_name} nicht erstellen, \
-                    da ein Problem aufgetreten ist.\n{format_ioerr(ex)}"
-                messagebox.showerror("Fehler:", mymsg)
-                return
-        else:
-            self.pdf.output(outfile)
+    def _success_message(self, outfile: str) -> None:
         mymsg = f"Die Datei {outfile} wurde erstellt."
         messagebox.showinfo("Information", mymsg)
+
+    def _fill_pdf_only(self, outfile: str) -> None:
+        if outfile is not None:
+            self.pdf.output(outfile)
+            self._success_message(outfile)
+
+    def _fill_pdf(self, directory, create_xml):
+        if self._try_to_fill_pdf():
+            return
+        fn, outfile = self._get_filenames(directory)
+        if create_xml:
+            if self._create_and_add_xml(fn, outfile):
+                return
+            self._success_message(outfile)
+        else:
+            self._fill_pdf_only(outfile)
+
+    def _try_to_init_pdf(self, contentini_file: dict) -> bool:
+        """returns True if error occurs"""
+        try:
+            self.pdf = Pdf(
+                self.excel_file,
+                contentini_file,
+                self.logo_fn if Path(self.logo_fn).exists() else None,
+            )
+        except ValueError as e:
+            messagebox.showerror("Fehler in den Stammdaten", e)
+            return True
+        return False
 
     def create_pdf(self):
         """
@@ -475,22 +541,10 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
             contentini_file = self.ini_file.read_ini_file()
         if self.excel_file:
             self.excel_file.read_sheet(self.selected_lb_item)
-        create_xml = contentini_file["ZugFeRD"].split("\n")[0] == "Ja"
-
-        #        msg = f"Ausgewählt wurde das Excel Sheet: \
-        #               {self.selected_lb_item}"
-        #        messagebox.showinfo("Information", msg)
-        try:
-            self.pdf = Pdf(
-                self.excel_file,
-                contentini_file,
-                self.logo_fn if Path(self.logo_fn).exists() else None,
-            )
-        except ValueError as e:
-            messagebox.showerror("Fehler in den Stammdaten", e)
+        if self._try_to_init_pdf(contentini_file):
             return
-        directory = contentini_file["Verzeichnis"]
-        self._fill_pdf(directory, create_xml)
+        self._fill_pdf(contentini_file["Verzeichnis"],
+                       self.pdf.lieferantensteuerung.create_xml)
 
     def open_stammdaten(self):
         """
@@ -500,40 +554,53 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         s_oberfl = OberflaecheIniFile(self.fields, self.ini_file, self.root)
         s_oberfl.loop()
 
-    def _open_file(self, init_dir, contentini_file):
-        # print(init_dir, "Verzeichnis" in contentini_file, contentini_file)
+    def _file_dialog(self, init_dir: str) -> None:
         self.filename = filedialog.askopenfilename(
             title="Bitte die Excel Datei auswählen",
             initialdir=Path(init_dir).resolve(),
             filetypes=(("Excel Datei", "*.xlsx"), ("Alle Dateien", "*.*")),
         )
-        if len(self.filename) > 0 and Path(self.filename).exists():
-            mydir = os.path.dirname(self.filename)
-            self.excel_file = ExcelContent(self.filename, "")
-            self.file_name_label.config(text=self.filename)
-            self.lb.delete(0, "end")
-            items = self.excel_file.read_sheet_list()
-            for item in items:
-                self.lb.insert("end", item)
-            try:
-                if self.ini_file:
-                    self.ini_file.create_ini_file(
-                        {**contentini_file, "Verzeichnis": mydir}
-                    )
-            except IOError as ex:
-                mymsg = f"Ini-File kann nicht beschrieben werden.\n\
-                    {format_ioerr(ex)}"
-                messagebox.showerror("Fehler", mymsg)
 
+    def _read_sheet_list(self) -> list:
+        self.excel_file = ExcelContent(self.filename, "")
+        self.file_name_label.config(text=self.filename)
+        self.lb.delete(0, "end")
+        items = self.excel_file.read_sheet_list()
+        for item in items:
+            self.lb.insert("end", item)
+
+    def _try_to_save_Verzeichnis(self, contentini_file: dict) -> None:
+        mydir = os.path.dirname(self.filename)
+        try:
+            if self.ini_file:
+                self.ini_file.create_ini_file(
+                    {**contentini_file, "Verzeichnis": mydir}
+                )
+        except IOError as ex:
+            mymsg = f"Ini-File kann nicht beschrieben werden.\n\
+                {format_ioerr(ex)}"
+            messagebox.showerror("Fehler", mymsg)
+
+    def _open_file(self, init_dir, contentini_file):
+        # print(init_dir, "Verzeichnis" in contentini_file, contentini_file)
+        self._file_dialog(init_dir)
+        if len(self.filename) > 0 and Path(self.filename).exists():
+            self._read_sheet_list()
+            self._try_to_save_Verzeichnis(contentini_file)
+
+    def _get_documents_directory(self):
+        doc_dir = Path.home()
+        if Path(Path.joinpath(doc_dir, "Documents")).is_dir():
+            doc_dir = Path.joinpath(doc_dir, "Documents")
+        return doc_dir
+            
     def open_file(self):
         """
         Open File
         """
         if self.ini_file:
             contentini_file = self.ini_file.read_ini_file()
-        doc_dir = Path.home()
-        if Path(Path.joinpath(doc_dir, "Documents")).is_dir():
-            doc_dir = Path.joinpath(doc_dir, "Documents")
+        doc_dir = self._get_documents_directory()
         init_dir = (
             contentini_file["Verzeichnis"]
             if contentini_file
