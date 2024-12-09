@@ -33,20 +33,32 @@ class Handle_Girocode:
 
     def __init__(self, bic: str, iban: str, receiver: str,
                  verbose: bool = False):
-        if not (isinstance(bic, (str)) and len(bic) > 0):
-            raise ValueError(f"parameter BIC as string \
-expected but got {bic}")
+        self._check_bic(bic)
         self.bic = bic[:11]
-        if not (isinstance(iban, (str)) and len(iban) > 0):
-            raise ValueError(f"parameter IBAN as string \
-expected but got {iban}")
+        self._check_iban(iban)
         self.iban = iban[:34]
-        if not (isinstance(receiver, (str)) and len(receiver) > 0):
-            raise ValueError(f"parameter receiver as string \
-expected but got {receiver}")
+        self._check_receiver(receiver)
         self.receiver = uml2ascii(receiver)[:70]
         self.verbose = verbose
         self.qrdata = None
+
+    def _check_bic(self, bic: str) -> None:
+        """check bic for str and length, raise ValueError if faulty"""
+        if not (isinstance(bic, (str)) and len(bic) > 0):
+            raise ValueError(f"parameter BIC as string \
+expected but got {bic}")
+
+    def _check_iban(self, iban: str) -> None:
+        """check iban for str and length, raise ValueError if faulty"""
+        if not (isinstance(iban, (str)) and len(iban) > 0):
+            raise ValueError(f"parameter IBAN as string \
+expected but got {iban}")
+
+    def _check_receiver(self, receiver: str) -> None:
+        """check receiver for str and length, raise ValueError if faulty"""
+        if not (isinstance(receiver, (str)) and len(receiver) > 0):
+            raise ValueError(f"parameter receiver as string \
+expected but got {receiver}")
 
     def girocodegen(self, amount: float, purpose: str):
         """generate qrcode"""
