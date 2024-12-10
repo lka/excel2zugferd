@@ -593,7 +593,7 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         if Path(Path.joinpath(doc_dir, "Documents")).is_dir():
             doc_dir = Path.joinpath(doc_dir, "Documents")
         return doc_dir
-            
+
     def open_file(self):
         """
         Open File
