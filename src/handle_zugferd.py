@@ -48,8 +48,9 @@ class ZugFeRD:
 
     def add_bundesland(self, bundesland):
         """Add Bundesland"""
-        self.doc.trade.agreement.seller\
-            .address.country_subdivision = bundesland
+        if bundesland:
+            self.doc.trade.agreement.seller\
+                .address.country_subdivision = bundesland
 
     def add_zahlungsempfaenger(self, text):
         """set Zahlungsempfaenger to correct value"""
@@ -128,6 +129,7 @@ class ZugFeRD:
         """Add Address of my company to zugferd"""
         self._add_my_adresse(lieferant)
         self._add_my_kontakt(lieferant)
+        self.add_bundesland(lieferant.bundesland)
         taxreg = TaxRegistration()
         taxreg.id = ("VA", lieferant.steuerid)\
             if lieferant.steuerid else ("FC", lieferant.steuernr)
