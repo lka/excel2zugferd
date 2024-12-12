@@ -246,7 +246,6 @@ class OberflaecheIniFile(Oberflaeche):
                 None,
                 content,
                 False,
-                None,
             )
         except ValueError as e:
             messagebox.showerror("Fehler in den Stammdaten", e)
