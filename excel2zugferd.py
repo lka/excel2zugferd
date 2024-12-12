@@ -131,7 +131,7 @@ class Oberflaeche:
         """
         set logo to position
         """
-        if Path(fn).exists():
+        if fn is not None and Path(fn).exists():
             img = Image.open(fn)
             img = img.resize((100, 100), Image.BOX)
             image = ImageTk.PhotoImage(img)
@@ -245,7 +245,7 @@ class OberflaecheIniFile(Oberflaeche):
             Pdf(
                 None,
                 content,
-                False,
+                None,
             )
         except ValueError as e:
             messagebox.showerror("Fehler in den Stammdaten", e)
@@ -516,11 +516,11 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
             self.pdf.output(outfile)
             self._success_message(outfile)
 
-    def _fill_pdf(self, directory, create_xml):
+    def _fill_pdf(self, directory):
         if self._try_to_fill_pdf():
             return
         fn, outfile = self._get_filenames(directory)
-        if create_xml:
+        if self.pdf.lieferantensteuerung.create_xml:
             if self._create_and_add_xml(fn, outfile):
                 return
             self._success_message(outfile)
@@ -555,8 +555,7 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
             self.excel_file.read_sheet(self.selected_lb_item)
         if self._try_to_init_pdf(contentini_file):
             return
-        self._fill_pdf(contentini_file["Verzeichnis"],
-                       self.pdf.lieferantensteuerung.create_xml)
+        self._fill_pdf(contentini_file["Verzeichnis"])
 
     def open_stammdaten(self):
         """
@@ -582,6 +581,7 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
             self.lb.insert("end", item)
 
     def _try_to_save_Verzeichnis(self, contentini_file: dict) -> None:
+        """save Verzeichnis in INI-File"""
         mydir = os.path.dirname(self.filename)
         try:
             if self.ini_file:
