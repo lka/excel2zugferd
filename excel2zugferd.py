@@ -444,12 +444,27 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         # messagebox.showinfo("Debug-Information", msg)
         return False
 
-    def _populate_temp_file(self, file_name: str) -> None:
+    def _populate_temp_file(self, file_name: str) -> str | None:
+        """returns own pdf filename with path"""
         if self.pdf.lieferantensteuerung.BYOPdf:
             theFile = self._get_own_pdf()
             shutil.copyfile(theFile, file_name)
+            return theFile
         else:
             self.pdf.output(file_name)
+            return None
+
+    def _add_xml_with_perhaps_modify_outfile(self, file_name: str) -> bool:
+        modifiedFn = self._populate_temp_file(file_name)
+        if modifiedFn is not None:
+            outfile = self.pdf.uniquify(modifiedFn, '_ZugFeRD')
+        if self._add_xml(file_name, outfile):
+            return True
+        if modifiedFn is not None:
+            self._success_message(outfile)
+            return True  # just to permit success_message
+                         #  with wrong filename # noqa 116
+        return False
 
     def _create_and_add_xml(self, fn: str, outfile: str) -> bool:
         """returns True if caught 'has_error'"""
@@ -462,9 +477,7 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
                 file_name = os.path.join(
                     Path(tmp), fn
                 )  # doesn't matter, cannot exist twice
-                self._populate_temp_file(file_name)
-                if self._add_xml(file_name, outfile):
-                    return True
+                return self._add_xml_with_perhaps_modify_outfile(file_name)
         except IOError as ex:
             mymsg = f"Konnte {file_name} nicht erstellen, \
                 da ein Problem aufgetreten ist.\n{format_ioerr(ex)}"

@@ -2,6 +2,8 @@
 
 Dieses Programm liest die Daten aus einer Excel Datei aus und hängt sie als ZUGFeRD - kompatible XML-Daten an die erstellte PDF an.
 
+Alternativ kann das Programm den ZugFeRD - Anteil an eine von Ihnen erstellte PDF anhängen. Dann wird die PDF als IhrPdfName_ZuGFeRD.pdf ins Verzeichnis Ihrer PDF gestellt.
+
 Ich benutze das Programm ausschließlich um meine Stundenabrechnungen zu erledigen. Es werden also nur Stunden "h" als Typen erkannt, alle anderen Typen werden als Minuten im XML-Part dargestellt, auch wenn in der Testrechnung.xlsx beispielsweise "10 Min." stehen.
 
 Die Umsatzsteuer wird ausgewiesen und zwar fix mit 19%.

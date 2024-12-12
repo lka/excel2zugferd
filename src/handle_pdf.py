@@ -334,12 +334,19 @@ class PDF(FPDF):
         self.cell(80, 1, 'Bezahlen via GiroCode')
         self.set_font(None, "", size=10)
 
-    def uniquify(self, path: str) -> str:
+    def uniquify(self, path: str, appendix: str = None) -> str:
         """
         make unique Path from filename
         """
         fn, ext = os.path.splitext(path)
         counter = 1
+
+        if appendix is not None:
+            equal = False
+            for i in range(len(appendix)-1):
+                equal |= (appendix[-(i+1)] == fn[-(i+1)])
+            fn = f"{fn}{appendix}" if not equal else fn
+            path = f"{fn}" + ext
 
         while os.path.exists(path):
             path = f"{fn} ({str(counter)})" + ext

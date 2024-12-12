@@ -45,6 +45,40 @@ class TestHandlePdf(unittest.TestCase):
         except OSError:
             pass
 
+    def test_uniquify_appendix(self):
+        """
+        Check whether uniquify counts up filename if file already exists
+        """
+        fn = "testUniquify.pdf"
+        expected = "testUniquify_E.pdf"
+        try:
+            Path(fn).touch()
+        except OSError:
+            pass
+        retval = self.pdf.uniquify(fn, '_E')
+        self.assertEqual(retval, expected, "should be equal")
+        try:
+            os.remove(fn)
+        except OSError:
+            pass
+
+    def test_uniquify_appendix_with_already_existant_appendix(self):
+        """
+        Check whether uniquify counts up filename if file already exists
+        without appending already existant appendix
+        """
+        fn = "testUniquify_E.pdf"
+        expected = "testUniquify_E (1).pdf"
+        try:
+            Path(fn).touch()
+        except OSError:
+            pass
+        retval = self.pdf.uniquify(fn, '_E')
+        self.assertEqual(retval, expected, "should be equal")
+        try:
+            os.remove(fn)
+        except OSError:
+            pass
 
 # if __name__ == "__main__":
 #     unittest.main()
