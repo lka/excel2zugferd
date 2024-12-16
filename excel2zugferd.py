@@ -454,7 +454,8 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
             self.pdf.output(file_name)
             return None
 
-    def _add_xml_with_perhaps_modify_outfile(self, file_name: str) -> bool:
+    def _add_xml_with_perhaps_modify_outfile(self, file_name: str,
+                                             outfile: str) -> bool:
         modifiedFn = self._populate_temp_file(file_name)
         if modifiedFn is not None:
             outfile = self.pdf.uniquify(modifiedFn, '_ZugFeRD')
@@ -477,7 +478,8 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
                 file_name = os.path.join(
                     Path(tmp), fn
                 )  # doesn't matter, cannot exist twice
-                return self._add_xml_with_perhaps_modify_outfile(file_name)
+                return self._add_xml_with_perhaps_modify_outfile(file_name,
+                                                                 outfile)
         except IOError as ex:
             mymsg = f"Konnte {file_name} nicht erstellen, \
                 da ein Problem aufgetreten ist.\n{format_ioerr(ex)}"

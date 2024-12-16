@@ -71,11 +71,7 @@ class ZugFeRD:
             self.doc.trade.settlement.payment_means.payee_institution\
                 .bic = arr[2].split(" ", 1)[1]
 
-    def add_rechnungsempfaenger(self, text):
-        """set Rechnungsempfänger"""
-        self.doc.trade.settlement.currency_code = "EUR"
-        # self.doc.trade.settlement.tax_currency_code = "EUR" # BR-53-1
-
+    def _add_buyer_from_text(self, text: str) -> None:
         arr = text.split("\n")
         # self.doc.trade.settlement.invoicee.name = arr[0]
         self.doc.trade.agreement.buyer.name = arr[0]
@@ -88,7 +84,41 @@ class ZugFeRD:
                 .postcode = arr[-1].split(" ", 1)[0]
             self.doc.trade.agreement.buyer.address\
                 .city_name = arr[-1].split(" ", 1)[1]
-            self.doc.trade.agreement.buyer.address.country_id = "DE"
+
+    def _add_str_hnr(self, buyer: Adresse) -> None:
+        if buyer.postfach is not None:  # BT-50
+            self.doc.trade.agreement.buyer.address.line_one =\
+                'Postfach: ' + buyer.postfach
+        elif buyer.strasse is not None:  # BT-50
+            self.doc.trade.agreement.buyer.address.line_one =\
+                buyer.strasse + ' ' + buyer.hausnummer
+
+    def _add_plz_ort(self, buyer: Adresse) -> None:
+        if buyer.plz is not None:  # BT-53
+            self.doc.trade.agreement.buyer.address\
+                .postcode = buyer.plz
+        if buyer.ort is not None:  # BT-52
+            self.doc.trade.agreement.buyer.address\
+                .city_name = buyer.ort
+
+    def _add_buyer_from_object(self, buyer: Adresse) -> None:
+        if buyer.anschrift_line1 is not None:  # BT-44
+            self.doc.trade.agreement.buyer.name = buyer.anschrift_line1
+        if buyer.adresszusatz is not None:  # BT-51
+            self.doc.trade.agreement.buyer.address.line_two =\
+                buyer.adresszusatz
+        self._add_str_hnr(buyer)
+        self._add_plz_ort(buyer)
+
+    def add_rechnungsempfaenger(self, text: str, adr: Adresse = None):
+        """set Rechnungsempfänger"""
+        self.doc.trade.settlement.currency_code = "EUR"
+        # self.doc.trade.settlement.tax_currency_code = "EUR" # BR-53-1
+        if adr is not None:
+            self._add_buyer_from_object(adr)
+        else:
+            self._add_buyer_from_text(text)
+        self.doc.trade.agreement.buyer.address.country_id = "DE"
 
     def _add_my_adresse(self, lieferant: Adresse):
         self.doc.trade.agreement.seller.id = lieferant.betriebsbezeichnung
@@ -96,7 +126,7 @@ class ZugFeRD:
         self.doc.trade.agreement.seller.name = lieferant.betriebsbezeichnung
         if lieferant.adresszusatz:
             self.doc.trade.agreement.\
-                seller.address.line_three = lieferant.adresszusatz
+                seller.address.line_two = lieferant.adresszusatz
         if lieferant.postfach:
             self.doc.trade.agreement.seller.address\
                 .line_two = lieferant.postfach

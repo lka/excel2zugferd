@@ -6,6 +6,7 @@ import os
 import math
 import pandas as pd
 import numpy as np
+from src.handle_other_objects import Adresse
 
 
 class ExcelContent:
@@ -16,6 +17,7 @@ class ExcelContent:
         self.dir = directory
         self.path = os.path.join(self.dir, self.fn)
         self.daten = None
+        self.customer = Adresse()
         try:
             self.xlsx = pd.ExcelFile(self.path)
             pd.options.mode.copy_on_write = True
@@ -89,7 +91,7 @@ class ExcelContent:
         """get first index of next NaN"""
         return next((i for i, v in enumerate(df) if v != v), -1)
 
-    def _search_anschrift(self, search):
+    def _search_anschrift(self, search: str) -> str:
         """
         Search in specified column until next NaN,
         return string with \\n joined values
@@ -98,7 +100,10 @@ class ExcelContent:
             return None
         an = self.daten[search]
         nan_idx = self._get_index_of_nan(an)  # get first index of NaN in an
-        return "\n".join(an[0:nan_idx])
+        arr = an[0:nan_idx]
+        self.customer._fill_adresse(arr)
+        self.customer.landeskennz = "DE"
+        return "\n".join(arr)
 
     def get_maxlengths(self, df: pd.DataFrame) -> list:
         """

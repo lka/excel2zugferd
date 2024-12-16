@@ -751,7 +751,8 @@ class Pdf(PDF):
         self.fill_lieferant_to_note()
         self.zugferd.add_my_company(self.lieferant)
         self.zugferd.add_rgnr(f"{rg_nr['value']}")
-        self.zugferd.add_rechnungsempfaenger(an)
+#        self.zugferd.add_rechnungsempfaenger(an)
+        self.zugferd.add_rechnungsempfaenger(None, self.daten.customer)
         self._fill_invoice_positions_in_xml()
         self.zugferd.add_gesamtsummen(summen,
                                       self._get_the_tax(),

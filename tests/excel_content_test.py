@@ -181,6 +181,30 @@ class TestExcelContent(TestCase):
         # print(value)
         self.assertEqual(value, expected, "should be equal")
 
+    def test__search_anschrift_object(self):
+        """
+        Lies die Anschrift des Kunden aus dem Excel Sheet in das Adresse Objekt
+        """
+        self.xlsx.read_sheet("Rechnung2")
+        expected = ADDRESS_EXPECTED
+        exp_arr = expected.split('\n')
+        MSG = "should be equal"
+        value = self.xlsx\
+            ._search_anschrift("An:")\
+            # pylint: disable=protected-access
+        # print(value)
+        self.assertEqual(value, expected, MSG)
+        # print(repr(kunde))
+        self.assertEqual(self.xlsx.customer.anschrift_line1, exp_arr[0], MSG)
+        self.assertEqual(self.xlsx.customer.adresszusatz, exp_arr[1], MSG)
+        self.assertEqual(self.xlsx.customer.strasse, exp_arr[2].split(' ')[0],
+                         MSG)
+        self.assertEqual(self.xlsx.customer.hausnummer,
+                         exp_arr[2].split(' ')[1], MSG)
+        self.assertEqual(self.xlsx.customer.plz, exp_arr[3].split(' ')[0], MSG)
+        self.assertEqual(self.xlsx.customer.ort, exp_arr[3].split(' ')[1], MSG)
+        self.assertEqual(self.xlsx.customer.landeskennz, 'DE', MSG)
+
     def test__get_index_of_nan(self):
         """
         Lies die Anschrift des Kunden aus dem Excel Sheet

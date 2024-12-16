@@ -29,6 +29,7 @@ class Adresse(object):
         self._plz = None
         self._ort = None
         self._bundesland = None
+        self._landeskennz = None
         self._telefon = None
         self._fax = None
         self._email = None
@@ -40,9 +41,10 @@ class Adresse(object):
     def __repr__(self) -> str:
         return f"Adresse(betriebsbezeichnung: '{self.betriebsbezeichnung}',\
  name: '{self.name}', anschrift_line1: '{self.anschrift_line1}',\
- anschrift_line2: '{self.anschrift_line2}',\
+ adresszusatz: '{self.adresszusatz}',\
  strasse: '{self.strasse}', hausnummer: '{self.hausnummer}',\
  plz: '{self.plz}', ort: {self.ort}',\
+ landeskennz: '{self.landeskennz}'\
  bundesland: '{self.bundesland}', telefon: '{self.telefon}',\
  fax: '{self.fax}', email: '{self.email}', steuernr: '{self.steuernr}',\
  finanzamt: '{self.finanzamt}', steuerid: '{self.steuerid}',\
@@ -119,6 +121,14 @@ class Adresse(object):
     @ort.setter
     def ort(self, value):
         self._ort = value
+
+    @property
+    def landeskennz(self):
+        return self._landeskennz
+
+    @landeskennz.setter
+    def landeskennz(self, value):
+        self._landeskennz = value
 
     @property
     def bundesland(self):
@@ -247,10 +257,7 @@ class Adresse(object):
         else:
             raise ANSCHRIFT_ERROR
 
-    def _fill_anschrift(self, daten):
-        if daten["Anschrift"] is None:
-            raise ANSCHRIFT_ERROR
-        arr = daten["Anschrift"].split('\n')
+    def _fill_adresse(self, arr: list) -> None:
         if len(arr) < 3 or len(arr) > 4:
             raise ANSCHRIFT_ERROR
         self.anschrift_line1 = arr[0]
@@ -261,6 +268,12 @@ class Adresse(object):
         else:
             self._fill_str_hnr(arr[1])
             self._fill_plz_ort(arr[2])
+
+    def _fill_anschrift(self, daten):
+        if daten["Anschrift"] is None:
+            raise ANSCHRIFT_ERROR
+        arr = daten["Anschrift"].split('\n')
+        self._fill_adresse(arr)
 
     def _fill_tel_fax_email(self, elem, value):
         if len(value) == 0:
