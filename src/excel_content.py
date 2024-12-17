@@ -100,8 +100,8 @@ class ExcelContent:
             return None
         an = self.daten[search]
         nan_idx = self._get_index_of_nan(an)  # get first index of NaN in an
-        arr = an[0:nan_idx]
-        self.customer._fill_adresse(arr)
+        arr = an[0:nan_idx].to_list()
+        self.customer.anschrift = arr
         self.customer.landeskennz = "DE"
         return "\n".join(arr)
 

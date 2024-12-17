@@ -89,16 +89,21 @@ class PDF(FPDF):
         self.line(3, 148.5, 6, 148.5)  # Lochmarke
         self.line(4, 210, 8, 210)
 
+    def _set_section(self, section: str, x: float, y: float, style: str,
+                     size: int) -> None:
+        """sets section, xy position, font"""
+        if section is not None:
+            self.start_section(section)
+        self.set_xy(x, y)
+        self.set_font(None, style, size)
+
     def print_absender(self, adress: str) -> None:
         """
         prints Absenderdaten
         """
-        self.start_section("Absender", 0)
-        self.set_xy(140, 25.5)
-        self.set_font_size(12)
+        self._set_section("Absender", 140, 25.5, "", 12)
         self.multi_cell(105, 5, adress)
-        self.set_xy(25, 60.5)
-        self.set_font(None, "U", size=6)
+        self._set_section("Abs-kurz", 25, 60.5, "U", 6)
         self.cell(105, 1, adress.replace("\n", ", "))
         self.ln()
 
@@ -106,36 +111,28 @@ class PDF(FPDF):
         """
         prints Bundesland
         """
-        self.start_section("Bundesland", 0)
-        self.set_xy(140, 54.5)
-        self.set_font(None, "", 10)
+        self._set_section("Bundesland", 140, 54.5, "", 10)
         self.cell(105, 1, bundesland)
 
     def print_kleinunternehmerregelung(self, grund: str) -> None:
         """
         prints Begründung Kleinunternehmerregelung
         """
-        self.start_section("Kleinunternehmen")
-        self.set_xy(25, 105)
-        self.set_font(None, "", 10)
+        self._set_section("Kleinunternehmen", 25, 105, "", 10)
         self.cell(105, 1, grund)
 
     def print_kontakt(self, daten: str) -> None:
         """
         prints Kontakt
         """
-        self.start_section("Kontakt", 0)
-        self.set_xy(140, 60)
-        self.set_font(None, "", size=10)
+        self._set_section("Kontakt", 140, 60, "", 10)
         self.multi_cell(105, 5, daten)
 
     def print_adress(self, adress: str) -> None:
         """
         prints Empfänger
         """
-        self.start_section("Empfänger", 0)
-        self.set_xy(25, 63.6)
-        self.set_font_size(12)
+        self._set_section("Empfänger", 25, 63.6, "", 12)
         self.multi_cell(105, 5, adress)
         self.ln()
 
@@ -143,17 +140,13 @@ class PDF(FPDF):
         """
         prints Betreffzeile
         """
-        self.start_section("Betreff", 0)
-        self.set_xy(25, 97.4)
-        self.set_font(None, "B", size=12)
+        self._set_section("Betreff", 25, 97.4, "B", 12)
         self.cell(None, None, text)
         self.ln()
 
     def _printTableHeader(self):
         """set table Header"""
-        self.start_section("Rechnungspositionen", 0)
-        self.set_xy(25, 110)
-        self.set_font(None, "", size=10)
+        self._set_section("Rechnungspositionen", 25, 110, "", 10)
         if self.table_lines:
             self.set_draw_color(self.table_lines)
         else:
@@ -657,13 +650,13 @@ class Pdf(PDF):
         self.add_page()
         self.print_faltmarken()
         self.print_logo(self.logo_fn)
-        self.print_absender(self.lieferant.get_anschrift())
+        self.print_absender(self.lieferant.anschrift)
         bundesland = self.lieferant.bundesland
         if len(bundesland) > 0:
             self.print_bundesland(bundesland)
         self.print_kontakt(
-            self.lieferant.get_kontakt() + "\n\n" +
-            self.lieferant.get_umsatzsteuer()
+            self.lieferant.kontakt + "\n\n" +
+            self.lieferant.umsatzsteuer
         )
 
     def fill_lieferant_to_note(self) -> None:
@@ -671,11 +664,11 @@ class Pdf(PDF):
         populate note with addressfields for ZugFeRD
         """
         txt = (
-            self.lieferant.get_anschrift()
+            self.lieferant.anschrift
             + "\n"
-            + self.lieferant.get_kontakt()
+            + self.lieferant.kontakt
             + "\n"
-            + self.lieferant.get_umsatzsteuer()
+            + self.lieferant.umsatzsteuer
         )
         self.zugferd.add_note(txt)
 
@@ -737,7 +730,7 @@ class Pdf(PDF):
 {ueberweisungsdatum.strftime(GERMAN_DATE)} auf u.a. Konto.\n\n{abspann}"
         )
 
-    def fill_xml(self, rg_nr: list, an: str, summen: list,
+    def fill_xml(self, rg_nr: list, summen: list,
                  brutto: str, ueberweisungsdatum: datetime,
                  datum: str) -> None:
         """
@@ -751,7 +744,6 @@ class Pdf(PDF):
         self.fill_lieferant_to_note()
         self.zugferd.add_my_company(self.lieferant)
         self.zugferd.add_rgnr(f"{rg_nr['value']}")
-#        self.zugferd.add_rechnungsempfaenger(an)
         self.zugferd.add_rechnungsempfaenger(None, self.daten.customer)
         self._fill_invoice_positions_in_xml()
         self.zugferd.add_gesamtsummen(summen,
@@ -786,7 +778,7 @@ class Pdf(PDF):
         brutto = summen[-1][-1]
         self.print_summen(summen)
         if self.lieferantensteuerung.create_xml:
-            self.fill_xml(rg_nr, an, summen, brutto, ueberweisungsdatum, datum)
+            self.fill_xml(rg_nr, summen, brutto, ueberweisungsdatum, datum)
         self._fill_abspann(brutto, ueberweisungsdatum)
 
         if self.lieferantensteuerung.create_girocode:

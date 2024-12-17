@@ -3,9 +3,10 @@ Module handles Classes Adresse, Konto and Steuerung
 """
 KONTAKT_ERROR = ValueError("'Kontakt': mindestens 2, maximal 3 Zeilen\n\
 Tel.: 012345-1234\nFax: 012345-1235 (optional)\nEmail: xyz@abcdef.de")
-ANSCHRIFT_ERROR = ValueError("'Anschrift': mindestens 3, maximal 4 Zeilen\n\
-Adresszeile 1\nAdresszusatz (optional)\nStrasse Hausnummer\n\
-PLZ Ortsname oder Postfach 1234")
+ANSCHRIFT_ERROR = ValueError("'Anschrift': mindestens 3, maximal 5 Zeilen\n\
+Adresszeile 1\nAdresszusatz (optional)\nAdresszeile 3 (optional)\n\
+Strasse Hausnummer oder Postfach 12345\n\
+PLZ Ortsname")
 USTID_ERROR = ValueError("'Umsatzsteuer': 1-2 Zeilen\n\
 Steuernummer: 12345/12345\nFinanzamt Ortsname\n\noder\n\n\
 Umsatzsteuer-ID: DE999999999")
@@ -22,6 +23,7 @@ class Adresse(object):
         self._betriebsbezeichnung = None
         self._name = None
         self._anschrift_line1 = None
+        self._anschrift_line3 = None
         self._postfach = None
         self._strasse = None
         self._hausnummer = None
@@ -42,6 +44,7 @@ class Adresse(object):
         return f"Adresse(betriebsbezeichnung: '{self.betriebsbezeichnung}',\
  name: '{self.name}', anschrift_line1: '{self.anschrift_line1}',\
  adresszusatz: '{self.adresszusatz}',\
+ anschrift_line3: '{self.anschrift_line3}',\
  strasse: '{self.strasse}', hausnummer: '{self.hausnummer}',\
  plz: '{self.plz}', ort: {self.ort}',\
  landeskennz: '{self.landeskennz}'\
@@ -73,6 +76,14 @@ class Adresse(object):
     @anschrift_line1.setter
     def anschrift_line1(self, value):
         self._anschrift_line1 = value
+
+    @property
+    def anschrift_line3(self):
+        return self._anschrift_line3
+
+    @anschrift_line3.setter
+    def anschrift_line3(self, value):
+        self._anschrift_line3 = value
 
     @property
     def postfach(self):
@@ -194,12 +205,16 @@ class Adresse(object):
     def zahlungsziel(self, value):
         self._zahlungsziel = value
 
-    def get_anschrift(self) -> str:
+# -------------- H E L P E R S ------------------------------------------
+
+    @property
+    def anschrift(self) -> str:
         return '\n'.join(
             filter(None,
                    [
                             self.anschrift_line1,
                             self.adresszusatz,
+                            self.anschrift_line3,
                             ' '.join(['Postfach:', self.postfach])
                             if self.postfach else None,
                             ' '.join([self.strasse, self.hausnummer])
@@ -209,7 +224,21 @@ class Adresse(object):
                    )
             )
 
-    def get_kontakt(self) -> str:
+    @anschrift.setter
+    def anschrift(self, arr: list) -> None:
+        # print(arr)
+        if len(arr) < 3 or len(arr) > 5:
+            raise ANSCHRIFT_ERROR
+        self.anschrift_line1 = arr[0]
+        if len(arr) == 5:
+            self.anschrift_line3 = arr[2]
+        if len(arr) > 3:
+            self.adresszusatz = arr[1]
+        self._fill_str_hnr(arr[-2])
+        self._fill_plz_ort(arr[-1])
+
+    @property
+    def kontakt(self) -> str:
         return '\n'.join(
             filter(None,
                    [
@@ -219,7 +248,17 @@ class Adresse(object):
                    ])
         )
 
-    def get_umsatzsteuer(self) -> str:
+    @kontakt.setter
+    def kontakt(self, arr: list) -> None:
+        for elem in arr:
+            sub = elem.split()
+            if len(sub) != 2:
+                raise KONTAKT_ERROR
+            else:
+                self._fill_tel_fax_email(elem, sub[1])
+
+    @property
+    def umsatzsteuer(self) -> str:
         return '\n'.join(
             filter(None,
                    [
@@ -230,6 +269,13 @@ class Adresse(object):
                        if self.steuerid else None,
                    ])
         )
+
+    @umsatzsteuer.setter
+    def umsatzsteuer(self, arr: list) -> None:
+        sub = arr[0].split()
+        if len(arr) != 2 or len(sub) != 2:
+            raise USTID_ERROR
+        self._fill_umsatzsteuer_or_id(arr, sub)
 
     def _fill_postfach(self, postfach):
         sub = postfach.split(' ', -1)
@@ -257,23 +303,11 @@ class Adresse(object):
         else:
             raise ANSCHRIFT_ERROR
 
-    def _fill_adresse(self, arr: list) -> None:
-        if len(arr) < 3 or len(arr) > 4:
-            raise ANSCHRIFT_ERROR
-        self.anschrift_line1 = arr[0]
-        if len(arr) > 3:
-            self.adresszusatz = arr[1]
-            self._fill_str_hnr(arr[2])
-            self._fill_plz_ort(arr[3])
-        else:
-            self._fill_str_hnr(arr[1])
-            self._fill_plz_ort(arr[2])
-
     def _fill_anschrift(self, daten):
         if daten["Anschrift"] is None:
             raise ANSCHRIFT_ERROR
         arr = daten["Anschrift"].split('\n')
-        self._fill_adresse(arr)
+        self.anschrift = arr
 
     def _fill_tel_fax_email(self, elem, value):
         if len(value) == 0:
@@ -287,21 +321,13 @@ class Adresse(object):
         else:
             raise KONTAKT_ERROR
 
-    def _fill_subs(self, arr: list) -> None:
-        for elem in arr:
-            sub = elem.split()
-            if len(sub) != 2:
-                raise KONTAKT_ERROR
-            else:
-                self._fill_tel_fax_email(elem, sub[1])
-
     def _fill_kontakt(self, daten: list) -> None:
         if daten["Kontakt"] is None:
             raise ANSCHRIFT_ERROR
         arr = daten["Kontakt"].split('\n')
         if len(arr) < 2 or len(arr) > 3:
             raise KONTAKT_ERROR
-        self._fill_subs(arr)
+        self.kontakt = arr
 
     def _fill_umsatzsteuerid(self, arr: list, sub: list) -> None:
         if len(sub) != 2:
@@ -325,10 +351,7 @@ class Adresse(object):
         if daten["Umsatzsteuer"] is None:
             raise USTID_ERROR
         arr = daten["Umsatzsteuer"].split('\n')
-        sub = arr[0].split()
-        if len(arr) != 2 or len(sub) != 2:
-            raise USTID_ERROR
-        self._fill_umsatzsteuer_or_id(arr, sub)
+        self.umsatzsteuer = arr
 
     def _fill_betrieb(self, daten):
         betrieb = daten['Betriebsbezeichnung']

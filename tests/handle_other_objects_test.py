@@ -125,10 +125,10 @@ class TestAdresse(unittest.TestCase):
         adr.telefon = TEL
         adr.fax = FAX
         adr.bundesland = COUNTY
-        self.assertEqual(adr.get_anschrift(),
+        self.assertEqual(adr.anschrift,
                          f"{AN1}\n{STR} {HNR}\n{PLZ} {ORT}", MSG)
         adr.adresszusatz = ZUS
-        self.assertEqual(adr.get_anschrift(),
+        self.assertEqual(adr.anschrift,
                          f"{AN1}\n{ZUS}\n{STR} {HNR}\n{PLZ} {ORT}", MSG)
 
     def test_get_kontakt(self):
@@ -139,10 +139,10 @@ class TestAdresse(unittest.TestCase):
         MAIL = 'mustermann@telekom.de'
         adr.telefon = TEL
         adr.email = MAIL
-        self.assertEqual(adr.get_kontakt(),
+        self.assertEqual(adr.kontakt,
                          f"Tel.: {TEL}\nEmail: {MAIL}")
         adr.fax = FAX
-        self.assertEqual(adr.get_kontakt(),
+        self.assertEqual(adr.kontakt,
                          f"Tel.: {TEL}\nFax: {FAX}\nEmail: {MAIL}")
 
     def test_get_umsatzsteuer(self):
@@ -152,7 +152,7 @@ class TestAdresse(unittest.TestCase):
         USTNR = '12345/12345'
         adr.steuernr = USTNR
         adr.finanzamt = AMT
-        self.assertEqual(adr.get_umsatzsteuer(),
+        self.assertEqual(adr.umsatzsteuer,
                          f"Steuernummer: {USTNR}\n{AMT}")
 
     def test_get_umsatzsteuer_ID(self):
@@ -160,7 +160,7 @@ class TestAdresse(unittest.TestCase):
         adr = Adresse()
         USTNR = 'DE123456789'
         adr.steuerid = USTNR
-        self.assertEqual(adr.get_umsatzsteuer(),
+        self.assertEqual(adr.umsatzsteuer,
                          f"Umsatzsteuer-ID: {USTNR}")
 
     def test__fill_umsatzsteuer(self):
