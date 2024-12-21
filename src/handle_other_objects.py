@@ -292,8 +292,6 @@ class Adresse(object):
             self.strasse = sub[0]
             if len(sub) == 2:
                 self.hausnummer = sub[1]
-            else:
-                raise ANSCHRIFT_ERROR
 
     def _fill_plz_ort(self, ort):
         sub = ort.split(' ', 1)

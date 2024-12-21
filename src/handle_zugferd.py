@@ -174,7 +174,8 @@ class ZugFeRD:
     def _fillPosAndNameOfLi(self, li: LineItem, item: list) -> None:
         li.document.line_id = item[0]  # Pos.
         # Datum + ': ' + Tätigkeit
-        li.product.name = item[1] + ": " + item[2]
+        # li.product.name = item[1] + ": " + item[2]
+        li.product.name = item[2]
 
     def _replaceCommaWithDot(self, item: str) -> float:
         return float(item.split()[0].replace(",", "."))
@@ -189,17 +190,22 @@ class ZugFeRD:
         li.settlement.monetary_summation\
             .total_amount = Decimal(f"{gesamt:.2f}")
 
+    def _set_date(self, item: str) -> datetime:
+        if item == 'nan' or item == "":
+            return self.last_date if self.last_date is not None\
+                else datetime.today()
+        else:
+            return datetime.strptime(item, '%Y-%m-%d %H:%M:%S')
+
     def _setOccurrenceInLi(self, li: LineItem, item: str) -> None:
-        if item and len(item) == 10:
-            the_date = datetime.strptime(item, '%d.%m.%Y')
-            # tatsächlicher Zeitpunkt der Tätigkeit
-            li.delivery.event.occurrence = the_date
+        if item is not None:
+            the_date = self._set_date(item)
+            # BG-26
+            li.settlement.period.start = the_date  # BT-134
+            li.settlement.period.end = the_date  # BT-135
             if self.first_date is None:
                 self.first_date = the_date
-            else:
-                self.last_date = the_date
-                # ich benutze nur den ersten Leistungsbezug,
-                # keinen Bereich
+            self.last_date = the_date
 
     def add_items(self, dat, the_tax: str):
         """add items to invoice"""
@@ -210,7 +216,8 @@ class ZugFeRD:
                 li = LineItem()
                 self._fillPosAndNameOfLi(li, item)
                 menge = float(item[3])
-                einzelpreisnetto = self._replaceCommaWithDot(item[5])
+                einzelpreisnetto = float(item[5])
+                # self._replaceCommaWithDot(item[5])
                 li.agreement.net.amount = Decimal(f"{einzelpreisnetto:.2f}")
                 li.delivery.billed_quantity = (
                     Decimal(f"{menge:.4f}"),
@@ -223,13 +230,13 @@ class ZugFeRD:
     def add_gesamtsummen(self, dat, the_tax: str,
                          steuerbefreiungsgrund: str = None) -> None:
         """add gesamtsumme to invoice"""
-        netto = float(dat[0][1].split()[0].replace(",", "."))
-        steuer = float(dat[1][1].split()[0].replace(",", "."))
-        brutto = float(dat[2][1].split()[0].replace(",", "."))
+        netto = dat[0]
+        steuer = dat[1]
+        brutto = dat[2]
 
         trade_tax = ApplicableTradeTax()
-        trade_tax.calculated_amount = Decimal(f"{steuer:.2f}")
-        trade_tax.basis_amount = Decimal(f"{netto:.2f}")
+        trade_tax.calculated_amount = steuer
+        trade_tax.basis_amount = netto
         trade_tax.type_code = "VAT"
         trade_tax.category_code = "E" if the_tax == "0.00" else 'S'
         # trade_tax.exemption_reason_code = 'VATEX-EU-AE'
@@ -238,29 +245,24 @@ class ZugFeRD:
             trade_tax.exemption_reason = steuerbefreiungsgrund
         self.doc.trade.settlement.trade_tax.add(trade_tax)
 
-        self.doc.trade.settlement.monetary_summation.line_total = Decimal(
-            f"{netto:.2f}"
-        )
+        self.doc.trade.settlement.monetary_summation.line_total = netto
         # self.doc.trade.settlement.monetary_summation\
         #   .charge_total = Decimal("0.00")
         # self.doc.trade.settlement.monetary_summation\
         #   .allowance_total = Decimal("0.00")
-        self.doc.trade.settlement.monetary_summation.tax_basis_total = Decimal(
-            f"{netto:.2f}"
-        )
+        self.doc.trade.settlement.monetary_summation.tax_basis_total = netto
         self.doc.trade.settlement.monetary_summation.tax_total = (
-            Decimal(f"{steuer:.2f}"),
+            steuer,
             "EUR",
         )
-        self.doc.trade.settlement.monetary_summation.grand_total = Decimal(
-            f"{brutto:.2f}"
-        )
-        self.doc.trade.settlement.monetary_summation.due_amount = Decimal(
-            f"{brutto:.2f}"
-        )
+        self.doc.trade.settlement.monetary_summation.grand_total = brutto
+        self.doc.trade.settlement.monetary_summation.due_amount = brutto
         self.doc.trade.delivery.event.occurrence = self.first_date
         self.doc.trade.settlement.monetary_summation.charge_total = 0.00
         self.doc.trade.settlement.monetary_summation.allowance_total = 0.00
+        # BG-14 - Rechnungszeitraum
+        self.doc.trade.settlement.period.start = self.first_date  # BT-73
+        self.doc.trade.settlement.period.end = self.last_date  # BT-74
 
     def add_zahlungsziel(self, text, datum):
         """add zahlungsziel to zugferd"""

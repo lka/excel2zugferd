@@ -677,7 +677,7 @@ class Pdf(PDF):
                                       self.lieferantenkonto.iban,
                                       self.lieferantenkonto.name)
         self.qrcode_img = girocode.girocodegen(
-            float(brutto.split(' ')[0].replace(',', '.')),
+            brutto,
             f"{rg_nr['key']} {rg_nr['value']} vom {datum}")
         self.print_qrcode(self.qrcode_img)
 
@@ -714,10 +714,13 @@ class Pdf(PDF):
 
     def _fill_invoice_positions_in_xml(self) -> None:
         """fills invoice positions into ZugFeRD"""
-        theDict = self.daten.get_invoice_positions() if self.daten else []
-        if len(theDict) > 0:
-            df = theDict['daten']
-            self.zugferd.add_items(df, self._get_the_tax())
+        # theDict = self.daten.get_invoice_positions() if self.daten else []
+        # if len(theDict) > 0:
+        #     df = theDict['daten']
+        if self.daten.invoice_poitions is not None:
+            self.zugferd.add_items(self.daten.invoice_poitions,
+                                   self._get_the_tax())
+#            self.zugferd.add_items(df, self._get_the_tax())
 
     def _fill_abspann(self, brutto: str, ueberweisungsdatum: datetime) -> None:
         abspann = (
@@ -746,7 +749,7 @@ class Pdf(PDF):
         self.zugferd.add_rgnr(f"{rg_nr['value']}")
         self.zugferd.add_rechnungsempfaenger(None, self.daten.customer)
         self._fill_invoice_positions_in_xml()
-        self.zugferd.add_gesamtsummen(summen,
+        self.zugferd.add_gesamtsummen(self.daten.summen,
                                       self._get_the_tax(),
                                       P19USTG if kleinunternehmen else None)
         self.zugferd.add_zahlungsziel(
@@ -762,8 +765,8 @@ class Pdf(PDF):
         self.fill_header()
 
         self._fill_kleinunternehmen()
-        an = self.daten.get_address_of_customer() if self.daten else ""
-        self.print_adress(an)
+        self.daten.get_address_of_customer() if self.daten else ""
+        self.print_adress(self.daten.customer.anschrift)
         rg_nr = self._get_rg_nr()
         today = datetime.now()
         datum = today.strftime(GERMAN_DATE)
@@ -775,7 +778,7 @@ class Pdf(PDF):
 
         self._fill_positions()
         summen = self.daten.get_invoice_sums() if self.daten else []
-        brutto = summen[-1][-1]
+        brutto = self.daten.summen[-1]
         self.print_summen(summen)
         if self.lieferantensteuerung.create_xml:
             self.fill_xml(rg_nr, summen, brutto, ueberweisungsdatum, datum)

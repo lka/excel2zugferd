@@ -44,6 +44,15 @@ Als Vorlage benutzen Sie bitte die Datei TestRechnung.xlsx.
 
 ## Versionen
 
+### 0.13.0
+
+- Formatierung der Spalte "Anzahl" mit Trennzeichen "Komma" anstatt "Punkt" bei Dezimalwerten (#18)
+- Im ZugFeRD BT-73, BT-74, also den Rechnungszeitraum auf Rechnungsebene gesetzt
+- Im ZugFeRD BT-134, BT-135, die Datumsangabe im Positionstext wird durch das Lieferdatum auf Positionsebene ersetzt
+- Im ZugFeRD wird eine fehlende Datumsangabe bei der Position mit dem Datum der vorherigen Position gesetzt (#19 teilweise)
+- Die Formatierung der Tausenderstellen mit '.' ergänzt
+- Die Validierung des erzeugten ZUGFeRD Dokuments auf https://www.portinvoice.com ist erfolgreich (Ohne Fehler und Warnungen).
+
 ### 0.12.0
 
 - Sie können mit der Option "anderweitig erzeugtes PDF verwenden" ein von Ihnen selbst anderweitig erzeugtes PDF verwenden und daran den ZugFeRD Part anhängen. Z.B. MS Office Professional Plus 2024 erzeugt ein PDF/A-3A Format, das verwendet werden kann. ACHTUNG: Es liegt in Ihrer Verantwortung, die verwendeten Daten zu prüfen; die Inhalte der PDF werden mit den Inhalten der ZugFeRD xml <b>nicht</b> verglichen !!! Ich prüfe den ZugFeRD Anteil mit Hilfe des Ultramarin eRechnung Viewer. Ein GiroCode kann dann nicht erzeugt  werden.

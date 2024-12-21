@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import src.handle_zugferd as handle_zugferd
 import src.handle_pdf as handle_pdf
 from src.handle_other_objects import Adresse
+import decimal
 
 
 class TestZugFerd(unittest.TestCase):
@@ -55,6 +56,35 @@ xmlns:udt=\"urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100\">\
         count = mod_xml.count('xmlns:qdt=')
         self.assertEqual(count, 1, 'should only be 1')
         # self.assertIn('show me the content of mod_xml', mod_xml)
+
+    def test_add_items(self):
+        """test that add_items doesn't throw any exception"""
+        data = [
+                ['Pos.', 'Datum', 'Tätigkeit', 'Anzahl', 'Typ', 'Preis',
+                 'Summe'],
+                ['1', '2024-01-01 00:00:00',
+                    'WhatsApp wg. Netzteil für USB-Server', '1', '10 Min.',
+                    '22',
+                    '22'],
+                ['2', '2024-01-02 00:00:00',
+                    'Telefonat wg. KVSiServer (steht in der Doku)', '1',
+                    '10 Min.',
+                    '22', '22'],
+                ['3', '2024-01-03 00:00:00',
+                    'Telefonat wg. KVSiServer (steht in der Doku)', '1',
+                    '10 Min.',
+                    '22', '22'],
+                ['4', '2024-01-03 00:00:00',
+                    'Bewerbungsgespräch mit Frau A und B', '2', 'h', '75',
+                    '150'],
+                ['5', '',
+                    'Anfahrt dazu', '1', 'h', '75',
+                    '75'],
+                ]
+        try:
+            self.zugferd.add_items(data, "19.00")
+        except Exception:
+            self.fail("raised Exceptionr unexpectedly!")
 
     def test_add_xml2pdf(self):
         """
@@ -108,72 +138,72 @@ xmlns:udt=\"urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100\">\
                  "Gesamt €"),
                 (
                     "1",
-                    "01.01.2024",
+                    "2024-01-01 00:00:00",
                     "Irgendwas, das länger ist als zwei Zeilen in der Ausgabe \
                         mit einer Dokumentation dessen, was geleistet wurde.",
                     "3",
                     "10 Min.",
-                    "22,00",
-                    "66,00",
+                    "22.00",
+                    "66.00",
                 ),
                 (
                     "2",
-                    "02.01.2024",
+                    "2024-01-02 00:00:00",
                     "Irgendwas, das länger ist als eine Zeilen und einer \
                         Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "h",
-                    "75,00",
-                    "75,00",
+                    "75.00",
+                    "75.00",
                 ),
                 (
                     "3",
-                    "02.01.2024",
+                    "2024-01-02 00:00:00",
                     "Irgendwas, das länger ist als eine Zeilen und einer \
                         Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "h",
-                    "75,00",
-                    "75,00",
+                    "75.00",
+                    "75.00",
                 ),
                 (
                     "4",
-                    "02.01.2024",
+                    "2024-01-02 00:00:00",
                     "Irgendwas, das länger ist als eine Zeilen und einer \
                         Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "h",
-                    "75,00",
-                    "75,00",
+                    "75.00",
+                    "75.00",
                 ),
                 (
                     "5",
-                    "02.01.2024",
+                    "2024-01-02 00:00:00",
                     "Irgendwas, das länger ist als eine Zeilen und einer \
                         Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "h",
-                    "75,00",
-                    "75,00",
+                    "75.00",
+                    "75.00",
                 ),
                 (
                     "6",
-                    "02.01.2024",
+                    "2024-01-02 00:00:00",
                     "Irgendwas, das länger ist als eine Zeilen und einer \
                         Dokumentation dessen, was geleistet wurde.",
                     "1",
                     "h",
-                    "75,00 €",
-                    "75,00 €",
+                    "75.00",
+                    "75.00",
                 ),
             ], "19.0"
         )
 
         self.zugferd.add_gesamtsummen(
             [
-                ("Summe Netto:", "1540,00 €"),
-                ("zzgl. Umsatzsteuer 19%:", "84,98 €"),
-                ("Gesamt:", "1690,98 €"),
+                decimal.Decimal("1540.00"),
+                decimal.Decimal("84.98"),
+                decimal.Decimal("1690.98"),
             ], "19.0"
         )
 

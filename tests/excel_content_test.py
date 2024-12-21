@@ -7,6 +7,9 @@ import os
 import numpy as np
 import pandas as pd
 from src.excel_content import ExcelContent
+import decimal
+import locale
+
 
 ADDRESS_EXPECTED = "\n".join(
     [
@@ -117,6 +120,15 @@ von Hrn. F",
             "22,00 €",
             "22,00 €",
         ],
+        [
+            "11",
+            "",
+            "Anfahrt dazu",
+            "0,5",
+            "h",
+            "75,00 €",
+            "37,50 €",
+        ]
     ]
 )
 
@@ -164,22 +176,23 @@ class TestExcelContent(TestCase):
         """
         Lies die Anschrift des Kunden aus dem Excel Sheet
         """
+        MSG = "should be equal"
         self.xlsx.read_sheet("Rechnung2")
         expected = ADDRESS_EXPECTED
-        value = self.xlsx.get_address_of_customer()
+        self.xlsx.get_address_of_customer()
         # print(value)
-        self.assertEqual(value, expected, "should be equal")
+        self.assertEqual(self.xlsx.customer.anschrift, expected, MSG)
 
     def test__search_anschrift(self):
         """
         Lies die Anschrift des Kunden aus dem Excel Sheet
         """
+        MSG = "should be equal"
         self.xlsx.read_sheet("Rechnung2")
         expected = ADDRESS_EXPECTED
-        value = self.xlsx\
-            ._search_anschrift("An:")  # pylint: disable=protected-access
+        self.xlsx._search_anschrift("An:")  # pylint: disable=protected-access
         # print(value)
-        self.assertEqual(value, expected, "should be equal")
+        self.assertEqual(self.xlsx.customer.anschrift, expected, MSG)
 
     def test__search_anschrift_object(self):
         """
@@ -189,11 +202,9 @@ class TestExcelContent(TestCase):
         expected = ADDRESS_EXPECTED
         exp_arr = expected.split('\n')
         MSG = "should be equal"
-        value = self.xlsx\
-            ._search_anschrift("An:")\
-            # pylint: disable=protected-access
+        self.xlsx._search_anschrift("An:")  # pylint: disable=protected-access
         # print(value)
-        self.assertEqual(value, expected, MSG)
+        self.assertEqual(self.xlsx.customer.anschrift, expected, MSG)
         # print(repr(kunde))
         self.assertEqual(self.xlsx.customer.anschrift_line1, exp_arr[0], MSG)
         self.assertEqual(self.xlsx.customer.adresszusatz, exp_arr[1], MSG)
@@ -228,7 +239,7 @@ class TestExcelContent(TestCase):
         expected = POSITIONS_EXPECTED
         value = self.xlsx.get_invoice_positions()
         MSG = "should be equal"
-        # print(value)
+        print(value)
         # self.assertEqual(value.ndim, expected.ndim, "should be equal")
         self.assertTrue(np.array_equiv(value['daten'], expected), MSG)
         # type: ignore
@@ -240,10 +251,18 @@ class TestExcelContent(TestCase):
         expected = POSITIONS_EXPECTED
         value = self.xlsx._split_dataframe_by_search_value(
                 "An:", "Pos."
-            )['daten']  # pylint: disable=protected-access
-        # print(value)
+            )  # pylint: disable=protected-access
+        # ['daten']
+        self.xlsx._change_values_to_german(value)
+        test = np.r_[
+            [
+                ["Pos.", "Datum", "Tätigkeit", "Anzahl", "Typ", "Preis",
+                 "Summe"]
+            ],
+            value.astype(str).values]
+
         # self.assertEqual(value.ndim, expected.ndim, "should be equal")
-        self.assertTrue(np.array_equiv(value, expected), "should be equal")
+        self.assertTrue(np.array_equiv(test, expected), "should be equal")
         # type: ignore
 
     def test__split_dataframe_by_search_value_unknown_column(self):
@@ -277,7 +296,7 @@ class TestExcelContent(TestCase):
     def test_get_invoice_sums(self):
         """Lies die Summen aus dem Excel Sheet"""
         self.xlsx.read_sheet("Rechnung2")
-        expected = "957,00 €"
+        expected = "994,50 €"
         retval = self.xlsx.get_invoice_sums()
         # print(retval)
         self.assertEqual(retval[0][1], expected, "should be equal")
@@ -286,12 +305,17 @@ class TestExcelContent(TestCase):
         """Lies die Summen aus dem Excel Sheet"""
         sums = "Unnamed: 5"
         self.xlsx.read_sheet("Rechnung2")
-        expected = "1138,83 €"
-        _brutto = float(self.xlsx
-                        .search_cell_right_of(sums, 'Bruttobetrag'))
-        retval = f"{_brutto:.2f} €".replace(".", ",")
+        expected = "1.183,46"
+        with decimal.localcontext() as ctx:
+            # locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')
+            ctx.rounding = decimal.ROUND_05UP
+            _value = decimal.Decimal(self.xlsx
+                                     .search_cell_right_of(sums,
+                                                           'Bruttobetrag'))\
+                .quantize(decimal.Decimal('1.00', ctx))
+            _brutto = locale.format_string('%0.2f', _value, grouping=True)
         # print(retval)
-        self.assertEqual(retval, expected, "should be equal")
+        self.assertEqual(_brutto, expected, "should be equal")
 
     def test_search_cell_right_of_unknown_search_value(self):
         """Lies die Summen aus dem Excel Sheet"""
