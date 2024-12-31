@@ -258,16 +258,14 @@ class ZugFeRD:
         # self.doc.trade.settlement.monetary_summation\
         #   .allowance_total = Decimal("0.00")
         self.doc.trade.settlement.monetary_summation.tax_basis_total = (
-            netto,
-            "EUR",
+            netto
         )
         self.doc.trade.settlement.monetary_summation.tax_total = (
             steuer,
             "EUR",
         )
         self.doc.trade.settlement.monetary_summation.grand_total = (
-            brutto,
-            "EUR",
+            brutto
         )
         self.doc.trade.settlement.monetary_summation.due_amount = brutto
         self.doc.trade.delivery.event.occurrence = self.first_date
