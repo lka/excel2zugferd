@@ -1,10 +1,15 @@
 """
-Module handles Classes Adresse, Konto and Steuerung
+Module handles Classes Adresse, Konto, Steuerung and Invoice
 """
+
+import pandas as pd
+from datetime import datetime, timedelta
+
 KONTAKT_ERROR = ValueError("'Kontakt': mindestens 2, maximal 3 Zeilen\n\
-Tel.: 012345-1234\nFax: 012345-1235 (optional)\nEmail: xyz@abcdef.de")
-ANSCHRIFT_ERROR = ValueError("'Anschrift': mindestens 3, maximal 5 Zeilen\n\
-Adresszeile 1\nAdresszusatz (optional)\nAdresszeile 3 (optional)\n\
+Tel.: 012345-1234\nFax: 012345-1235 (optional)\nE-Mail: xyz@abcdef.de")
+ANSCHRIFT_ERROR = ValueError("'Anschrift': mindestens 3, maximal 5 Zeilen,\
+ keine Leerzeilen\n\
+\nFirma\nAdresszeile 2 (optional)\nAdresszeile 3 (optional)\n\
 Strasse Hausnummer oder Postfach 12345\n\
 PLZ Ortsname")
 USTID_ERROR = ValueError("'Umsatzsteuer': 1-2 Zeilen\n\
@@ -212,14 +217,14 @@ class Adresse(object):
         return '\n'.join(
             filter(None,
                    [
-                            self.anschrift_line1,
-                            self.adresszusatz,
-                            self.anschrift_line3,
-                            ' '.join(['Postfach:', self.postfach])
-                            if self.postfach else None,
-                            ' '.join([self.strasse, self.hausnummer])
-                            if not self.postfach else None,
-                            ' '.join([self.plz, self.ort]),
+                        self.anschrift_line1,
+                        self.adresszusatz,
+                        self.anschrift_line3,
+                        ' '.join(['Postfach:', self.postfach])
+                        if self.postfach else None,
+                        ' '.join([self.strasse, self.hausnummer])
+                        if not self.postfach else None,
+                        ' '.join([self.plz, self.ort]),
                     ]
                    )
             )
@@ -229,7 +234,7 @@ class Adresse(object):
         # print(arr)
         if len(arr) < 3 or len(arr) > 5:
             raise ANSCHRIFT_ERROR
-        self.anschrift_line1 = arr[0]
+        self._fill_adresszeile1(arr[0])
         if len(arr) == 5:
             self.anschrift_line3 = arr[2]
         if len(arr) > 3:
@@ -244,14 +249,14 @@ class Adresse(object):
                    [
                         'Tel.: ' + self.telefon if self.telefon else None,
                         'Fax: ' + self.fax if self.fax else None,
-                        'Email: ' + self.email if self.email else None,
+                        'E-Mail: ' + self.email if self.email else None,
                    ])
         )
 
     @kontakt.setter
     def kontakt(self, arr: list) -> None:
         for elem in arr:
-            sub = elem.split()
+            sub = list(filter(None, elem.split()))
             if len(sub) != 2:
                 raise KONTAKT_ERROR
             else:
@@ -272,13 +277,20 @@ class Adresse(object):
 
     @umsatzsteuer.setter
     def umsatzsteuer(self, arr: list) -> None:
-        sub = arr[0].split()
-        if len(arr) != 2 or len(sub) != 2:
+        if len(arr) > 2:
+            raise USTID_ERROR
+        sub = list(filter(None, arr[0].split()))
+        if len(sub) != 2:
             raise USTID_ERROR
         self._fill_umsatzsteuer_or_id(arr, sub)
 
+    def _fill_adresszeile1(self, zeile1: str) -> None:
+        if len(zeile1) == 0:
+            raise ANSCHRIFT_ERROR
+        self.anschrift_line1 = zeile1
+
     def _fill_postfach(self, postfach):
-        sub = postfach.split(' ', -1)
+        sub = list(filter(None, postfach.split(' ', -1)))
         if len(sub) == 2:
             self.postfach = sub[1]
         else:
@@ -288,13 +300,13 @@ class Adresse(object):
         if 'Postfach' in strasse:
             self._fill_postfach(strasse)
         else:
-            sub = strasse.split(' ', -1)
+            sub = list(filter(None, strasse.split(' ', -1)))
             self.strasse = sub[0]
             if len(sub) == 2:
                 self.hausnummer = sub[1]
 
     def _fill_plz_ort(self, ort):
-        sub = ort.split(' ', 1)
+        sub = list(filter(None, ort.split(' ', 1)))
         self.plz = sub[0]
         if len(sub) == 2:
             self.ort = sub[1]
@@ -304,7 +316,7 @@ class Adresse(object):
     def _fill_anschrift(self, daten):
         if daten["Anschrift"] is None:
             raise ANSCHRIFT_ERROR
-        arr = daten["Anschrift"].split('\n')
+        arr = list(filter(None, daten["Anschrift"].split('\n')))
         self.anschrift = arr
 
     def _fill_tel_fax_email(self, elem, value):
@@ -316,18 +328,20 @@ class Adresse(object):
             self.fax = value
         elif 'Email' in elem:
             self.email = value
+        elif 'E-Mail' in elem:
+            self.email = value
         else:
             raise KONTAKT_ERROR
 
     def _fill_kontakt(self, daten: list) -> None:
         if daten["Kontakt"] is None:
             raise ANSCHRIFT_ERROR
-        arr = daten["Kontakt"].split('\n')
+        arr = list(filter(None, daten["Kontakt"].split('\n')))
         if len(arr) < 2 or len(arr) > 3:
             raise KONTAKT_ERROR
         self.kontakt = arr
 
-    def _fill_umsatzsteuerid(self, arr: list, sub: list) -> None:
+    def _fill_umsatzsteuerid(self, sub: list) -> None:
         if len(sub) != 2:
             raise USTID_ERROR
         self.steuerid = sub[1]
@@ -341,14 +355,18 @@ class Adresse(object):
 
     def _fill_umsatzsteuer_or_id(self, arr: list, sub: list) -> None:
         if len(arr) >= 1 and 'Umsatzsteuer-ID' in sub[0]:
-            self._fill_umsatzsteuerid(arr, sub)
+            self._fill_umsatzsteuerid(sub)
         else:
+            if len(arr) != 2:
+                raise USTID_ERROR
             self._fill_steuernummer(arr, sub)
 
     def _fill_umsatzsteuer(self, daten: list) -> None:
         if daten["Umsatzsteuer"] is None:
             raise USTID_ERROR
-        arr = daten["Umsatzsteuer"].split('\n')
+        arr = list(filter(None, daten["Umsatzsteuer"].split('\n')))
+        if len(arr) == 0:
+            raise USTID_ERROR
         self.umsatzsteuer = arr
 
     def _fill_betrieb(self, daten):
@@ -386,6 +404,18 @@ class Adresse(object):
             self._fill_umsatzsteuer(daten)
             self._fill_zahlungsziel(daten)
             # print(repr(self))
+
+    def get_ueberweisungsdatum(self) -> datetime:
+        return (
+            datetime.now()
+            + timedelta(
+                days=int(
+                    self.zahlungsziel
+                    if self.zahlungsziel > ""
+                    else "0"
+                )
+            )
+        )
 
 
 class Konto(object):
@@ -445,7 +475,7 @@ class Konto(object):
 
     def _search_iban_bic(self, arr: list) -> None:
         for elem in arr[1:]:
-            sub = elem.split(' ', 1)
+            sub = list(filter(None, elem.split(' ', 1)))
             if len(sub) != 2:
                 raise KONTO_ERROR
             else:
@@ -456,7 +486,7 @@ class Konto(object):
         if daten:
             if daten["Konto"] is None:
                 raise KONTAKT_ERROR
-            arr = daten['Konto'].split('\n')
+            arr = list(filter(None, daten['Konto'].split('\n')))
             if len(arr) != 3:
                 raise KONTO_ERROR
             self.name = arr[0]
@@ -474,12 +504,14 @@ class Steuerung(object):
         self._is_kleinunternehmen = None
         self._abspann = None
         self._BYOPdf = None
+        self._directory = None
 
     def __repr__(self) -> str:
-        return f"Steuerung('create_xml: {self.create_xml}', \
+        return f"Steuerung(create_xml: '{self.create_xml}', \
  create_girocode: '{self.create_girocode}',\
  is_kleinunternehmen: '{self.is_kleinunternehmen}', abspann: '{self.abspann}',\
  BYOPdf: '{self.BYOPdf}'\
+ directory: '{self.directory}'\
 )"
 
     @property
@@ -522,6 +554,14 @@ class Steuerung(object):
     def BYOPdf(self, value):
         self._BYOPdf = value
 
+    @property
+    def directory(self):
+        return self._directory
+
+    @directory.setter
+    def directory(self, value):
+        self._directory = value
+
     def _check_TrueFalse(self, thekeys: list, daten: dict, name: str) -> bool:
         return (
             (daten[name] == "Ja")
@@ -551,4 +591,82 @@ class Steuerung(object):
                 daten["Abspann"] if "Abspann" in thekeys else None
             )
             self._fill_bools(thekeys, daten)
+            self.directory = daten['Verzeichnis']
             # print(repr(self))
+
+
+class Invoice(object):
+    """Class Invoice handles collected data for invoice"""
+    def __init__(self) -> None:
+        self._customer: Adresse = None
+        self._supplier: Adresse = None
+        self._supplier_account: Konto = None
+        self._positions: pd.DataFrame = None
+        self._invoicenr: dict = None
+        self._sums: list = None
+        self._management: Steuerung = None
+
+    def __repr__(self) -> str:
+        return f"Invoice: customer: '{repr(self.customer)}',\
+ supplier: '{repr(self.supplier)}',\
+ supplier_account: '{repr(self.supplier_account)}',\
+ positions: '{self.positions}',\
+ invoicenr: '{self.invoicenr}',\
+ sums '{self.sums}'\
+ management: '{repr(self.management)}'"
+
+    @property
+    def customer(self) -> Adresse:
+        return self._customer
+
+    @customer.setter
+    def customer(self, value: Adresse) -> None:
+        self._customer = value
+
+    @property
+    def supplier(self) -> Adresse:
+        return self._supplier
+
+    @supplier.setter
+    def supplier(self, value: Adresse) -> None:
+        self._supplier = value
+
+    @property
+    def supplier_account(self) -> Konto:
+        return self._supplier_account
+
+    @supplier_account.setter
+    def supplier_account(self, value: Konto) -> None:
+        self._supplier_account = value
+
+    @property
+    def positions(self) -> pd.DataFrame:
+        return self._positions
+
+    @positions.setter
+    def positions(self, value: pd.DataFrame) -> None:
+        self._positions = value
+
+    @property
+    def invoicenr(self) -> dict:
+        return self._invoicenr
+
+    @invoicenr.setter
+    def invoicenr(self, value: dict) -> None:
+        self._invoicenr = value
+
+    @property
+    def sums(self) -> list:
+        return self._sums
+
+    @sums.setter
+    def sums(self, value: list) -> None:
+        self._sums = value
+
+    @property
+    def management(self) -> Steuerung:
+        return self._management
+
+    @management.setter
+    def management(self, value: Steuerung) -> None:
+        self._management = value

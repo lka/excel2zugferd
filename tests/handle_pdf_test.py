@@ -13,20 +13,8 @@ class TestHandlePdf(unittest.TestCase):
     Test Class for handling pdf
     """
     def setUp(self) -> None:
-        self.pdf = handle_pdf.Pdf(None, None)
+        self.pdf = handle_pdf.Pdf()
         return super().setUp()
-
-    def test_demo(self):
-        """
-        check whether demo creates the file hello_world.pdf
-        """
-        try:
-            os.remove("hello_world.pdf")
-        except OSError:
-            pass
-
-        self.pdf.demo()
-        self.assertTrue(os.path.isfile("hello_world.pdf"))
 
     def test_uniquify(self):
         """

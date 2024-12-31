@@ -2,6 +2,7 @@
 Module handle_zugferd
 """
 import re
+import numpy as np
 
 from datetime import date, datetime
 from decimal import Decimal
@@ -16,6 +17,8 @@ from drafthorse.pdf import attach_xml
 from drafthorse.models import NS_QDT
 
 from src.handle_other_objects import Adresse
+from src.collect_data import InvoiceCollection
+from src import P19USTG, GERMAN_DATE
 
 
 class ZugFeRD:
@@ -166,10 +169,10 @@ class ZugFeRD:
         self.doc.trade.agreement.seller.tax_registrations.add(taxreg)
         # self.doc.trade.agreement.seller.tax = ustid
 
-    def add_verwendungszweck(self, rg_nr: str, datum: str) -> None:
+    def add_verwendungszweck(self, rg_nr: dict, datum: str) -> None:
         """Add Verwendungszweck to zugferd BT-83"""
         self.doc.trade.settlement.payment_reference =\
-            f"{rg_nr['key']} {rg_nr['value']} vom {datum}"
+            f"{list(rg_nr.keys())[0]} {list(rg_nr.values())[0]} vom {datum}"
 
     def _fillPosAndNameOfLi(self, li: LineItem, item: list) -> None:
         li.document.line_id = item[0]  # Pos.
@@ -202,7 +205,7 @@ class ZugFeRD:
             the_date = self._set_date(item)
             # BG-26
             li.settlement.period.start = the_date  # BT-134
-            li.settlement.period.end = the_date  # BT-135
+            # li.settlement.period.end = the_date  # BT-135
             if self.first_date is None:
                 self.first_date = the_date
             self.last_date = the_date
@@ -221,18 +224,22 @@ class ZugFeRD:
                 li.agreement.net.amount = Decimal(f"{einzelpreisnetto:.2f}")
                 li.delivery.billed_quantity = (
                     Decimal(f"{menge:.4f}"),
-                    "HUR" if item[4] == "h" else "MIN",
-                )  # C62 == pieces
+                    "HUR" if item[4] == "h" else "MIN",  # BT-130
+                )  # C62 == pieces - BT-150 ?
                 self._setOccurrenceInLi(li, item[1])
                 self._setTaxInLi(li, item[6], the_tax)
                 self.doc.trade.items.add(li)
 
+    def _get_float_value(self, tuple) -> float:
+        _, v = tuple
+        return float(v)
+
     def add_gesamtsummen(self, dat, the_tax: str,
                          steuerbefreiungsgrund: str = None) -> None:
         """add gesamtsumme to invoice"""
-        netto = dat[0]
-        steuer = dat[1]
-        brutto = dat[2]
+        netto = self._get_float_value(dat[0])
+        steuer = self._get_float_value(dat[1])
+        brutto = self._get_float_value(dat[2])
 
         trade_tax = ApplicableTradeTax()
         trade_tax.calculated_amount = steuer
@@ -250,12 +257,18 @@ class ZugFeRD:
         #   .charge_total = Decimal("0.00")
         # self.doc.trade.settlement.monetary_summation\
         #   .allowance_total = Decimal("0.00")
-        self.doc.trade.settlement.monetary_summation.tax_basis_total = netto
+        self.doc.trade.settlement.monetary_summation.tax_basis_total = (
+            netto,
+            "EUR",
+        )
         self.doc.trade.settlement.monetary_summation.tax_total = (
             steuer,
             "EUR",
         )
-        self.doc.trade.settlement.monetary_summation.grand_total = brutto
+        self.doc.trade.settlement.monetary_summation.grand_total = (
+            brutto,
+            "EUR",
+        )
         self.doc.trade.settlement.monetary_summation.due_amount = brutto
         self.doc.trade.delivery.event.occurrence = self.first_date
         self.doc.trade.settlement.monetary_summation.charge_total = 0.00
@@ -308,3 +321,54 @@ class ZugFeRD:
         # print ('MAP:', nsmap)
 
         return decoded.encode('utf-8')
+
+    def fill_lieferant_to_note(self, lieferant: Adresse) -> None:
+        """
+        populate note with addressfields for ZugFeRD
+        """
+        txt = (
+            lieferant.anschrift
+            + "\n"
+            + lieferant.kontakt
+            + "\n"
+            + lieferant.umsatzsteuer
+        )
+        self.add_note(txt)
+
+    def _get_the_tax(self, is_kleinunternehmen: bool = False) -> str:
+        return "0.00" if is_kleinunternehmen else "19.00"
+
+    def _fill_invoice_positions_in_xml(self, positions:
+                                       np.ndarray = None) -> None:
+        """fills invoice positions into ZugFeRD"""
+        if positions is not None:
+            self.add_items(positions, self._get_the_tax())
+
+    def _get_brutto(self, sums: list = None) -> str:
+        return self._get_float_value(sums[-1])
+
+    def fill_xml(self, invoice: InvoiceCollection = None) -> None:
+        """
+        fills data into ZugFeRD part
+        """
+        kleinunternehmen = invoice.management.is_kleinunternehmen
+        self.add_zahlungsempfaenger(
+            invoice.supplier_account.multiliner())
+
+        self.fill_lieferant_to_note(invoice.supplier)
+        self.add_my_company(invoice.supplier)
+        self.add_rgnr(f"{list(invoice.invoicenr.values())[0]}")
+        self.add_rechnungsempfaenger(None, invoice.customer)
+        self._fill_invoice_positions_in_xml(np.r_[[invoice.positions.columns],
+                                            invoice.positions.astype(str)
+                                            .values])
+        self.add_gesamtsummen(invoice.sums,
+                              self._get_the_tax(kleinunternehmen),
+                              P19USTG if kleinunternehmen else None)
+        self.add_zahlungsziel(
+            f"Bitte überweisen Sie den Betrag von \
+{self._get_brutto(invoice.sums)} bis zum",
+            invoice.supplier.get_ueberweisungsdatum(),
+        )
+        self.add_verwendungszweck(invoice.invoicenr,
+                                  datetime.now().strftime(GERMAN_DATE))

@@ -5,9 +5,7 @@ Module excel_content
 import os
 import math
 import pandas as pd
-import numpy as np
 from src.handle_other_objects import Adresse
-import locale
 import decimal
 
 
@@ -19,23 +17,20 @@ class ExcelContent:
         self.dir: str = directory
         self.path: str = os.path.join(self.dir, self.fn)
         self.daten: pd.DataFrame = None
-        self.invoice_poitions: pd.DataFrame = None
-        self.customer = Adresse()
-        self.summen = None
         try:
             self.xlsx = pd.ExcelFile(self.path)
             pd.options.mode.copy_on_write = True
         except FileNotFoundError:
             pass
-        locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')
 
     def read_sheet_list(self):
         """Read the List of Sheets in this Excel File"""
         return self.xlsx.sheet_names
 
-    def read_sheet(self, sheet_name) -> None:
+    def read_sheet(self, sheet_name) -> pd.DataFrame:
         """Read the specified sheet content"""
         self.daten = self.xlsx.parse(sheet_name)
+        return self.daten
 
     def _get_search_err(self, search_value: str, column_name: str) -> str:
         """return ErrorMessage for search_err"""
@@ -96,7 +91,7 @@ class ExcelContent:
         """get first index of next NaN"""
         return next((i for i, v in enumerate(df) if v != v), -1)
 
-    def _search_anschrift(self, search: str) -> None:
+    def _search_anschrift(self, search: str, customer: Adresse) -> None:
         """
         Search in specified column until next NaN,
         and fill it into anschrift of customer
@@ -106,72 +101,15 @@ class ExcelContent:
         an = self.daten[search]
         nan_idx = self._get_index_of_nan(an)  # get first index of NaN in an
         arr = an[0:nan_idx].to_list()
-        self.customer.anschrift = arr
-        self.customer.landeskennz = "DE"
-        # return "\n".join(arr)
-
-    def get_maxlengths(self, df: pd.DataFrame) -> list:
-        """
-        get array with max string length of each column in pandas DataFrame
-        """
-        lenArr = []
-        for c in df:
-            theLength = max(df[c].astype(str).map(len).max(), len(c))
-            # print('Max length of column %s: %s' % (c, theLength))
-            lenArr.append(theLength)
-        return lenArr
-
-    def _currency(self, amount: float | decimal.Decimal) -> str:
-        """return str as locale currency"""
-        return locale.currency(amount, grouping=True)
-
-    def _change_values_to_german(self, df: pd.DataFrame,
-                                 datum: str = "Datum",
-                                 preis: str = "Preis",
-                                 summe: str = "Summe",
-                                 anzahl: str = "Anzahl") -> None:
-        """
-        replace column Datum with german date %d.%m.%Y and columns Preis and
-        Summe as float values with Komma separated"""
-        retval = df
-        # retval.style.format({datum: lambda t: t.strftime("%d.%m.%Y")
-        #                      if len(t) > 0 else ""})
-        retval[datum] = pd.to_datetime(retval[datum],
-                                       errors="ignore").dt.strftime("%d.%m.%Y")
-        retval[datum] = retval[datum].fillna("")  # substitute NaN by ""
-        # pd.describe_option("styler.format.decimal")
-        # pd.set_option("styler.format.decimal", ",")
-        # pd.describe_option("styler.format.decimal")
-        # pd.options.styler.format.thousands = "."
-        # print(retval[datum])
-        # pattern = "{:.2f} €".format
-        # retval.to_string(formatters={preis: pattern, summe: pattern})
-        # print(retval)
-        retval[anzahl] = (
-            retval[anzahl]
-            .apply("{:n}".format)
-            # .apply(lambda x: x.replace(".", ","))
-            # .apply(lambda x: locale.format_string('%.2g', x))
-        )
-        retval[preis] = (
-            retval[preis]
-            # .apply("{:.2f} €".format)
-            # .apply(lambda x: x.replace(".", ","))
-            .apply(lambda x: self._currency(x))
-        )
-        retval[summe] = (
-            retval[summe]
-            # .apply("{:.2f} €".format)
-            # .apply(lambda x: x.replace(".", ","))
-            .apply(lambda x: self._currency(x))
-        )
+        if customer:
+            customer.anschrift = arr
+            customer.landeskennz = "DE"
 
     def _split_dataframe_by_search_value(self, column_name: str,
                                          search_value: str) -> dict:
         """
         Search in specified column for search_value return rows until next NaN
-        as numpy dataFrame with all cells as strings, append
-        maxlengths of columns to dict as {'daten': np.r_[], 'maxlengths': []}
+        as pandas dataFrame
         """
         if self.daten is None:
             return None
@@ -200,33 +138,26 @@ class ExcelContent:
         # print(retval)
         return retval
 
-    def get_address_of_customer(self, anschrift: str = "An:"):
+    def get_address_of_customer(self, anschrift: str = "An:",
+                                customer: Adresse = None):
         """returns address of customer in Excel Sheet with \\n joined values"""
-        return self._search_anschrift(anschrift)
+        return self._search_anschrift(anschrift, customer)
 
     def get_invoice_number(self, spalte: str = "An:",
-                           rg_nr: str = "Rechnungs-Nr:"):
+                           rg_nr: str = "Rechnungs-Nr:"
+                           ) -> dict:
         """returns tuple ('InvoiceNumberText', invoiceNumber)"""
-        return {rg_nr: self.search_cell_right_of(spalte, rg_nr)}
+        theDict = {rg_nr: self.search_cell_right_of(spalte, rg_nr)}
+        # self.invoice.invoicenr = theDict   # ToDo. eliminate
+        return theDict
 
     def get_invoice_positions(self, spalte: str = "An:",
-                              search: str = "Pos.") -> dict:
+                              search: str = "Pos.",
+                              ) -> dict:
         """
-        return dict with array of array of positions for invoice
-        and maxlengths of columns
-        {'daten': np.r_[], 'maxlengths': []}
+        return pandas DataFrame with positions for invoice
         """
-        retval = self._split_dataframe_by_search_value(spalte, search)
-        self.invoice_poitions = np.r_[[retval.columns],
-                                      retval.astype(str).values]
-        self._change_values_to_german(retval)
-        # print(retval)
-        lenArr = self.get_maxlengths(retval)
-        # print(lenArr)
-
-        # return {'daten': np.r_[line.values, retval.astype(str).values],
-        return {'daten': np.r_[[retval.columns], retval.astype(str).values],
-                'maxlengths': lenArr}
+        return self._split_dataframe_by_search_value(spalte, search)
 
     def _round(self, value, prec: int) -> decimal.Decimal:
         """round decimal to prec as in excel"""
@@ -240,16 +171,12 @@ class ExcelContent:
                          spalte: str = "Unnamed: 5",
                          sum: str = "Summe",
                          USt: str = "Umsatzsteuer 19%",
-                         bruttobetr: str = "Bruttobetrag"):
+                         bruttobetr: str = "Bruttobetrag",
+                         ):
         """return array of invoice sums"""
         netto = self._round(self.search_cell_right_of(spalte, sum), 2)
         umsatzsteuer = self._round(self.search_cell_right_of(spalte, USt), 2)
         brutto = self._round(self.search_cell_right_of(spalte, bruttobetr), 2)
-        self.summen = [netto,
-                       umsatzsteuer,
-                       brutto]  # saved for for xml
-        return [
-            ("Summe netto:", self._currency(netto)),
-            ("zzgl. Umsatzsteuer 19%:", self._currency(umsatzsteuer)),
-            ("Bruttobetrag:", self._currency(brutto))
-        ]
+        return [("Summe netto:", netto),
+                ("zzgl. Umsatzsteuer:", umsatzsteuer),
+                ("Bruttobetrag:", brutto)]

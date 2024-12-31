@@ -4,19 +4,20 @@ Module handle_pdf
 
 # -*- coding: utf8 -*-
 
-from datetime import datetime, timedelta
+from datetime import datetime
 import os
 from fpdf import FPDF
 from fpdf.fonts import FontFace
 from fpdf.enums import TableCellFillMode, OutputIntentSubType
-from src.excel_content import ExcelContent
-import src.handle_zugferd as handle_zugferd
+# import src.handle_zugferd as handle_zugferd
 import src.handle_girocode as gc
-from src.handle_other_objects import Adresse, Konto, Steuerung
+import pandas as pd
+import numpy as np
+from src.collect_data import InvoiceCollection
 import math
-
-GERMAN_DATE = "%d.%m.%Y"
-P19USTG = "Gemäß § 19 UStG wird keine Umsatzsteuer berechnet."
+import locale
+import decimal
+from src import P19USTG, GERMAN_DATE
 
 
 class PDF(FPDF):
@@ -259,6 +260,7 @@ class PDF(FPDF):
         """
         print Summen
         """
+        # print(arr)
         self._printSummenHeader()
         # headings_style = FontFace(emphasis="BOLD", color=255,
         # fill_color=self.table_head
@@ -352,24 +354,14 @@ class Pdf(PDF):
     Klasse Pdf
     """
 
-    def __init__(self, daten, stammdaten, logo_fn=None)\
+    def __init__(self, logo_fn=None)\
             -> None:
         super().__init__()
-        # print(daten)
-        # print("----------")
-        # print(stammdaten)
         self.logo_fn = logo_fn
-        self.daten = daten if isinstance(daten, ExcelContent) else None
-        self.stammdaten = stammdaten if stammdaten is not None else {}
         self.qrcode_img = None
-        self.lieferant = Adresse()
-        self.lieferantenkonto = Konto()
-        self.lieferantensteuerung = Steuerung()
-        self.empfaenger = Adresse()
-        self.lieferant.fill_lieferant(stammdaten)
-        self.lieferantensteuerung.fill_steuerung(stammdaten)
-        self.lieferantenkonto.fill_konto(stammdaten)
+        self.invoice: InvoiceCollection = None
         self.set_fonts_and_other_stuff()
+        locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')
 
     def set_fonts_and_other_stuff(self) -> None:
         """
@@ -411,230 +403,13 @@ class Pdf(PDF):
             "sRGB2014 (v2)",
         )
 
-    def demo(self) -> None:
-        """
-        Demo for creation of Pdf
-        """
-        today = datetime.now()
-        german_date = "%d.%m.%Y"
-        datum = today.strftime(german_date)
-        ueberweisungsdatum = (today + timedelta(days=14)).strftime(german_date)
-        # self = self()
-
-        #
-        self.table_head = (
-            255  # white fill-color of Table Header (30, 144, 255)
-            # DodgerBlue1
-        )
-        self.table_head_color = 0  # black text-color of Table Header
-        self.table_lines = 0  # black (0, 0, 255)  # Blue
-        self.table_fill_color = 220  # lightgrey
-        self.table_widths = (10, 21, 68, 16, 15, 16, 19)
-        # (11, 22, 61, 16, 20, 21, 21)
-        self.table_lines = 120  # darkgrey
-
-        self.set_title("Max Mustermann - Softwareentwicklung")
-        self.footer_txt = (
-            "Max Mustermann, IBAN: DE 6472482348234234248794, \
-                BIC: BICOFINSTITUTE"
-        )
-        self.set_author("M. Mustermann")
-        self.add_page()
-        self.print_faltmarken()
-        self.print_absender(
-            "Max Mustermann\nSoftwareentwicklung\nDorfstr. 712\n\
-                65432 Musterdorf"
-        )
-        self.print_kontakt(
-            "Tel.: 0813-12345678\nEMail: max@mustermann.de\n\nSteuer-Nr: \
-                081519/987543\nFinanzamt Musterdorf"
-        )
-        self.print_adress(
-            "Empfängerfirma GmbH\nFrau Anette Musterfrau\nDorfstr. 10\n\
-                65432 Musterdorf"
-        )
-        self.print_bezug(f"Rechnung Nr. 123456 vom {datum}")
-
-        self.print_positions(
-            [
-                ("Pos.", "Datum", "Tätigkeit", "Menge", "Typ", "Einzel €",
-                 "Gesamt €"),
-                (
-                    "1",
-                    "01.01.2024",
-                    "Irgendwas, das länger ist als zwei Zeilen in der Ausgabe \
-                        mit einer Dokumentation dessen, was geleistet wurde.",
-                    "1",
-                    "10 Min.",
-                    "22.00",
-                    "22.00",
-                ),
-                (
-                    "2",
-                    "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer \
-                        Dokumentation dessen, was geleistet wurde.",
-                    "1",
-                    "h",
-                    "75.00",
-                    "75.00",
-                ),
-                (
-                    "3",
-                    "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer \
-                        Dokumentation dessen, was geleistet wurde.",
-                    "1",
-                    "h",
-                    "75.00",
-                    "75.00",
-                ),
-                (
-                    "4",
-                    "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer \
-                        Dokumentation dessen, was geleistet wurde.",
-                    "1",
-                    "h",
-                    "75.00",
-                    "75.00",
-                ),
-                (
-                    "5",
-                    "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer \
-                        Dokumentation dessen, was geleistet wurde.",
-                    "1",
-                    "h",
-                    "75.00",
-                    "75.00",
-                ),
-                (
-                    "6",
-                    "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer \
-                        Dokumentation dessen, was geleistet wurde.",
-                    "1",
-                    "h",
-                    "75.00",
-                    "75.00",
-                ),
-                (
-                    "7",
-                    "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer \
-                        Dokumentation dessen, was geleistet wurde.",
-                    "1",
-                    "h",
-                    "75.00",
-                    "75.00",
-                ),
-                (
-                    "8",
-                    "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer \
-                        Dokumentation dessen, was geleistet wurde.",
-                    "1",
-                    "h",
-                    "75.00",
-                    "75.00",
-                ),
-                (
-                    "9",
-                    "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer\
-                          Dokumentation dessen, was geleistet wurde.",
-                    "1",
-                    "h",
-                    "75.00",
-                    "75.00",
-                ),
-                (
-                    "10",
-                    "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer \
-                        Dokumentation dessen, was geleistet wurde.",
-                    "1",
-                    "h",
-                    "75.00",
-                    "75.00",
-                ),
-                (
-                    "11",
-                    "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer \
-                        Dokumentation dessen, was geleistet wurde.",
-                    "2",
-                    "10 Min.",
-                    "22.00",
-                    "44.00",
-                ),
-                (
-                    "12",
-                    "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer \
-                        Dokumentation dessen, was geleistet wurde.",
-                    "2",
-                    "10 Min.",
-                    "22.00",
-                    "44.00",
-                ),
-                (
-                    "13",
-                    "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer \
-                        Dokumentation dessen, was geleistet wurde.",
-                    "2",
-                    "10 Min.",
-                    "22.00",
-                    "44.00",
-                ),
-                (
-                    "14",
-                    "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer \
-                        Dokumentation dessen, was geleistet wurde.",
-                    "2",
-                    "10 Min.",
-                    "22.00",
-                    "44.00",
-                ),
-                (
-                    "15",
-                    "02.01.2024",
-                    "Irgendwas, das länger ist als eine Zeilen und einer \
-                        Dokumentation dessen, was geleistet wurde.",
-                    "2",
-                    "10 Min.",
-                    "22.00",
-                    "44.00",
-                ),
-            ]
-        )
-
-        self.print_summen(
-            [
-                ("Summe Netto:", "1.540,00 €"),
-                ("zzgl. Umsatzsteuer 19%:", "84,98 €"),
-                ("Gesamt:", "1.690,98 €"),
-            ]
-        )
-
-        self.print_abspann(
-            f"Bitte überweisen Sie den Betrag von 1.690,98 € bis zum \
-{ueberweisungsdatum} auf u.a. Konto.\
-\n\nMit freundlichen Grüßen\nMax Mustermann",
-        )
-
-        self.output("hello_world.pdf")
-
     def fill_header(self) -> None:
         """
         populate header with data
         """
-        self.set_title(self.lieferant.betriebsbezeichnung)
-        self.footer_txt = self.lieferantenkonto.oneliner()
-        self.set_author(self.lieferant.name)
+        self.set_title(self.invoice.supplier.betriebsbezeichnung)
+        self.footer_txt = self.invoice.supplier_account.oneliner()
+        self.set_author(self.invoice.supplier.name)
 
         self.table_head = (
             255  # white fill-color of Table Header (30, 144, 255)
@@ -650,139 +425,146 @@ class Pdf(PDF):
         self.add_page()
         self.print_faltmarken()
         self.print_logo(self.logo_fn)
-        self.print_absender(self.lieferant.anschrift)
-        bundesland = self.lieferant.bundesland
+        self.print_absender(self.invoice.supplier.anschrift)
+        bundesland = self.invoice.supplier.bundesland
         if len(bundesland) > 0:
             self.print_bundesland(bundesland)
         self.print_kontakt(
-            self.lieferant.kontakt + "\n\n" +
-            self.lieferant.umsatzsteuer
+            self.invoice.supplier.kontakt + "\n\n" +
+            self.invoice.supplier.umsatzsteuer
         )
-
-    def fill_lieferant_to_note(self) -> None:
-        """
-        populate note with addressfields for ZugFeRD
-        """
-        txt = (
-            self.lieferant.anschrift
-            + "\n"
-            + self.lieferant.kontakt
-            + "\n"
-            + self.lieferant.umsatzsteuer
-        )
-        self.zugferd.add_note(txt)
 
     def _fill_girocode(self, brutto, rg_nr, datum):
-        girocode = gc.Handle_Girocode(self.lieferantenkonto.bic,
-                                      self.lieferantenkonto.iban,
-                                      self.lieferantenkonto.name)
+        girocode = gc.Handle_Girocode(self.invoice.supplier_account.bic,
+                                      self.invoice.supplier_account.iban,
+                                      self.invoice.supplier_account.name)
         self.qrcode_img = girocode.girocodegen(
             brutto,
-            f"{rg_nr['key']} {rg_nr['value']} vom {datum}")
+            f"{list(rg_nr.keys())[0]} {list(rg_nr.values())[0]} vom {datum}")
         self.print_qrcode(self.qrcode_img)
 
     def _fill_kleinunternehmen(self) -> None:
-        if self.lieferantensteuerung.is_kleinunternehmen:
+        if self.invoice.management.is_kleinunternehmen:
             self.print_kleinunternehmerregelung(P19USTG)
 
-    def _get_ueberweisungsdatum(self, today: datetime) -> datetime:
-        return (
-            today
-            + timedelta(
-                days=int(
-                    self.lieferant.zahlungsziel
-                    if self.lieferant.zahlungsziel > ""
-                    else "0"
-                )
-            )
+    def get_maxlengths(self, df: pd.DataFrame) -> list:
+        """
+        get array with max string length of each column in pandas DataFrame
+        """
+        lenArr = []
+        for c in df:
+            theLength = max(df[c].astype(str).map(len).max(), len(c))
+            # print('Max length of column %s: %s' % (c, theLength))
+            lenArr.append(theLength)
+        return lenArr
+
+    def _currency(self, amount: float | decimal.Decimal) -> str:
+        """return str as locale currency"""
+        return locale.currency(amount, grouping=True)
+
+    def _change_values_to_german(self, df: pd.DataFrame,
+                                 datum: str = "Datum",
+                                 preis: str = "Preis",
+                                 summe: str = "Summe",
+                                 anzahl: str = "Anzahl") -> pd.DataFrame:
+        """
+        replace column Datum with german date %d.%m.%Y and columns Preis and
+        Summe as float values with Komma separated"""
+        retval = df.copy()
+        # retval.style.format({datum: lambda t: t.strftime("%d.%m.%Y")
+        #                      if len(t) > 0 else ""})
+        retval[datum] = pd.to_datetime(retval[datum],
+                                       errors="ignore").dt.strftime("%d.%m.%Y")
+        retval[datum] = retval[datum].fillna("")  # substitute NaN by ""
+        # print(retval)
+        retval[anzahl] = (
+            retval[anzahl]
+            .apply("{:n}".format)
         )
+        retval[preis] = (
+            retval[preis]
+            .apply(lambda x: self._currency(x))
+        )
+        retval[summe] = (
+            retval[summe]
+            .apply(lambda x: self._currency(x))
+        )
+        return retval
 
-    def _get_rg_nr(self) -> list:
-        rg_nr = self.daten.get_invoice_number() if self.daten else {}
-        return {'key': list(rg_nr.keys())[0],
-                'value': rg_nr[list(rg_nr.keys())[0]]}
+    def get_invoice_positions(self, positions: pd.DataFrame = None) -> dict:
+        """
+        return dict with array of array of positions for invoice
+        and maxlengths of columns
+        {'daten': np.r_[], 'maxlengths': []}
+        """
+        retval = self._change_values_to_german(positions)
+        # print(retval)
+        lenArr = self.get_maxlengths(retval)
+        # print(lenArr)
 
-    def _get_the_tax(self) -> str:
-        return "0.00" if self.lieferantensteuerung.is_kleinunternehmen\
-                        else "19.00"
+        # return {'daten': np.r_[line.values, retval.astype(str).values],
+        return {'daten': np.r_[[retval.columns], retval.astype(str).values],
+                'maxlengths': lenArr}
 
     def _fill_positions(self) -> None:
         # print(self.split_dataframe_by_SearchValue(AN, "Pos."))
-        theDict = self.daten.get_invoice_positions() if self.daten else []
+        theDict = self.get_invoice_positions(self.invoice.positions)
         if len(theDict) > 0:
             self.print_positions(theDict['daten'], theDict['maxlengths'])
 
-    def _fill_invoice_positions_in_xml(self) -> None:
-        """fills invoice positions into ZugFeRD"""
-        # theDict = self.daten.get_invoice_positions() if self.daten else []
-        # if len(theDict) > 0:
-        #     df = theDict['daten']
-        if self.daten.invoice_poitions is not None:
-            self.zugferd.add_items(self.daten.invoice_poitions,
-                                   self._get_the_tax())
-#            self.zugferd.add_items(df, self._get_the_tax())
-
     def _fill_abspann(self, brutto: str, ueberweisungsdatum: datetime) -> None:
         abspann = (
-            self.lieferantensteuerung.abspann
-            if len(self.lieferantensteuerung.abspann) > 1
-            else "Mit freundlichen Grüßen\n" + self.lieferant.name
+            self.invoice.management.abspann
+            if len(self.invoice.management.abspann) > 1
+            else "Mit freundlichen Grüßen\n" + self.invoice.supplier.name
         )
         self.print_abspann(
             f"Bitte überweisen Sie den Betrag von {brutto} bis zum \
-{ueberweisungsdatum.strftime(GERMAN_DATE)} auf u.a. Konto.\n\n{abspann}"
+{ueberweisungsdatum.strftime(GERMAN_DATE)} auf \
+u.a. Konto.\n\n{abspann}"
         )
 
-    def fill_xml(self, rg_nr: list, summen: list,
-                 brutto: str, ueberweisungsdatum: datetime,
-                 datum: str) -> None:
-        """
-        fills data into ZugFeRD part
-        """
-        self.zugferd = handle_zugferd.ZugFeRD()
-        kleinunternehmen = self.lieferantensteuerung.is_kleinunternehmen
-        self.zugferd.add_zahlungsempfaenger(
-            self.lieferantenkonto.multiliner())
+    def _get_value(self, tuple) -> str:
+        _, v = tuple
+        return v
 
-        self.fill_lieferant_to_note()
-        self.zugferd.add_my_company(self.lieferant)
-        self.zugferd.add_rgnr(f"{rg_nr['value']}")
-        self.zugferd.add_rechnungsempfaenger(None, self.daten.customer)
-        self._fill_invoice_positions_in_xml()
-        self.zugferd.add_gesamtsummen(self.daten.summen,
-                                      self._get_the_tax(),
-                                      P19USTG if kleinunternehmen else None)
-        self.zugferd.add_zahlungsziel(
-            f"Bitte überweisen Sie den Betrag von {brutto} bis zum",
-            ueberweisungsdatum,
-        )
-        self.zugferd.add_verwendungszweck(rg_nr, datum)
+    def get_invoice_sums(self):
+        """return array of invoice sums"""
+        netto = self._get_value(self.invoice.sums[0])
+        umsatzsteuer = self._get_value(self.invoice.sums[1])
+        brutto = self._get_value(self.invoice.sums[-1])
+        return [
+            ("Summe netto:", self._currency(netto)),
+            ("zzgl. Umsatzsteuer 19%:", self._currency(umsatzsteuer)),
+            ("Bruttobetrag:", self._currency(brutto))
+        ]
 
-    def fill_pdf(self) -> None:
+    def fill_pdf(self, invoice: InvoiceCollection) -> None:
         """
         set own data
         """
+        self.invoice = invoice
         self.fill_header()
 
         self._fill_kleinunternehmen()
-        self.daten.get_address_of_customer() if self.daten else ""
-        self.print_adress(self.daten.customer.anschrift)
-        rg_nr = self._get_rg_nr()
+        self.print_adress(self.invoice.customer.anschrift)
+        rg_nr = self.invoice.invoicenr  # _get_rg_nr()
         today = datetime.now()
         datum = today.strftime(GERMAN_DATE)
-        ueberweisungsdatum = self._get_ueberweisungsdatum(today)
+        ueberweisungsdatum = self.invoice.supplier.get_ueberweisungsdatum()
 
         self.print_bezug(
-            f"{rg_nr['key']} {rg_nr['value']} vom {datum}"
+            f"{list(rg_nr.keys())[0]} {list(rg_nr.values())[0]} vom {datum}"
         )
 
         self._fill_positions()
-        summen = self.daten.get_invoice_sums() if self.daten else []
-        brutto = self.daten.summen[-1]
+
+        summen = self.get_invoice_sums()
+        brutto = self._get_value(summen[-1])
         self.print_summen(summen)
-        if self.lieferantensteuerung.create_xml:
-            self.fill_xml(rg_nr, summen, brutto, ueberweisungsdatum, datum)
+        # if self.lieferantensteuerung.create_xml:
+        #     self.fill_xml(rg_nr, summen, brutto, ueberweisungsdatum, datum)
         self._fill_abspann(brutto, ueberweisungsdatum)
 
-        if self.lieferantensteuerung.create_girocode:
-            self._fill_girocode(brutto, rg_nr, datum)
+        if self.invoice.management.create_girocode:
+            self._fill_girocode(locale.atof(brutto.strip(" €")), rg_nr, datum)

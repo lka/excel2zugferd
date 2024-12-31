@@ -73,6 +73,7 @@ expected but got {receiver}")
         if self.verbose:
             self.qrdata = qrdata
 
+        # print(qrdata)
         qr = qrcode.QRCode(box_size=QR_SIZE, border=QR_BORDER)
         qr.add_data(qrdata)
 

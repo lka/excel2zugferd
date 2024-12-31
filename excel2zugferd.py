@@ -13,7 +13,9 @@ from PIL import Image, ImageTk
 from src.handle_pdf import Pdf
 
 from src.handle_ini_file import IniFile
-from src.excel_content import ExcelContent
+import src.excel_content
+from src.collect_data import InvoiceCollection
+from src.handle_zugferd import ZugFeRD
 
 
 def format_ioerr(err: IOError) -> str:
@@ -242,11 +244,7 @@ class OberflaecheIniFile(Oberflaeche):
     def _check_content_of_stammdaten(self, content: dict) -> bool:
         """return whether stammdaten have failures"""
         try:
-            Pdf(
-                None,
-                content,
-                None,
-            )
+            InvoiceCollection(stammdaten=content)
         except ValueError as e:
             messagebox.showerror("Fehler in den Stammdaten", e)
             return True
@@ -373,7 +371,7 @@ class OberflaecheIniFile(Oberflaeche):
             "Löschen des Logos",
             "Sind Sie sicher, dass Sie das Logolöschen möchten?"
         )
-        print(resp)
+        # print(resp)
         if resp is True:
             os.remove(self.logo_fn)
             self.logo_delete.pack_forget()
@@ -393,6 +391,8 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         self.filename = None
         self.excel_file = None
         self.selected_lb_item = None
+        self.invoiceCollection = InvoiceCollection()
+        self.zugferd = None
         self.double_clicked_flag = False
         self.root.title("Excel2ZugFeRD")
         self.make_menu_bar(
@@ -432,7 +432,7 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
     def _add_xml(self, file_name: str, outfile: str) -> bool:
         """returns true if failure"""
         try:
-            self.pdf.zugferd.add_xml2pdf(file_name, outfile)
+            self.zugferd.add_xml2pdf(file_name, outfile)
         except IOError as ex:
             mymsg = f"Konnte {outfile} aus {file_name} \
                         nicht erstellen, \
@@ -446,7 +446,7 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
 
     def _populate_temp_file(self, file_name: str) -> str | None:
         """returns own pdf filename with path"""
-        if self.pdf.lieferantensteuerung.BYOPdf:
+        if self.invoiceCollection.management.BYOPdf:
             theFile = self._get_own_pdf()
             shutil.copyfile(theFile, file_name)
             return theFile
@@ -469,6 +469,8 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
 
     def _create_and_add_xml(self, fn: str, outfile: str) -> bool:
         """returns True if caught 'has_error'"""
+        if self.create_ZugFeRD():
+            return True
         if fn is None or outfile is None:
             return True
         try:
@@ -490,7 +492,7 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
     def _try_to_fill_pdf(self) -> bool:
         """returns True if Daten have failures"""
         try:
-            self.pdf.fill_pdf()
+            self.pdf.fill_pdf(self.invoiceCollection)
         except ValueError as e:
             messagebox.showerror("Fehler in den Daten", e)
             return True
@@ -513,32 +515,83 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         mymsg = f"Die Datei {outfile} wurde erstellt."
         messagebox.showinfo("Information", mymsg)
 
-    def _fill_pdf_only(self, outfile: str) -> None:
+    def _create_pdf_file_only(self, outfile: str) -> None:
         if outfile is not None:
             self.pdf.output(outfile)
             self._success_message(outfile)
 
-    def _fill_pdf(self, directory):
+    def _fill_pdf(self):
         if self._try_to_fill_pdf():
             return
-        fn, outfile = self._get_filenames(directory)
-        if self.pdf.lieferantensteuerung.create_xml:
+        fn, outfile = self._get_filenames(self.invoiceCollection
+                                          .management.directory)
+        if self.invoiceCollection.management.create_xml:
             if self._create_and_add_xml(fn, outfile):
                 return
             self._success_message(outfile)
         else:
-            self._fill_pdf_only(outfile)
+            self._create_pdf_file_only(outfile)
 
-    def _try_to_init_pdf(self, contentini_file: dict) -> bool:
+    def _try_to_init_pdf(self) -> bool:
         """returns True if error occurs"""
         try:
             self.pdf = Pdf(
-                self.excel_file,
-                contentini_file,
-                self.logo_fn if Path(self.logo_fn).exists() else None,
+                self.logo_fn if Path(self.logo_fn).exists() else None
             )
         except ValueError as e:
             messagebox.showerror("Fehler in den Stammdaten", e)
+            return True
+        return False
+
+    def try_to_fill_stammdaten(self, invoiceCollection: InvoiceCollection,
+                               stammdaten: dict) -> bool:
+        """returns True if error in stammdaten occurs"""
+        try:
+            invoiceCollection.set_stammdaten(stammdaten)
+        except ValueError as e:
+            messagebox.showerror("Fehler in den Stammdaten", e)
+            return True
+        return False
+
+    def try_to_fill_daten(self, invoiceCollection: InvoiceCollection,
+                          daten: src.excel_content.ExcelContent) -> bool:
+        """returns True if error in stammdaten occurs"""
+        try:
+            invoiceCollection.set_daten(daten)
+        except ValueError as e:
+            messagebox.showerror("Fehler in den Excel-Daten", e)
+            return True
+        # print('excel2zugferd:567: ', repr(invoiceCollection))
+        return False
+
+    def create_ZugFeRD(self) -> bool:
+        """returns True on Failure"""
+        self.zugferd = ZugFeRD()
+        # print('create_ZugFeRD:572', repr(self.invoiceCollection))
+        self.zugferd.fill_xml(self.invoiceCollection)
+        return False
+
+    def _getStammdatenToInvoiceCollection(self) -> bool:
+        """return True on failure"""
+        if self.ini_file:
+            contentini_file = self.ini_file.read_ini_file()
+            return self.try_to_fill_stammdaten(self.invoiceCollection,
+                                               contentini_file)
+        return False
+
+    def _getExcelDatenToInvoiceCollection(self) -> bool:
+        """return True on failure"""
+        if self.excel_file:
+            self.excel_file.read_sheet(self.selected_lb_item)
+            return self.try_to_fill_daten(self.invoiceCollection,
+                                          self.excel_file)
+        return False
+
+    def _check_tabellenblatt(self) -> bool:
+        """return True on failure"""
+        if self.selected_lb_item is None:
+            mymsg = "Bitte erst ein Excel Tabellenblatt auswählen."
+            messagebox.showinfo("Information", mymsg)
             return True
         return False
 
@@ -546,18 +599,15 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         """
         create the pdf
         """
-        # print('entries:', entries)
-        if self.selected_lb_item is None:
-            mymsg = "Bitte erst ein Excel Tabellenblatt auswählen."
-            messagebox.showinfo("Information", mymsg)
+        if self._check_tabellenblatt():
             return
-        if self.ini_file:
-            contentini_file = self.ini_file.read_ini_file()
-        if self.excel_file:
-            self.excel_file.read_sheet(self.selected_lb_item)
-        if self._try_to_init_pdf(contentini_file):
+        if self._getStammdatenToInvoiceCollection():
             return
-        self._fill_pdf(contentini_file["Verzeichnis"])
+        if self._getExcelDatenToInvoiceCollection():
+            return
+        if self._try_to_init_pdf():
+            return
+        self._fill_pdf()
 
     def open_stammdaten(self):
         """
@@ -575,7 +625,7 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         )
 
     def _read_sheet_list(self) -> list:
-        self.excel_file = ExcelContent(self.filename, "")
+        self.excel_file = src.excel_content.ExcelContent(self.filename, "")
         self.file_name_label.config(text=self.filename)
         self.lb.delete(0, "end")
         items = self.excel_file.read_sheet_list()

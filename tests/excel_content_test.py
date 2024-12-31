@@ -7,6 +7,8 @@ import os
 import numpy as np
 import pandas as pd
 from src.excel_content import ExcelContent
+from src.handle_other_objects import Adresse
+import src.handle_pdf as pdf
 import decimal
 import locale
 
@@ -179,9 +181,10 @@ class TestExcelContent(TestCase):
         MSG = "should be equal"
         self.xlsx.read_sheet("Rechnung2")
         expected = ADDRESS_EXPECTED
-        self.xlsx.get_address_of_customer()
+        customer = Adresse()
+        self.xlsx.get_address_of_customer(customer=customer)
         # print(value)
-        self.assertEqual(self.xlsx.customer.anschrift, expected, MSG)
+        self.assertEqual(customer.anschrift, expected, MSG)
 
     def test__search_anschrift(self):
         """
@@ -190,9 +193,11 @@ class TestExcelContent(TestCase):
         MSG = "should be equal"
         self.xlsx.read_sheet("Rechnung2")
         expected = ADDRESS_EXPECTED
-        self.xlsx._search_anschrift("An:")  # pylint: disable=protected-access
+        customer = Adresse()
+        self.xlsx._search_anschrift("An:", customer=customer)\
+            # pylint: disable=protected-access
         # print(value)
-        self.assertEqual(self.xlsx.customer.anschrift, expected, MSG)
+        self.assertEqual(customer.anschrift, expected, MSG)
 
     def test__search_anschrift_object(self):
         """
@@ -202,19 +207,21 @@ class TestExcelContent(TestCase):
         expected = ADDRESS_EXPECTED
         exp_arr = expected.split('\n')
         MSG = "should be equal"
-        self.xlsx._search_anschrift("An:")  # pylint: disable=protected-access
+        customer = Adresse()
+        self.xlsx._search_anschrift("An:", customer=customer)\
+            # pylint: disable=protected-access
         # print(value)
-        self.assertEqual(self.xlsx.customer.anschrift, expected, MSG)
+        self.assertEqual(customer.anschrift, expected, MSG)
         # print(repr(kunde))
-        self.assertEqual(self.xlsx.customer.anschrift_line1, exp_arr[0], MSG)
-        self.assertEqual(self.xlsx.customer.adresszusatz, exp_arr[1], MSG)
-        self.assertEqual(self.xlsx.customer.strasse, exp_arr[2].split(' ')[0],
+        self.assertEqual(customer.anschrift_line1, exp_arr[0], MSG)
+        self.assertEqual(customer.adresszusatz, exp_arr[1], MSG)
+        self.assertEqual(customer.strasse, exp_arr[2].split(' ')[0],
                          MSG)
-        self.assertEqual(self.xlsx.customer.hausnummer,
+        self.assertEqual(customer.hausnummer,
                          exp_arr[2].split(' ')[1], MSG)
-        self.assertEqual(self.xlsx.customer.plz, exp_arr[3].split(' ')[0], MSG)
-        self.assertEqual(self.xlsx.customer.ort, exp_arr[3].split(' ')[1], MSG)
-        self.assertEqual(self.xlsx.customer.landeskennz, 'DE', MSG)
+        self.assertEqual(customer.plz, exp_arr[3].split(' ')[0], MSG)
+        self.assertEqual(customer.ort, exp_arr[3].split(' ')[1], MSG)
+        self.assertEqual(customer.landeskennz, 'DE', MSG)
 
     def test__get_index_of_nan(self):
         """
@@ -237,9 +244,11 @@ class TestExcelContent(TestCase):
 
         self.xlsx.read_sheet("Rechnung2")
         expected = POSITIONS_EXPECTED
-        value = self.xlsx.get_invoice_positions()
+        retval = self.xlsx.get_invoice_positions()
+        myPdf = pdf.Pdf()
+        value = myPdf.get_invoice_positions(retval)
         MSG = "should be equal"
-        print(value)
+        # print(value)
         # self.assertEqual(value.ndim, expected.ndim, "should be equal")
         self.assertTrue(np.array_equiv(value['daten'], expected), MSG)
         # type: ignore
@@ -253,13 +262,14 @@ class TestExcelContent(TestCase):
                 "An:", "Pos."
             )  # pylint: disable=protected-access
         # ['daten']
-        self.xlsx._change_values_to_german(value)
+        myPdf = pdf.Pdf()
+        retval = myPdf._change_values_to_german(value)
         test = np.r_[
             [
                 ["Pos.", "Datum", "Tätigkeit", "Anzahl", "Typ", "Preis",
                  "Summe"]
             ],
-            value.astype(str).values]
+            retval.astype(str).values]
 
         # self.assertEqual(value.ndim, expected.ndim, "should be equal")
         self.assertTrue(np.array_equiv(test, expected), "should be equal")
@@ -296,10 +306,10 @@ class TestExcelContent(TestCase):
     def test_get_invoice_sums(self):
         """Lies die Summen aus dem Excel Sheet"""
         self.xlsx.read_sheet("Rechnung2")
-        expected = "994,50 €"
+        expected = 994.50
         retval = self.xlsx.get_invoice_sums()
         # print(retval)
-        self.assertEqual(retval[0][1], expected, "should be equal")
+        self.assertEqual(float(retval[0][1]), expected, "should be equal")
 
     def test_search_cell_right_of(self):
         """Lies die Summen aus dem Excel Sheet"""
@@ -350,7 +360,8 @@ class TestExcelContent(TestCase):
         """
         teste die Maximalen Längen eines DataFrames
         """
-        lenArr = self.xlsx.get_maxlengths(
+        myPdf = pdf.Pdf()
+        lenArr = myPdf.get_maxlengths(
             pd.DataFrame(data=POSITIONS_EXPECTED[1:],
                          columns=POSITIONS_EXPECTED[0]))
         MSG = 'should be equal'
