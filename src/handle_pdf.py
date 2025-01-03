@@ -528,14 +528,20 @@ u.a. Konto.\n\n{abspann}"
         _, v = tuple
         return v
 
+    def _toLocaleFloatStr(self, inp: str) -> str:
+        """convert string witch float to locale float string"""
+        return locale.format_string("%.f", float(inp), grouping=True)
+
     def get_invoice_sums(self):
         """return array of invoice sums"""
         netto = self._get_value(self.invoice.sums[0])
         umsatzsteuer = self._get_value(self.invoice.sums[1])
         brutto = self._get_value(self.invoice.sums[-1])
+        satz = self._toLocaleFloatStr(self.invoice.supplier.steuersatz)
+        UST = f"zzgl. Umsatzsteuer {satz}%:"
         return [
             ("Summe netto:", self._currency(netto)),
-            ("zzgl. Umsatzsteuer 19%:", self._currency(umsatzsteuer)),
+            (UST, self._currency(umsatzsteuer)),
             ("Bruttobetrag:", self._currency(brutto))
         ]
 

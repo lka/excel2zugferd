@@ -7,6 +7,7 @@ import math
 import pandas as pd
 from src.handle_other_objects import Adresse
 import decimal
+import string
 
 
 class ExcelContent:
@@ -15,12 +16,14 @@ class ExcelContent:
     def __init__(self, filename: str, directory: str):
         self.fn: str = filename
         self.dir: str = directory
-        self.path: str = os.path.join(self.dir, self.fn)
+        self.path: str = os.path.join(self.dir, self.fn)\
+            if '/' not in filename else filename
         self.daten: pd.DataFrame = None
         try:
             self.xlsx = pd.ExcelFile(self.path)
             pd.options.mode.copy_on_write = True
         except FileNotFoundError:
+            print(f"file not found '{self.path}'")
             pass
 
     def read_sheet_list(self):
@@ -29,7 +32,10 @@ class ExcelContent:
 
     def read_sheet(self, sheet_name) -> pd.DataFrame:
         """Read the specified sheet content"""
-        self.daten = self.xlsx.parse(sheet_name)
+        self.daten = self.xlsx.parse(sheet_name, header=None)
+        self.daten.columns = list(string.ascii_uppercase)[0:len(self.daten
+                                                                .columns)]
+        # print(self.daten)
         return self.daten
 
     def _get_search_err(self, search_value: str, column_name: str) -> str:
@@ -91,16 +97,18 @@ class ExcelContent:
         """get first index of next NaN"""
         return next((i for i, v in enumerate(df) if v != v), -1)
 
-    def _search_anschrift(self, search: str, customer: Adresse) -> None:
+    def _search_anschrift(self, spalte: str, search: str,
+                          customer: Adresse) -> None:
         """
         Search in specified column until next NaN,
         and fill it into anschrift of customer
         """
         if self.daten is None:
             return None
-        an = self.daten[search]
+        an = self.daten[spalte]
+        fromIdx = self.daten.index[an == search].tolist()[0] + 1
         nan_idx = self._get_index_of_nan(an)  # get first index of NaN in an
-        arr = an[0:nan_idx].to_list()
+        arr = an[fromIdx:nan_idx].to_list()
         if customer:
             customer.anschrift = arr
             customer.landeskennz = "DE"
@@ -138,12 +146,13 @@ class ExcelContent:
         # print(retval)
         return retval
 
-    def get_address_of_customer(self, anschrift: str = "An:",
+    def get_address_of_customer(self, spalte: str = "A",
+                                anschrift: str = "An:",
                                 customer: Adresse = None):
         """returns address of customer in Excel Sheet with \\n joined values"""
-        return self._search_anschrift(anschrift, customer)
+        return self._search_anschrift(spalte, anschrift, customer)
 
-    def get_invoice_number(self, spalte: str = "An:",
+    def get_invoice_number(self, spalte: str = "A",
                            rg_nr: str = "Rechnungs-Nr:"
                            ) -> dict:
         """returns tuple ('InvoiceNumberText', invoiceNumber)"""
@@ -151,7 +160,7 @@ class ExcelContent:
         # self.invoice.invoicenr = theDict   # ToDo. eliminate
         return theDict
 
-    def get_invoice_positions(self, spalte: str = "An:",
+    def get_invoice_positions(self, spalte: str = "A",
                               search: str = "Pos.",
                               ) -> dict:
         """
@@ -168,7 +177,7 @@ class ExcelContent:
                 )
 
     def get_invoice_sums(self,
-                         spalte: str = "Unnamed: 5",
+                         spalte: str = "F",
                          sum: str = "Summe",
                          USt: str = "Umsatzsteuer 19%",
                          bruttobetr: str = "Bruttobetrag",

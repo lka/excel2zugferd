@@ -18,34 +18,22 @@ class TestAdresse(unittest.TestCase):
         after creation of Object
         """
         adresse = Adresse()
-        self.assertIsNone(adresse.betriebsbezeichnung,
-                          'should be None on init')
-        self.assertIsNone(adresse.name,
-                          'should be None on init')
-        self.assertIsNone(adresse.anschrift_line1,
-                          'should be None on init')
-        self.assertIsNone(adresse.adresszusatz,
-                          'should be None on init')
-        self.assertIsNone(adresse.strasse,
-                          'should be None on init')
-        self.assertIsNone(adresse.hausnummer,
-                          'should be None on init')
-        self.assertIsNone(adresse.plz,
-                          'should be None on init')
-        self.assertIsNone(adresse.ort,
-                          'should be None on init')
-        self.assertIsNone(adresse.telefon,
-                          'should be None on init')
-        self.assertIsNone(adresse.fax,
-                          'should be None on init')
-        self.assertIsNone(adresse.email,
-                          'should be None on init')
-        self.assertIsNone(adresse.steuernr,
-                          'should be None on init')
-        self.assertIsNone(adresse.finanzamt,
-                          'should be None on init')
-        self.assertIsNone(adresse.zahlungsziel,
-                          'should be None on init')
+        MSG = 'should be None on init'
+        self.assertIsNone(adresse.betriebsbezeichnung, MSG)
+        self.assertIsNone(adresse.name, MSG)
+        self.assertIsNone(adresse.anschrift_line1, MSG)
+        self.assertIsNone(adresse.adresszusatz, MSG)
+        self.assertIsNone(adresse.strasse, MSG)
+        self.assertIsNone(adresse.hausnummer, MSG)
+        self.assertIsNone(adresse.plz, MSG)
+        self.assertIsNone(adresse.ort, MSG)
+        self.assertIsNone(adresse.telefon, MSG)
+        self.assertIsNone(adresse.fax, MSG)
+        self.assertIsNone(adresse.email, MSG)
+        self.assertIsNone(adresse.steuernr, MSG)
+        self.assertIsNone(adresse.finanzamt, MSG)
+        self.assertIsNone(adresse.zahlungsziel, MSG)
+        self.assertIsNone(adresse.steuersatz, MSG)
 
     def test_forPopulation(self):
         """
@@ -69,6 +57,7 @@ class TestAdresse(unittest.TestCase):
         AMT = 'Finanzamt Musterstadt'
         USTNR = '12345/12345'
         ZZIEL = '14'
+        SSATZ = '19'
         adr.betriebsbezeichnung = BEZ
         self.assertEqual(adr.betriebsbezeichnung, BEZ, MSG)
         adr.name = NAME
@@ -99,6 +88,8 @@ class TestAdresse(unittest.TestCase):
         self.assertEqual(adr.finanzamt, AMT, MSG)
         adr.zahlungsziel = ZZIEL
         self.assertEqual(adr.zahlungsziel, ZZIEL, MSG)
+        adr.steuersatz = SSATZ
+        self.assertEqual(adr.steuersatz, SSATZ, MSG)
 
     def test_get_anschrift(self):
         """Tests get_anschrift"""
@@ -200,6 +191,17 @@ class TestAdresse(unittest.TestCase):
         self.assertIsNone(adr.finanzamt)
         self.assertIsNone(adr.steuernr)
 
+    def test__fill_steuersatz(self):
+        """Test _fill_steuersatz with correct value"""
+        MSG = "should be equal"
+        adr = Adresse()
+        daten = {
+            'Steuersatz': '19'
+        }
+        EXPECTED = "19.00"
+        adr._fill_steuersatz(daten)
+        self.assertEqual(adr.steuersatz, EXPECTED, MSG)
+
     def test_fill_lieferant(self):
         """
         Tests that procedure fill_lieferant works
@@ -216,6 +218,7 @@ class TestAdresse(unittest.TestCase):
 \nFinanzamt Musterstadt",
                     "Verzeichnis": "C:/Users/xxx/Documents",
                     "Zahlungsziel": "14",
+                    "Steuersatz": "7.5",
                 }
         lieferant = Adresse()
         lieferant.fill_lieferant(daten)
@@ -235,6 +238,7 @@ class TestAdresse(unittest.TestCase):
         self.assertEqual(lieferant.strasse, "Musterstr.", MSG)
         self.assertEqual(lieferant.telefon, "01234-1234567", MSG)
         self.assertEqual(lieferant.zahlungsziel, "14", MSG)
+        self.assertEqual(lieferant.steuersatz, "7.50", MSG)
 
     def test_fill_lieferant_throws_cond1(self):
         """
@@ -251,6 +255,7 @@ class TestAdresse(unittest.TestCase):
 \nFinanzamt Musterstadt",
                     "Verzeichnis": "C:/Users/xxx/Documents",
                     "Zahlungsziel": "14",
+                    "Steuersatz": "19",
                 }
         lieferant = Adresse()
         daten["Anschrift"] = None
@@ -284,6 +289,10 @@ Musterstr. 17a\n12345 Musterstadt"
             self.fail("raised ValueError unexpectedly!")
         daten["Anschrift"] = "Software AG\nAbtlg. EDV\n\
 Herr Maier\nMusterstr. 17a\n12345 Musterstadt"
+        daten["Steuersatz"] = "Hallo"
+        with self.assertRaises(ValueError):
+            lieferant.fill_lieferant(daten)
+        daten["Steuersatz"] = "19"
         try:
             lieferant.fill_lieferant(daten)
         except ValueError:
@@ -304,6 +313,7 @@ Herr Maier\nMusterstr. 17a\n12345 Musterstadt"
 \nFinanzamt Musterstadt",
                     "Verzeichnis": "C:/Users/xxx/Documents",
                     "Zahlungsziel": "14",
+                    "Steuersatz": None,
                 }
         lieferant = Adresse()
         daten["Betriebsbezeichnung"] = None
@@ -333,6 +343,7 @@ Herr Maier\nMusterstr. 17a\n12345 Musterstadt"
 \nFinanzamt Musterstadt",
                     "Verzeichnis": "C:/Users/xxx/Documents",
                     "Zahlungsziel": "14",
+                    "Steuersatz": None,
                 }
         lieferant = Adresse()
         daten["Kontakt"] = None
@@ -373,6 +384,7 @@ Herr Maier\nMusterstr. 17a\n12345 Musterstadt"
 \nFinanzamt Musterstadt",
                     "Verzeichnis": "C:/Users/xxx/Documents",
                     "Zahlungsziel": "14",
+                    "Steuersatz": None,
                 }
         lieferant = Adresse()
         daten["Name"] = None
@@ -405,6 +417,7 @@ Herr Maier\nMusterstr. 17a\n12345 Musterstadt"
 \nFinanzamt Musterstadt",
                     "Verzeichnis": "C:/Users/xxx/Documents",
                     "Zahlungsziel": "14",
+                    "Steuersatz": None,
                 }
         lieferant = Adresse()
         daten["Umsatzsteuer"] = None
@@ -441,6 +454,7 @@ Herr Maier\nMusterstr. 17a\n12345 Musterstadt"
 \nFinanzamt Musterstadt",
                     "Verzeichnis": "C:/Users/xxx/Documents",
                     "Zahlungsziel": "14",
+                    "Steuersatz": None,
                 }
         lieferant = Adresse()
         daten["Zahlungsziel"] = None

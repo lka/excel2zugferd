@@ -3,6 +3,7 @@ Module handle_zugferd
 """
 import re
 import numpy as np
+import pandas as pd
 
 from datetime import date, datetime
 from decimal import Decimal
@@ -234,6 +235,19 @@ class ZugFeRD:
         _, v = tuple
         return float(v)
 
+    def add_rechnungsperiode(self, posDatum: pd.DataFrame = None) -> None:
+        posDatum = posDatum.copy()
+        posDatum = posDatum.dropna()
+        # pd.to_datetime(posDatum, errors="ignore")
+        # print(posDatum)
+        startDatum = posDatum.min(axis=0, skipna=True)
+        endDatum = posDatum.max(axis=0, skipna=True)
+        # print(f"{startDatum} - {endDatum}")
+        self.doc.trade.delivery.event.occurrence = startDatum
+        # BG-14 - Rechnungszeitraum
+        self.doc.trade.settlement.period.start = startDatum  # BT-73
+        self.doc.trade.settlement.period.end = endDatum  # BT-74
+
     def add_gesamtsummen(self, dat, the_tax: str,
                          steuerbefreiungsgrund: str = None) -> None:
         """add gesamtsumme to invoice"""
@@ -268,12 +282,8 @@ class ZugFeRD:
             brutto
         )
         self.doc.trade.settlement.monetary_summation.due_amount = brutto
-        self.doc.trade.delivery.event.occurrence = self.first_date
         self.doc.trade.settlement.monetary_summation.charge_total = 0.00
         self.doc.trade.settlement.monetary_summation.allowance_total = 0.00
-        # BG-14 - Rechnungszeitraum
-        self.doc.trade.settlement.period.start = self.first_date  # BT-73
-        self.doc.trade.settlement.period.end = self.last_date  # BT-74
 
     def add_zahlungsziel(self, text, datum):
         """add zahlungsziel to zugferd"""
@@ -333,14 +343,16 @@ class ZugFeRD:
         )
         self.add_note(txt)
 
-    def _get_the_tax(self, is_kleinunternehmen: bool = False) -> str:
-        return "0.00" if is_kleinunternehmen else "19.00"
+    def _get_the_tax(self, steuersatz: str = "19.00",
+                     is_kleinunternehmen: bool = False) -> str:
+        return "0.00" if is_kleinunternehmen else steuersatz
 
     def _fill_invoice_positions_in_xml(self, positions:
-                                       np.ndarray = None) -> None:
+                                       np.ndarray = None,
+                                       steuersatz: str = None) -> None:
         """fills invoice positions into ZugFeRD"""
         if positions is not None:
-            self.add_items(positions, self._get_the_tax())
+            self.add_items(positions, steuersatz)
 
     def _get_brutto(self, sums: list = None) -> str:
         return self._get_float_value(sums[-1])
@@ -350,6 +362,7 @@ class ZugFeRD:
         fills data into ZugFeRD part
         """
         kleinunternehmen = invoice.management.is_kleinunternehmen
+        steuersatz = invoice.supplier.steuersatz
         self.add_zahlungsempfaenger(
             invoice.supplier_account.multiliner())
 
@@ -359,10 +372,14 @@ class ZugFeRD:
         self.add_rechnungsempfaenger(None, invoice.customer)
         self._fill_invoice_positions_in_xml(np.r_[[invoice.positions.columns],
                                             invoice.positions.astype(str)
-                                            .values])
+                                            .values],
+                                            self.
+                                            _get_the_tax(steuersatz,
+                                                         kleinunternehmen))
         self.add_gesamtsummen(invoice.sums,
-                              self._get_the_tax(kleinunternehmen),
+                              self._get_the_tax(steuersatz, kleinunternehmen),
                               P19USTG if kleinunternehmen else None)
+        self.add_rechnungsperiode(invoice.positions['Datum'])
         self.add_zahlungsziel(
             f"Bitte überweisen Sie den Betrag von \
 {self._get_brutto(invoice.sums)} bis zum",

@@ -6,7 +6,6 @@ Alternativ kann das Programm den ZugFeRD - Anteil an eine von Ihnen erstellte PD
 
 Ich benutze das Programm ausschließlich um meine Stundenabrechnungen zu erledigen. Es werden also nur Stunden "h" als Typen erkannt, alle anderen Typen werden als Minuten im XML-Part dargestellt, auch wenn in der Testrechnung.xlsx beispielsweise "10 Min." stehen.
 
-Die Umsatzsteuer wird ausgewiesen und zwar fix mit 19%.
 
 ## Installation
 
@@ -43,6 +42,14 @@ Die Struktur der Excel Datei ist vorgegeben und kann nicht verändert werden, oh
 Als Vorlage benutzen Sie bitte die Datei TestRechnung.xlsx.
 
 ## Versionen
+
+### 0.14.0
+
+- In den Stammdaten kann der "normale" Steuersatz gesetzt werden (Default 19%) falls er mal geändert werden sollte.
+- Im ZugFeRD BT-134, die Datumsangabe im Positionstext wird durch das Lieferdatum auf Positionsebene ersetzt; BT-135 entfällt, da immer der gleiche Wert wie in BT-134 gesetzt werden müsste.
+- Im ZugFeRD wird BT-14, die Rechnungsperiode, wird auf das Minimum bis zum Maximum der Datumseinträge der Positionen gesetzt.
+- für erste Tests: Wenn zugferd.exe mit Parametern aufgerufen wird, wird der letzte Parameter als Pfadangabe für die Excel-Datei betrachtet.
+- Die Validierung des erzeugten ZUGFeRD Dokuments auf https://www.portinvoice.com ist erfolgreich (Ohne Fehler und Warnungen).
 
 ### 0.13.0
 

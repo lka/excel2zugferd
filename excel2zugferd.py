@@ -7,6 +7,7 @@ from tkinter import messagebox, filedialog, Button, ttk
 import json
 import tempfile
 import os
+from sys import argv
 from pathlib import Path
 import shutil
 from PIL import Image, ImageTk
@@ -40,10 +41,12 @@ fields = [
     {"Text": "Umsatzsteuer", "Label": "Umsatzsteuer", "Lines": 2,
         "Type": "String"},
     {"Text": "Konto", "Label": "Konto", "Lines": 3, "Type": "String"},
-    {"Text": "Zahlungsziel", "Label": "Zahlungsziel", "Lines": 1,
+    {"Text": "Zahlungsziel", "Label": "Zahlungsziel (in Tagen)", "Lines": 1,
         "Type": "String"},
     {"Text": "Abspann", "Label": "Abspann", "Lines": 5, "Type": "String"},
     {"Text": "Verzeichnis", "Label": "Verzeichnis", "Lines": 1,
+        "Type": "String"},
+    {"Text": "Steuersatz", "Label": "Steuersatz (in %)", "Lines": 1,
         "Type": "String"},
     {
         "Text": "Kleinunternehmen",
@@ -384,7 +387,7 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
     Klasse OberflaecheExcel2ZugFerd
     """
 
-    def __init__(self, myfields, myini=None):
+    def __init__(self, myfields, myini=None, args: list = None):
         super().__init__()
         self.fields = myfields
         self.ini_file = myini
@@ -420,6 +423,16 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         )
         self.save_button.pack(side=tk.LEFT, padx=PADX, pady=PADY)
         self.save_button.bind("<Return>", (lambda event: self.create_pdf()))
+        self._getStammdatenToInvoiceCollection()
+        self.check_args(args)
+
+    def check_args(self, args: list) -> None:
+        """check arguments from main call"""
+        # messagebox.showinfo("Information", f"Args: {args}")
+        if len(args) > 1:
+            self.filename = args[-1]
+            if len(self.filename) > 0 and Path(self.filename).exists():
+                self._read_sheet_list()
 
     def _get_own_pdf(self):
         fn = filedialog.askopenfilename(
@@ -601,8 +614,9 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         """
         if self._check_tabellenblatt():
             return
-        if self._getStammdatenToInvoiceCollection():
-            return
+        # if self._getStammdatenToInvoiceCollection():
+        #     return
+        # do it only once on initialization, Lka, 03.01.2025
         if self._getExcelDatenToInvoiceCollection():
             return
         if self._try_to_init_pdf():
@@ -725,6 +739,7 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
 
 
 if __name__ == "__main__":
+    print(argv)
     thedir = Path.joinpath(
         Path(os.getenv("APPDATA")).resolve(), Path("excel2zugferd")
     )
@@ -740,5 +755,5 @@ if __name__ == "__main__":
     if ini.exists_ini_file() is None:
         oberfl = OberflaecheIniFile(fields, ini)
     else:
-        oberfl = OberflaecheExcel2Zugferd(fields, ini)
+        oberfl = OberflaecheExcel2Zugferd(fields, ini, argv)
     oberfl.loop()
