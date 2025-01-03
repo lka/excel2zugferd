@@ -194,7 +194,7 @@ class TestExcelContent(TestCase):
         self.xlsx.read_sheet("Rechnung2")
         expected = ADDRESS_EXPECTED
         customer = Adresse()
-        self.xlsx._search_anschrift("An:", customer=customer)\
+        self.xlsx._search_anschrift("A", "An:", customer=customer)\
             # pylint: disable=protected-access
         # print(value)
         self.assertEqual(customer.anschrift, expected, MSG)
@@ -208,7 +208,7 @@ class TestExcelContent(TestCase):
         exp_arr = expected.split('\n')
         MSG = "should be equal"
         customer = Adresse()
-        self.xlsx._search_anschrift("An:", customer=customer)\
+        self.xlsx._search_anschrift("A", "An:", customer=customer)\
             # pylint: disable=protected-access
         # print(value)
         self.assertEqual(customer.anschrift, expected, MSG)
@@ -230,12 +230,13 @@ class TestExcelContent(TestCase):
         self.xlsx.read_sheet("Rechnung2")
         expected = ADDRESS_EXPECTED
         if self.xlsx.daten is not None:
-            an = self.xlsx.daten["An:"]
+            an = self.xlsx.daten["A"]
+            fromIdx = self.xlsx.daten.index[an == "An:"].tolist()[0] + 1
             nan_idx = self.xlsx\
                 ._get_index_of_nan(  # pylint: disable=protected-access
                     an
                 )
-            value = "\n".join(an[0:nan_idx])
+            value = "\n".join(an[fromIdx:nan_idx])
             # print(value)
             self.assertEqual(value, expected, "should be equal")
 
@@ -259,7 +260,7 @@ class TestExcelContent(TestCase):
         self.xlsx.read_sheet("Rechnung2")
         expected = POSITIONS_EXPECTED
         value = self.xlsx._split_dataframe_by_search_value(
-                "An:", "Pos."
+                "A", "Pos."
             )  # pylint: disable=protected-access
         # ['daten']
         myPdf = pdf.Pdf()
@@ -284,7 +285,7 @@ class TestExcelContent(TestCase):
             )
         try:
             self.xlsx._split_dataframe_by_search_value(
-                "An:", "Pos."
+                "A", "Pos."
             )
         except ValueError:
             self.fail('raised ValueError unexpectedly!')
@@ -294,11 +295,11 @@ class TestExcelContent(TestCase):
         self.xlsx.read_sheet("Rechnung2")
         with self.assertRaises(ValueError):
             self.xlsx._split_dataframe_by_search_value(
-                "An:", "Falscher Suchstring"
+                "A", "Falscher Suchstring"
             )
         try:
             self.xlsx._split_dataframe_by_search_value(
-                "An:", "Pos."
+                "A", "Pos."
             )
         except ValueError:
             self.fail('raised ValueError unexpectedly!')
@@ -313,7 +314,7 @@ class TestExcelContent(TestCase):
 
     def test_search_cell_right_of(self):
         """Lies die Summen aus dem Excel Sheet"""
-        sums = "Unnamed: 5"
+        sums = "F"
         self.xlsx.read_sheet("Rechnung2")
         expected = "1.183,46"
         with decimal.localcontext() as ctx:
@@ -329,7 +330,7 @@ class TestExcelContent(TestCase):
 
     def test_search_cell_right_of_unknown_search_value(self):
         """Lies die Summen aus dem Excel Sheet"""
-        sums = "Unnamed: 5"
+        sums = "F"
         self.xlsx.read_sheet("Rechnung2")
         # print(retval)
         with self.assertRaises(ValueError):
@@ -343,13 +344,13 @@ class TestExcelContent(TestCase):
 
     def test_search_cell_right_of_unknown_column(self):
         """Lies die Summen aus dem Excel Sheet"""
-        sums = "Falsche Spalte"
+        sums = "G"
         self.xlsx.read_sheet("Rechnung2")
         # print(retval)
         with self.assertRaises(ValueError):
             float(self.xlsx
                   .search_cell_right_of(sums, 'Bruttobetrag'))
-        sums = "Unnamed: 5"
+        sums = "F"
         try:
             float(self.xlsx
                   .search_cell_right_of(sums, 'Bruttobetrag'))
