@@ -1,8 +1,8 @@
 {
     "configurations": [
         {
-            "name": "Python: Current File with my args",
-            "type": "python",
+            "name": "Python Debugger: Current File with my args",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "args": [

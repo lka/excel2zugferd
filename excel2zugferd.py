@@ -739,7 +739,7 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
 
 
 if __name__ == "__main__":
-    print(argv)
+    # print(argv)
     thedir = Path.joinpath(
         Path(os.getenv("APPDATA")).resolve(), Path("excel2zugferd")
     )

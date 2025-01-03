@@ -388,10 +388,10 @@ class Adresse(object):
         self.umsatzsteuer = arr
 
     def _fill_steuersatz(self, daten: list) -> None:
-        print(daten)
+        # print(daten)
         if "Steuersatz" not in daten.keys() or daten["Steuersatz"] is None\
                 or len(daten["Steuersatz"]) == 0:
-            print('Steuersatz:', hasattr(daten, "Steuersatz"))
+            # print('Steuersatz:', hasattr(daten, "Steuersatz"))
             self.steuersatz = "19.00"
         else:
             try:
