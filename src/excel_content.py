@@ -35,8 +35,14 @@ class ExcelContent:
         self.daten = self.xlsx.parse(sheet_name, header=None)
         self.daten.columns = list(string.ascii_uppercase)[0:len(self.daten
                                                                 .columns)]
+        self.daten.index = range(1, len(self.daten.index)+1)
         # print(self.daten)
         return self.daten
+
+    def mapReducePositions(self, inp: pd.DataFrame, columns: list)\
+            -> pd.DataFrame:
+        """maps and reduces DataFrame inp to expected columns"""
+        return inp[columns]
 
     def _get_search_err(self, search_value: str, column_name: str) -> str:
         """return ErrorMessage for search_err"""
@@ -93,7 +99,7 @@ class ExcelContent:
                                                            search_value,
                                                            column_name))
 
-    def _get_index_of_nan(self, df) -> int:
+    def _get_index_of_nan(self, df: pd.DataFrame) -> int:
         """get first index of next NaN"""
         return next((i for i, v in enumerate(df) if v != v), -1)
 
@@ -106,7 +112,7 @@ class ExcelContent:
         if self.daten is None:
             return None
         an = self.daten[spalte]
-        fromIdx = self.daten.index[an == search].tolist()[0] + 1
+        fromIdx = self.daten.index[an == search].tolist()[0]  # + 1
         nan_idx = self._get_index_of_nan(an)  # get first index of NaN in an
         arr = an[fromIdx:nan_idx].to_list()
         if customer:
@@ -133,7 +139,7 @@ class ExcelContent:
             raise SEARCH_ERR
         # print(line)
         try:
-            start_index = int(line.index[0]) + 1
+            start_index = int(line.index[0])  # + 1
         except IndexError:
             raise SEARCH_ERR
 

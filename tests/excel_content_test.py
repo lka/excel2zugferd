@@ -231,7 +231,7 @@ class TestExcelContent(TestCase):
         expected = ADDRESS_EXPECTED
         if self.xlsx.daten is not None:
             an = self.xlsx.daten["A"]
-            fromIdx = self.xlsx.daten.index[an == "An:"].tolist()[0] + 1
+            fromIdx = self.xlsx.daten.index[an == "An:"].tolist()[0]  # + 1
             nan_idx = self.xlsx\
                 ._get_index_of_nan(  # pylint: disable=protected-access
                     an
@@ -367,6 +367,54 @@ class TestExcelContent(TestCase):
                          columns=POSITIONS_EXPECTED[0]))
         MSG = 'should be equal'
         self.assertEqual(lenArr, [4, 10, 138, 6, 7, 7, 8], MSG)
+
+    def test_mapReducePositions(self):
+        """
+        Test of remapping and reducing positions in DataFrame 
+        """
+        expected_columns = ['B', 'D', 'E', 'F',  'I', 'G', 'H']
+        expected = pd.DataFrame(
+            data=(
+                ["Pos.", "Datum", "Tätigkeit", "Anzahl", "Typ",
+                 "Preis", "Summe"],
+                [
+                    "1",
+                    "01.01.2024",
+                    "WhatsApp wg. Netzteil für USB-Server",
+                    "1",
+                    "10 Min.",
+                    "22",
+                    "22",
+                ],
+            ),
+            columns=expected_columns,
+            index=['1', '2']
+            )
+        entered = pd.DataFrame(
+            data=(
+                ["unusable", "Pos.", "unusable", "Datum", "Tätigkeit",
+                 "Anzahl", "Preis", "Summe", "Typ"],
+                [
+                    "NaN",
+                    "1",
+                    "NaN",
+                    "01.01.2024",
+                    "WhatsApp wg. Netzteil für USB-Server",
+                    "1",
+                    "22",
+                    "22",
+                    "10 Min.",
+                ],
+            ),
+            columns=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
+            index=['1', '2']
+            )
+        print('entered:\n', entered)
+        retVal = self.xlsx.mapReducePositions(entered, expected_columns)
+        print('retVal:\n', retVal)
+        print('expected:\n', expected)
+        self.assertTrue(expected.equals(retVal), 'should be True')
+
 
 # if __name__ == "__main__":
 #     unittest.main()
