@@ -15,35 +15,45 @@ STAMMDATEN = [
         "Label": "Betriebsbezeichnung",
         "Lines": 1,
         "Type": "String",
+        "Dest": "Stammdaten"
     },
-    {"Text": "Anschrift", "Label": "Anschrift", "Lines": 5, "Type": "String"},
+    {"Text": "Anschrift", "Label": "Anschrift", "Lines": 5, "Type": "String",
+        "Dest": "Stammdaten"},
     {"Text": "Bundesland", "Label": "Bundesland", "Lines": 1,
-        "Type": "String"},
-    {"Text": "Name", "Label": "Name", "Lines": 1, "Type": "String"},
-    {"Text": "Kontakt", "Label": "Kontakt", "Lines": 5, "Type": "String"},
+        "Type": "String",
+        "Dest": "Stammdaten"},
+    {"Text": "Name", "Label": "Name", "Lines": 1, "Type": "String",
+        "Dest": "Stammdaten"},
+    {"Text": "Kontakt", "Label": "Kontakt", "Lines": 5, "Type": "String",
+        "Dest": "Stammdaten"},
     {"Text": "Umsatzsteuer", "Label": "Umsatzsteuer", "Lines": 2,
-        "Type": "String"},
-    {"Text": "Konto", "Label": "Konto", "Lines": 3, "Type": "String"},
-    {"Text": "Zahlungsziel", "Label": "Zahlungsziel (in Tagen)", "Lines": 1,
-        "Type": "String"},
-    {"Text": "Abspann", "Label": "Abspann", "Lines": 5, "Type": "String"},
-    {"Text": "Verzeichnis", "Label": "Verzeichnis", "Lines": 1,
-        "Type": "String"},
-    {"Text": "Steuersatz", "Label": "Steuersatz (in %)", "Lines": 1,
-        "Type": "String"},
+        "Type": "String",
+        "Dest": "Stammdaten"},
+    {"Text": "Konto", "Label": "Konto", "Lines": 3, "Type": "String",
+        "Dest": "Stammdaten"},
     {
         "Text": "Kleinunternehmen",
         "Label": "Kleinunternehmen",
         "Lines": 1,
         "Type": "Boolean",
         "Variable": "Kleinunternehmen",
+        "Dest": "Stammdaten"
     },
+    {"Text": "Zahlungsziel", "Label": "Zahlungsziel (in Tagen)", "Lines": 1,
+        "Type": "String",
+        "Dest": "Steuerung"},
+    {"Text": "Abspann", "Label": "Abspann", "Lines": 5, "Type": "String",
+        "Dest": "Steuerung"},
+    {"Text": "Steuersatz", "Label": "Steuersatz (in %)", "Lines": 1,
+        "Type": "String",
+        "Dest": "Steuerung"},
     {
         "Text": "ZugFeRD",
         "Label": "ZugFeRD Datensatz erzeugen und anhängen",
         "Lines": 1,
         "Type": "Boolean",
         "Variable": "ZugFeRD",
+        "Dest": "Steuerung"
     },
     {
         "Text": "GiroCode",
@@ -51,6 +61,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "Boolean",
         "Variable": "GiroCode",
+        "Dest": "Steuerung"
     },
     {
         "Text": "BYOPdf",
@@ -58,7 +69,19 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "Boolean",
         "Variable": "BYOPdf",
-    }
+        "Dest": "Steuerung"
+    },
+    {
+        "Text": "Label1",
+        "Label": "↓--------------- Wird automatisch befüllt ---------------↓",
+        "Lines": 2,
+        "Type": "Label",
+        "Variable": "Label1",
+        "Dest": "Steuerung"
+    },
+    {"Text": "Verzeichnis", "Label": "Verzeichnis", "Lines": 1,
+        "Type": "String",
+        "Dest": "Steuerung"},
 ]
 
 if __name__ == "__main__":

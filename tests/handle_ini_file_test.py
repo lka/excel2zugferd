@@ -57,6 +57,28 @@ class TestIniFile(unittest.TestCase):
             # type: ignore
         )
 
+    def test_merge_content_of_ini_file(self):
+        """
+        Test the merge of content of ini_file with other content
+        """
+        MSG = "dicts should be equal"
+        self.ini_file_class.content = {
+            "Org1": "Test1",
+            "Org2": "Test2",
+            "Org3": "Test3"
+        }
+        modification = {
+            "Org2": "Test4",
+            "Mod1": "Test5"
+        }
+        expected = {
+            "Org1": "Test1",
+            "Org2": "Test4",
+            "Org3": "Test3",
+            "Mod1": "Test5"
+        }
+        self.ini_file_class.merge_content_of_ini_file(modification)
+        self.assertDictEqual(self.ini_file_class.content, expected, MSG)
 
 # if __name__ == '__main__':
 #     unittest.main()

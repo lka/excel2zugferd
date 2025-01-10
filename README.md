@@ -36,6 +36,7 @@ Nach dem Start des Programms:
 
 ### Stammdateneingabe
 ![Image der Stammdaten](/assets/Stammdaten.png)
+![Image der Sonstigen Stammdaten](/assets/Sonstige.png)
 
 ### Excel-Datei
 Die Struktur der Excel Datei ist vorgegeben und kann nicht verändert werden, ohne die Funktion zu verlieren.
@@ -43,6 +44,9 @@ Als Vorlage benutzen Sie bitte die Datei TestRechnung.xlsx.
 
 ## Versionen
 
+### 0.15.0
+
+- Die Oberfläche der Stammdaten ist ab jetzt in 2 Fenster aufgeteilt: "Firmendaten" und "Sonstige"
 ### 0.14.0
 
 - In den Stammdaten kann der "normale" Steuersatz gesetzt werden (Default 19%) falls er mal geändert werden sollte.

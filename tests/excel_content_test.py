@@ -370,7 +370,7 @@ class TestExcelContent(TestCase):
 
     def test_mapReducePositions(self):
         """
-        Test of remapping and reducing positions in DataFrame 
+        Test of remapping and reducing positions in DataFrame
         """
         expected_columns = ['B', 'D', 'E', 'F',  'I', 'G', 'H']
         expected = pd.DataFrame(

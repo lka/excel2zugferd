@@ -13,6 +13,7 @@ from PIL import Image, ImageTk
 from src.handle_pdf import Pdf
 
 import src.excel_content
+from src.handle_ini_file import IniFile
 from src.collect_data import InvoiceCollection
 from src.handle_zugferd import ZugFeRD
 
@@ -25,7 +26,7 @@ def format_ioerr(err: IOError) -> str:
 
 
 LABELWIDTH = 22
-TEXTWIDTH = 40
+TEXTWIDTH = 60
 PADX = 5
 PADY = 5
 
@@ -35,7 +36,11 @@ class Oberflaeche:
     Creates Parts of Oberflaeche
     """
 
-    def __init__(self, window=None):
+    def __init__(self, window=None) -> None:
+        if window:
+            # print('Oberflaeche destroying window')
+            self.destroy_children(window)
+
         self.root = tk.Tk() if window is None else window
         # self.myFont = Font(family="Helvetica", size=12)
         self.root.resizable(False, False)
@@ -49,25 +54,44 @@ class Oberflaeche:
             self.root.attributes("-toolwindow", True)
         except tk.TclError:
             print("Not supported on your platform")
+        return self.root
 
-    def _add_items(self, menu_bar, menu_items) -> None:
+    def _add_menu_items(self, menu, key, command) -> None:
+        if key == "Separator":
+            menu.add_separator()
+        else:
+            menu.add_command(label=key, command=command)
+
+    def _add_items(self, menu_bar: tk.Menu, menu_items: list) -> None:
+        # print('\n_add_item\n')
         for item in menu_items:
-            outerkeys = item.keys()
-            for outerkey in outerkeys:
-                # print(outerkey)
+            # print(f"item: {item}")
+            for outerkey in item.keys():
+                # print(f"outerkey: {outerkey}")
                 menu = tk.Menu(menu_bar, tearoff=0)
-                innerkeys = item[outerkey].keys()
-                for innerkey in innerkeys:
-                    # print(innerkey)
-                    if innerkey == "Separator":
-                        menu.add_separator()
+                for innerkey in item[outerkey].keys():
+                    # print(f"innerkey: {innerkey}")
+                    if isinstance(item[outerkey][innerkey], dict):
+                        submenu = self.make_sub_menu(menu,
+                                                     item[outerkey][innerkey])
+                        menu.add_cascade(label=innerkey, menu=submenu)
                     else:
-                        menu.add_command(
-                            label=innerkey, command=item[outerkey][innerkey]
-                        )
+                        self._add_menu_items(menu, innerkey,
+                                             item[outerkey][innerkey])
                 menu_bar.add_cascade(label=outerkey, menu=menu, underline=0)
 
-    def make_menu_bar(self, menu_items=None):
+    def make_sub_menu(self, menu: tk.Menu, menu_items: dict) -> tk.Menu:
+        submenu = tk.Menu(menu, tearoff=0)
+        if menu_items is None:
+            return
+        # print(f"submenuitems: {menu_items}")
+        for key in menu_items.keys():
+            # print(f"submenuitem: {key}")
+            self._add_menu_items(submenu, key,
+                                 menu_items[key])
+        return submenu
+
+    def make_menu_bar(self, menu_items: list = None):
         """
         MenuBar for each Oberflaeche
         """
@@ -119,6 +143,113 @@ class Oberflaeche:
         messagebox.showinfo("Info", my_msg)
         self.root.lift()
 
+    def destroy_children(self, parent):
+        """
+        recursive destroy all children of current window
+        """
+        for child in parent.winfo_children():
+            if child.winfo_children():
+                self.destroy_children(child)
+            child.destroy()
+
+    def _add_string(self, row: tk.Frame, field: dict, content: any) -> tk.Text:
+        lab = tk.Label(
+            row, width=LABELWIDTH, text=field["Label"] + ": ",
+            anchor="w"
+        )
+        # ent = Entry(row)
+        # ent.insert(0, "")
+        ent = tk.Text(row, width=TEXTWIDTH, height=field["Lines"])
+        # ent.configure(font=self.myFont)
+        ent.insert(
+            tk.END,
+            content[field["Text"]] if field["Text"] in content else "",
+        )
+        row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
+        lab.pack(side=tk.LEFT)
+        ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
+        return ent
+
+    def _add_label(self, row: tk.Frame, field: dict, content: any)\
+            -> tk.Message:
+        ent = tk.Message(row,
+                         text=field["Label"],
+                         border=1,
+                         width=9*TEXTWIDTH,
+                         )
+        row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
+        ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.BOTH)
+        return ent
+
+    def _add_boolean(self, row: tk.Frame, field: dict, content: any)\
+            -> tk.Checkbutton:
+        self.menuvars[field["Variable"]] = tk.StringVar()
+        ent = ttk.Checkbutton(
+            row, text=field["Label"], variable=self.menuvars[
+                                                field["Variable"]]
+        )
+        self.menuvars[field["Variable"]].set(
+            "1"
+            if (len(content) > 0)
+            and field["Text"] in content
+            and (
+                (content[field["Text"]] == "Ja")
+                or (content[field["Text"]] == "1")
+            )
+            else "0"
+        )
+        lab = tk.Label(row, width=LABELWIDTH, text=" ", anchor="w")
+        row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
+        lab.pack(side=tk.LEFT)
+        ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
+        return ent
+
+    def open_stammdaten(self, fields: dict = None, ini_file: str = None):
+        """
+        Open Stammdaten for editing
+        """
+        self.root.quit()
+        s_oberfl = OberflaecheIniFile(fields, ini_file, self.root)
+        s_oberfl.loop()
+
+    def open_steuerung(self, fields: dict = None, ini_file: str = None):
+        """
+        Open Steuerung for editing
+        """
+        self.root.quit()
+        s_oberfl = OberflaecheSteuerung(fields, ini_file, self.root)
+        s_oberfl.loop()
+
+    def _create_iniFile(self, ini_file: IniFile, content: dict = None) -> bool:
+        try:
+            if ini_file:
+                ini_file.create_ini_file(content)
+        except IOError as ex:
+            mymsg = f"Erstellen der Ini-Datei fehlgeschlagen.\n\
+            {format_ioerr(ex)}"
+            messagebox.showerror("Fehler:", mymsg)
+            return True
+        return False
+
+    def _get_text_of_field(self, field: any) -> str:
+        if isinstance(field, tk.Message):
+            return ''
+        return (
+                    field.get("1.0", "end-1c")
+                    if hasattr(field, "get")
+                    else "Ja" if field.instate(["selected"]) else "Nein"
+                )
+
+    def get_entries_from_type(self, row: tk.Frame, field: dict, content: dict):
+        ent = None
+        if field["Type"] == "String":
+            ent = self._add_string(row, field, content)
+        if field["Type"] == "Boolean":
+            ent = self._add_boolean(row, field, content)
+        if field["Type"] == "Label":
+            ent = self._add_label(row, field, content)
+        return ent
+
     def loop(self):
         """
         run main loop
@@ -131,18 +262,25 @@ class OberflaecheIniFile(Oberflaeche):
     Oberflaeche for Ini File Inputs
     """
 
-    def __init__(self, thefields, myini_file=None, window=None):
-        if window:
-            self.destroy_children(window)
-
+    def __init__(self, thefields: dict, myini_file: IniFile = None,
+                 window=None) -> None:
         super().__init__(window=window)  # tk.Toplevel())
-        self.fields = thefields
+        self.fields: dict = thefields
         self.menuvars = {}
-        self.ini_file = myini_file
-        self.root.title("Stammdateneingabe")
+        self.ini_file: IniFile = myini_file
+        self.root.title("Stammdateneingabe - Firmendaten")
         self.make_menu_bar(
             [
-                {"Datei": {"Stammdateneingabe Beenden": self.quit_cmd}},
+                {
+                    "Datei": {
+                        "Stammdateneingabe":
+                            {
+                                "Sonstige": self.pre_open_steuerung,
+                            },
+                        "Separator": 0,
+                        "Beenden": self.quit_cmd
+                        }
+                },
                 {"Hilfe": {"Info über...": self.info_cmd}},
             ]
         )
@@ -181,14 +319,9 @@ class OberflaecheIniFile(Oberflaeche):
         self.save_button.pack(side=tk.LEFT, padx=PADX, pady=PADY, expand=False)
         self.save_button.bind("<Return>", (lambda event: self.fetch()))
 
-    def destroy_children(self, parent):
-        """
-        recursive destroy all children of current window
-        """
-        for child in parent.winfo_children():
-            if child.winfo_children():
-                self.destroy_children(child)
-            child.destroy()
+    def pre_open_steuerung(self):
+        self.fetch_values_from_entries()
+        self.open_steuerung(self.fields, self.ini_file)
 
     def _check_content_of_stammdaten(self, content: dict) -> bool:
         """return whether stammdaten have failures"""
@@ -199,80 +332,32 @@ class OberflaecheIniFile(Oberflaeche):
             return True
         return False
 
-    def _create_iniFile(self, content: dict) -> bool:
-        try:
-            if self.ini_file:
-                self.ini_file.create_ini_file(content)
-        except IOError as ex:
-            mymsg = f"Erstellen der Ini-Datei fehlgeschlagen.\n\
-            {format_ioerr(ex)}"
-            messagebox.showerror("Fehler:", mymsg)
-            return True
-        return False
-
-    def _get_text_of_field(self, field: any) -> str:
-        return (
-                    field.get("1.0", "end-1c")
-                    if hasattr(field, "get")
-                    else "Ja" if field.instate(["selected"]) else "Nein"
-                )
+    def fetch_values_from_entries(self) -> dict:
+        """
+        get all values from items in Oberfläche
+        and merge them to ini_file.content
+        """
+        content = {}
+        if self.ents:
+            for key, field in self.ents.items():
+                content[key] = self._get_text_of_field(field)
+            if content:
+                return self.ini_file.merge_content_of_ini_file(content)
+        return content
 
     def fetch(self):
         """
         get all values for IniFile
         """
-        content = {}
+        content = self.fetch_values_from_entries()
         ini_has_failure = False
-        if self.ents:
-            for key, field in self.ents.items():
-                content[key] = self._get_text_of_field(field)
+        if content:
             ini_has_failure = self._check_content_of_stammdaten(content)
             ini_has_failure = ini_has_failure or self._create_iniFile(
-                content)
+                self.ini_file, None)
             if ini_has_failure:
                 return
         self.root.destroy()
-
-    def _add_string(self, row: tk.Frame, field: dict, content: any) -> tk.Text:
-        lab = tk.Label(
-            row, width=LABELWIDTH, text=field["Label"] + ": ",
-            anchor="w"
-        )
-        # ent = Entry(row)
-        # ent.insert(0, "")
-        ent = tk.Text(row, width=TEXTWIDTH, height=field["Lines"])
-        # ent.configure(font=self.myFont)
-        ent.insert(
-            tk.END,
-            content[field["Text"]] if field["Text"] in content else "",
-        )
-        row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
-        lab.pack(side=tk.LEFT)
-        ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
-        return ent
-
-    def _add_boolean(self, row: tk.Frame, field: dict, content: any)\
-            -> tk.Checkbutton:
-        self.menuvars[field["Variable"]] = tk.StringVar()
-        ent = ttk.Checkbutton(
-            row, text=field["Label"], variable=self.menuvars[
-                                                field["Variable"]]
-        )
-        self.menuvars[field["Variable"]].set(
-            "1"
-            if (len(content) > 0)
-            and field["Text"] in content
-            and (
-                (content[field["Text"]] == "Ja")
-                or (content[field["Text"]] == "1")
-            )
-            else "0"
-        )
-        lab = tk.Label(row, width=LABELWIDTH, text=" ", anchor="w")
-        row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
-        lab.pack(side=tk.LEFT)
-        ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
-        return ent
 
     def makeform(self) -> dict:
         """
@@ -286,12 +371,11 @@ class OberflaecheIniFile(Oberflaeche):
         # print(self.ini_file, content)
         # print(fields)
         for field in self.fields:
-            row = tk.Frame(self.root)
-            if field["Type"] == "String":
-                ent = self._add_string(row, field, content)
-            if field["Type"] == "Boolean":
-                ent = self._add_boolean(row, field, content)
-            entries[field["Text"]] = ent
+            if field["Dest"] == "Stammdaten":
+                row = tk.Frame(self.root)
+                entries[field["Text"]] = self.get_entries_from_type(row,
+                                                                    field,
+                                                                    content)
         return entries
 
     def handle_file_button(self):
@@ -328,12 +412,112 @@ class OberflaecheIniFile(Oberflaeche):
         self.root.lift()
 
 
+class OberflaecheSteuerung(Oberflaeche):
+    """
+    Oberflaeche for Ini File Inputs; Steuerung (Sonstige) Parts
+    """
+
+    def __init__(self, thefields: dict, myini_file: IniFile = None,
+                 window=None) -> None:
+        super().__init__(window=window)  # tk.Toplevel())
+        self.fields: dict = thefields
+        self.menuvars = {}
+        self.ini_file: IniFile = myini_file
+        self.root.title("Stammdateneingabe - Sonstige")
+        self.make_menu_bar(
+            [
+                {
+                    "Datei": {
+                        "Stammdateneingabe":
+                            {
+                                "Firmendaten": self.pre_open_stammdaten,
+                            },
+                        "Separator": 0,
+                        "Beenden": self.quit_cmd,
+                        }
+                },
+                {"Hilfe": {"Info über...": self.info_cmd}},
+            ]
+        )
+        row = tk.Frame(self.root)
+        row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
+
+        self.ents = self.makeform()
+
+        self.quit_button = tk.Button(self.root, text="Beenden",
+                                     command=self.quit_cmd)
+        self.quit_button.pack(side=tk.LEFT, padx=PADX, pady=PADY, expand=False)
+        self.quit_button.bind("<Return>", (lambda event: self.quit_cmd()))
+        self.save_button = tk.Button(self.root, text="Speichern",
+                                     command=self.fetch)
+        self.save_button.pack(side=tk.LEFT, padx=PADX, pady=PADY, expand=False)
+        self.save_button.bind("<Return>", (lambda event: self.fetch()))
+
+    def pre_open_stammdaten(self):
+        self.fetch_values_from_entries()
+        self.open_stammdaten(self.fields, self.ini_file)
+
+    def _check_content_of_stammdaten(self, content: dict) -> bool:
+        """return whether stammdaten have failures"""
+        try:
+            InvoiceCollection(stammdaten=content)
+        except ValueError as e:
+            messagebox.showerror("Fehler in den Stammdaten", e)
+            return True
+        return False
+
+    def fetch_values_from_entries(self) -> dict:
+        """
+        get all values from items in Oberfläche
+        and merge them to ini_file.content
+        """
+        content = {}
+        if self.ents:
+            for key, field in self.ents.items():
+                content[key] = self._get_text_of_field(field)
+            if content:
+                return self.ini_file.merge_content_of_ini_file(content)
+        return content
+
+    def fetch(self):
+        """
+        get all values for IniFile
+        """
+        content = self.fetch_values_from_entries()
+        ini_has_failure = False
+        if content:
+            ini_has_failure = self._check_content_of_stammdaten(content)
+            ini_has_failure = ini_has_failure or self._create_iniFile(
+                self.ini_file, None)
+            if ini_has_failure:
+                return
+        self.root.destroy()
+
+    def makeform(self) -> dict:
+        """
+        create the form of Steuerung (Sonstige) Oberflaeche
+        """
+        entries = {}
+        if self.ini_file:
+            content = self.ini_file.read_ini_file()
+        else:
+            return entries
+        for field in self.fields:
+            if (field["Dest"] == "Steuerung"):
+                row = tk.Frame(self.root)
+                entries[field["Text"]] = self.get_entries_from_type(row,
+                                                                    field,
+                                                                    content)
+        return entries
+
+
 class OberflaecheExcel2Zugferd(Oberflaeche):
     """
     Klasse OberflaecheExcel2ZugFerd
     """
 
-    def __init__(self, myfields, myini=None, args: list = None):
+    def __init__(self, myfields: dict, myini: IniFile = None,
+                 args: list = None) -> None:
         super().__init__()
         self.fields = myfields
         self.ini_file = myini
@@ -349,7 +533,10 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
                 {
                     "Datei": {
                         "Öffnen...": self.open_file,
-                        "Stammdateneingabe": self.open_stammdaten,
+                        "Stammdateneingabe": {
+                            "Firmendaten": self.pre_open_stammdaten,
+                            "Sonstige": self.pre_open_steuerung,
+                        },
                         "Separator": 0,
                         "Beenden": self.quit_cmd,
                     }
@@ -358,8 +545,7 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
             ]
         )
         self.makeform()
-        # self.root.bind('<Return>', (lambda event,
-        # e=self.ents: self.fetch(e)))
+
         self.quit_button = tk.Button(self.root, text="Beenden",
                                      command=self.quit_cmd)
         self.quit_button.pack(side=tk.LEFT, padx=PADX, pady=PADY)
@@ -569,13 +755,11 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
             return
         self._fill_pdf()
 
-    def open_stammdaten(self):
-        """
-        Open Stammdaten for editing
-        """
-        self.root.quit()
-        s_oberfl = OberflaecheIniFile(self.fields, self.ini_file, self.root)
-        s_oberfl.loop()
+    def pre_open_stammdaten(self):
+        self.open_stammdaten(self.fields, self.ini_file)
+
+    def pre_open_steuerung(self):
+        self.open_steuerung(self.fields, self.ini_file)
 
     def _file_dialog(self, init_dir: str) -> None:
         self.filename = filedialog.askopenfilename(
