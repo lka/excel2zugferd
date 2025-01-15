@@ -104,10 +104,10 @@ class PDF(FPDF):
         """
         prints Absenderdaten
         """
-        self._set_section("Absender", LEFTofABSENDER, 25.5, "", 10)
-        self.multi_cell(0, 5, adress)
-        self._set_section("Abs-kurz", 25, 60.5, "U", 6)
+        self._set_section("Absender", LEFTofABSENDER, 25.5, "", 11)
         arr = adress.splitlines()
+        self.multi_cell(0, 5, '\n'.join(arr[1:]))
+        self._set_section("Abs-kurz", 25, 60.5, "U", 6)
         abs_kurz = ", ".join([arr[0], arr[-2], arr[-1]])
         self.cell(105, 1, abs_kurz)
         self.ln()
