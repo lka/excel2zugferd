@@ -19,6 +19,8 @@ import locale
 import decimal
 from src import P19USTG, GERMAN_DATE
 
+LEFTofABSENDER = 135
+
 
 class PDF(FPDF):
     """
@@ -102,17 +104,19 @@ class PDF(FPDF):
         """
         prints Absenderdaten
         """
-        self._set_section("Absender", 140, 25.5, "", 12)
-        self.multi_cell(105, 5, adress)
+        self._set_section("Absender", LEFTofABSENDER, 25.5, "", 10)
+        self.multi_cell(0, 5, adress)
         self._set_section("Abs-kurz", 25, 60.5, "U", 6)
-        self.cell(105, 1, adress.replace("\n", ", "))
+        arr = adress.splitlines()
+        abs_kurz = ", ".join([arr[0], arr[-2], arr[-1]])
+        self.cell(105, 1, abs_kurz)
         self.ln()
 
     def print_bundesland(self, bundesland: str) -> None:
         """
         prints Bundesland
         """
-        self._set_section("Bundesland", 140, 54.5, "", 10)
+        self._set_section("Bundesland", LEFTofABSENDER, 54.5, "", 10)
         self.cell(105, 1, bundesland)
 
     def print_kleinunternehmerregelung(self, grund: str) -> None:
@@ -126,7 +130,7 @@ class PDF(FPDF):
         """
         prints Kontakt
         """
-        self._set_section("Kontakt", 140, 60, "", 10)
+        self._set_section("Kontakt", LEFTofABSENDER, 60, "", 10)
         self.multi_cell(105, 5, daten)
 
     def print_adress(self, adress: str) -> None:
