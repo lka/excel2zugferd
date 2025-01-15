@@ -93,7 +93,7 @@ class IniFile:
             return
         arr = self._normalize(self.content["Umsatzsteuer"].splitlines())
         for elem in arr:
-            sub = self._normalize(elem.split())
+            sub = self._normalize(elem.split(' ', 1))
             self._set_Steuer(sub)
         del self.content["Umsatzsteuer"]
 
