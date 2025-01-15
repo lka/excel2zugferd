@@ -164,7 +164,7 @@ class ZugFeRD:
                 contact.telephone.number = lieferant.telefon
         if lieferant.fax:
             self.doc.trade.agreement.seller.\
-                contact.telephone.fax.number = lieferant.fax
+                contact.fax.number = lieferant.fax
         if lieferant.email:
             self.doc.trade.agreement.seller.\
                 contact.email.address = lieferant.email
