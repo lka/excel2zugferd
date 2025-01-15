@@ -7,7 +7,7 @@ import os
 import numpy as np
 import pandas as pd
 from src.excel_content import ExcelContent
-from src.handle_other_objects import Adresse
+from src.kunde import Kunde
 import src.handle_pdf as pdf
 import decimal
 import locale
@@ -181,7 +181,7 @@ class TestExcelContent(TestCase):
         MSG = "should be equal"
         self.xlsx.read_sheet("Rechnung2")
         expected = ADDRESS_EXPECTED
-        customer = Adresse()
+        customer = Kunde()
         self.xlsx.get_address_of_customer(customer=customer)
         # print(value)
         self.assertEqual(customer.anschrift, expected, MSG)
@@ -193,10 +193,10 @@ class TestExcelContent(TestCase):
         MSG = "should be equal"
         self.xlsx.read_sheet("Rechnung2")
         expected = ADDRESS_EXPECTED
-        customer = Adresse()
+        customer = Kunde()
         self.xlsx._search_anschrift("A", "An:", customer=customer)\
             # pylint: disable=protected-access
-        # print(value)
+        # print(customer.anschrift)
         self.assertEqual(customer.anschrift, expected, MSG)
 
     def test__search_anschrift_object(self):
@@ -205,16 +205,16 @@ class TestExcelContent(TestCase):
         """
         self.xlsx.read_sheet("Rechnung2")
         expected = ADDRESS_EXPECTED
-        exp_arr = expected.split('\n')
+        exp_arr = expected.splitlines()
         MSG = "should be equal"
-        customer = Adresse()
+        customer = Kunde()
         self.xlsx._search_anschrift("A", "An:", customer=customer)\
             # pylint: disable=protected-access
         # print(value)
         self.assertEqual(customer.anschrift, expected, MSG)
         # print(repr(kunde))
-        self.assertEqual(customer.anschrift_line1, exp_arr[0], MSG)
-        self.assertEqual(customer.adresszusatz, exp_arr[1], MSG)
+        self.assertEqual(customer.betriebsbezeichnung, exp_arr[0], MSG)
+        self.assertEqual(customer.name, exp_arr[1], MSG)
         self.assertEqual(customer.strasse, exp_arr[2].split(' ')[0],
                          MSG)
         self.assertEqual(customer.hausnummer,

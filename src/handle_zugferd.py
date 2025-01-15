@@ -17,7 +17,8 @@ from drafthorse.models.party import TaxRegistration
 from drafthorse.pdf import attach_xml
 from drafthorse.models import NS_QDT
 
-from src.handle_other_objects import Adresse
+from src.kunde import Kunde
+from src.lieferant import Lieferant
 from src.collect_data import InvoiceCollection
 from src import P19USTG, GERMAN_DATE
 
@@ -89,15 +90,16 @@ class ZugFeRD:
             self.doc.trade.agreement.buyer.address\
                 .city_name = arr[-1].split(" ", 1)[1]
 
-    def _add_str_hnr(self, buyer: Adresse) -> None:
+    def _add_str_hnr(self, buyer: Kunde) -> None:
         if buyer.postfach is not None:  # BT-50
             self.doc.trade.agreement.buyer.address.line_one =\
                 'Postfach: ' + buyer.postfach
         elif buyer.strasse is not None:  # BT-50
             self.doc.trade.agreement.buyer.address.line_one =\
-                buyer.strasse + ' ' + buyer.hausnummer
+                buyer.strasse + (' ' + buyer.hausnummer
+                                 if buyer.hausnummer else '')
 
-    def _add_plz_ort(self, buyer: Adresse) -> None:
+    def _add_plz_ort(self, buyer: Kunde) -> None:
         if buyer.plz is not None:  # BT-53
             self.doc.trade.agreement.buyer.address\
                 .postcode = buyer.plz
@@ -105,16 +107,23 @@ class ZugFeRD:
             self.doc.trade.agreement.buyer.address\
                 .city_name = buyer.ort
 
-    def _add_buyer_from_object(self, buyer: Adresse) -> None:
-        if buyer.anschrift_line1 is not None:  # BT-44
-            self.doc.trade.agreement.buyer.name = buyer.anschrift_line1
+    def _add_buyer_from_object(self, buyer: Kunde) -> None:
+        if buyer.betriebsbezeichnung is not None:  # BT-44
+            self.doc.trade.agreement.buyer.name = buyer.betriebsbezeichnung
         if buyer.adresszusatz is not None:  # BT-51
             self.doc.trade.agreement.buyer.address.line_two =\
                 buyer.adresszusatz
+            if buyer.name is not None:  # BT-163
+                self.doc.trade.agreement.buyer.address.line_three =\
+                    buyer.name
+        else:
+            if buyer.name is not None:  # BT-51
+                self.doc.trade.agreement.buyer.address.line_two =\
+                    buyer.name
         self._add_str_hnr(buyer)
         self._add_plz_ort(buyer)
 
-    def add_rechnungsempfaenger(self, text: str, adr: Adresse = None):
+    def add_rechnungsempfaenger(self, text: str, adr: Kunde = None):
         """set Rechnungsempfänger"""
         self.doc.trade.settlement.currency_code = "EUR"
         # self.doc.trade.settlement.tax_currency_code = "EUR" # BR-53-1
@@ -124,7 +133,7 @@ class ZugFeRD:
             self._add_buyer_from_text(text)
         self.doc.trade.agreement.buyer.address.country_id = "DE"
 
-    def _add_my_adresse(self, lieferant: Adresse):
+    def _add_my_adresse(self, lieferant: Lieferant):
         self.doc.trade.agreement.seller.id = lieferant.betriebsbezeichnung
 
         self.doc.trade.agreement.seller.name = lieferant.betriebsbezeichnung
@@ -137,7 +146,8 @@ class ZugFeRD:
         else:
             self.doc.trade.agreement.\
                 seller.address.line_one = (
-                    lieferant.strasse + ' ' + lieferant.hausnummer
+                    lieferant.strasse + (' ' + lieferant.hausnummer if
+                                         lieferant.hausnummer else '')
                 )
         self.doc.trade.agreement.seller.address\
             .postcode = lieferant.plz
@@ -145,7 +155,7 @@ class ZugFeRD:
             .city_name = lieferant.ort
         self.doc.trade.agreement.seller.address.country_id = "DE"
 
-    def _add_my_kontakt(self, lieferant: Adresse):
+    def _add_my_kontakt(self, lieferant: Lieferant):
         if lieferant.name:
             self.doc.trade.agreement.seller.\
                 contact.person_name = lieferant.name
@@ -159,7 +169,7 @@ class ZugFeRD:
             self.doc.trade.agreement.seller.\
                 contact.email.address = lieferant.email
 
-    def add_my_company(self, lieferant: Adresse):
+    def add_my_company(self, lieferant: Lieferant):
         """Add Address of my company to zugferd"""
         self._add_my_adresse(lieferant)
         self._add_my_kontakt(lieferant)
@@ -330,7 +340,7 @@ class ZugFeRD:
 
         return decoded.encode('utf-8')
 
-    def fill_lieferant_to_note(self, lieferant: Adresse) -> None:
+    def fill_lieferant_to_note(self, lieferant: Lieferant) -> None:
         """
         populate note with addressfields for ZugFeRD
         """

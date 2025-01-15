@@ -44,9 +44,17 @@ Als Vorlage benutzen Sie bitte die Datei TestRechnung.xlsx.
 
 ## Versionen
 
+### 0.16.0
+
+- Die Firmendaten sind ab jetzt vereinzelt, um eine bessere Eingabe zu ermöglichen.
+Dabei werden die vorhandenen Stammdaten übernommen und umgesetzt. Redundante Informatinen werden gelöscht.
+Bitte prüfen, ob die Daten korrekt sind.
+Ab Version 1.0.0 werden die Übernahmefunktionen entfernt.
+
 ### 0.15.0
 
 - Die Oberfläche der Stammdaten ist ab jetzt in 2 Fenster aufgeteilt: "Firmendaten" und "Sonstige"
+
 ### 0.14.0
 
 - In den Stammdaten kann der "normale" Steuersatz gesetzt werden (Default 19%) falls er mal geändert werden sollte.

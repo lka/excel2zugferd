@@ -17,19 +17,55 @@ STAMMDATEN = [
         "Type": "String",
         "Dest": "Stammdaten"
     },
-    {"Text": "Anschrift", "Label": "Anschrift", "Lines": 5, "Type": "String",
+    # {"Text": "Anschrift", "Label": "Anschrift", "Lines": 5, "Type": "String",
+    #     "Dest": "Stammdaten"},
+    {"Text": "Abteilung", "Label": "Abteilung (optional)", "Lines": 1,
+        "Type": "String",  "Dest": "Stammdaten"},
+    {"Text": "Ansprechpartner", "Label": "Ansprechpartner", "Lines": 1,
+        "Type": "String",  "Dest": "Stammdaten"},
+    {"Text": "Strasse", "Label": "Strasse", "Lines": 1, "Type": "String",
+        "Dest": "Stammdaten"},
+    {"Text": "Hausnummer", "Label": "Hausnummer", "Lines": 1, "Type": "String",
+        "Dest": "Stammdaten"},
+    {"Text": "Postfach",
+        "Label": "Postfach (alternativ zu\nStrasse und Hausnr.)",
+        "Lines": 1, "Type": "String", "Dest": "Stammdaten"},
+    {"Text": "PLZ", "Label": "PLZ", "Lines": 1, "Type": "String",
+        "Dest": "Stammdaten"},
+    {"Text": "Ort", "Label": "Ort", "Lines": 1, "Type": "String",
         "Dest": "Stammdaten"},
     {"Text": "Bundesland", "Label": "Bundesland", "Lines": 1,
         "Type": "String",
         "Dest": "Stammdaten"},
-    {"Text": "Name", "Label": "Name", "Lines": 1, "Type": "String",
+    # {"Text": "Name", "Label": "Name", "Lines": 1, "Type": "String",
+    #     "Dest": "Stammdaten"},
+    # {"Text": "Kontakt", "Label": "Kontakt", "Lines": 5, "Type": "String",
+    #     "Dest": "Stammdaten"},
+    {"Text": "Telefon", "Label": "Telefon", "Lines": 1, "Type": "String",
         "Dest": "Stammdaten"},
-    {"Text": "Kontakt", "Label": "Kontakt", "Lines": 5, "Type": "String",
+    {"Text": "Fax", "Label": "Fax", "Lines": 1, "Type": "String",
         "Dest": "Stammdaten"},
-    {"Text": "Umsatzsteuer", "Label": "Umsatzsteuer", "Lines": 2,
+    {"Text": "Email", "Label": "E-Mail", "Lines": 1, "Type": "String",
+        "Dest": "Stammdaten"},
+    # {"Text": "Umsatzsteuer", "Label": "Umsatzsteuer", "Lines": 2,
+    #     "Type": "String",
+    #     "Dest": "Stammdaten"},
+    {"Text": "Steuernummer", "Label": "Steuernummer", "Lines": 1,
         "Type": "String",
         "Dest": "Stammdaten"},
-    {"Text": "Konto", "Label": "Konto", "Lines": 3, "Type": "String",
+    {"Text": "Finanzamt", "Label": "Finanzamt", "Lines": 1,
+        "Type": "String",
+        "Dest": "Stammdaten"},
+    {"Text": "UmsatzsteuerID",
+        "Label": "Umsatzsteuer-ID (alternativ\nzu Steuernr. und Finanzamt)",
+        "Lines": 1, "Type": "String", "Dest": "Stammdaten"},
+    # {"Text": "Konto", "Label": "Konto", "Lines": 3, "Type": "String",
+    #     "Dest": "Stammdaten"},
+    {"Text": "Kontoinhaber", "Label": "Kontoinhaber", "Lines": 1,
+        "Type": "String",  "Dest": "Stammdaten"},
+    {"Text": "IBAN", "Label": "IBAN", "Lines": 1, "Type": "String",
+        "Dest": "Stammdaten"},
+    {"Text": "BIC", "Label": "BIC", "Lines": 1, "Type": "String",
         "Dest": "Stammdaten"},
     {
         "Text": "Kleinunternehmen",
@@ -71,16 +107,17 @@ STAMMDATEN = [
         "Variable": "BYOPdf",
         "Dest": "Steuerung"
     },
-    {
-        "Text": "Label1",
-        "Label": "↓--------------- Wird automatisch befüllt ---------------↓",
-        "Lines": 2,
-        "Type": "Label",
-        "Variable": "Label1",
-        "Dest": "Steuerung"
-    },
+    # {
+    #     "Text": "Label1",
+    #     "Label": "↓--------------- Wird automatisch befüllt\
+    #  ---------------↓",
+    #     "Lines": 2,
+    #     "Type": "Label",
+    #     "Variable": "Label1",
+    #     "Dest": "Steuerung"
+    # },
     {"Text": "Verzeichnis", "Label": "Verzeichnis", "Lines": 1,
-        "Type": "String",
+        "Type": "Label",
         "Dest": "Steuerung"},
 ]
 
@@ -99,7 +136,7 @@ if __name__ == "__main__":
             messagebox.showerror("Fehler", msg)
     oberfl = None
     if ini.exists_ini_file() is None:
-        oberfl = src.oberflaechen.OberflaecheIniFile(STAMMDATEN)
+        oberfl = src.oberflaechen.OberflaecheIniFile(STAMMDATEN, ini)
     else:
         oberfl = src.oberflaechen.OberflaecheExcel2Zugferd(STAMMDATEN, ini,
                                                            argv)

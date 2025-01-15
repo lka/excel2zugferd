@@ -515,8 +515,10 @@ class Pdf(PDF):
     def _fill_abspann(self, brutto: str, ueberweisungsdatum: datetime) -> None:
         abspann = (
             self.invoice.management.abspann
-            if len(self.invoice.management.abspann) > 1
-            else "Mit freundlichen Grüßen\n" + self.invoice.supplier.name
+            if self.invoice.management.abspann and len(self.invoice.
+                                                       management.abspann) > 1
+            else "Mit freundlichen Grüßen\n" + self.invoice.supplier.name if
+            self.invoice.supplier.name else ''
         )
         self.print_abspann(
             f"Bitte überweisen Sie den Betrag von {brutto} bis zum \

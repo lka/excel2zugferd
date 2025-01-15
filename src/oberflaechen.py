@@ -161,36 +161,43 @@ class Oberflaeche:
         # ent.insert(0, "")
         ent = tk.Text(row, width=TEXTWIDTH, height=field["Lines"])
         # ent.configure(font=self.myFont)
-        ent.insert(
-            tk.END,
-            content[field["Text"]] if field["Text"] in content else "",
+        if content:
+            ent.insert(
+                tk.END,
+                content[field["Text"]] if field["Text"] in content else "",
+            )
+        row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
+        lab.pack(side=tk.LEFT)
+        ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
+        return ent
+
+    def _add_label(self, row: tk.Frame, field: dict, content: dict)\
+            -> tk.Message:
+        msg = content[field["Text"]] if\
+            content and field["Text"] in content else ""
+        if msg != "":
+            lab = tk.Label(
+                row, width=LABELWIDTH, text=field["Label"] + ": ",
+                anchor="w"
+            )
+        else:
+            lab = tk.Label(
+                row, width=LABELWIDTH, text="",
+                anchor="w"
+            )
+            msg = field["Label"]
+        ent = tk.Label(
+                row, text=msg, width=TEXTWIDTH, anchor="w"
         )
         row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
         lab.pack(side=tk.LEFT)
         ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
         return ent
 
-    def _add_label(self, row: tk.Frame, field: dict, content: any)\
-            -> tk.Message:
-        ent = tk.Message(row,
-                         text=field["Label"],
-                         border=1,
-                         width=9*TEXTWIDTH,
-                         )
-        row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
-        ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.BOTH)
-        return ent
-
-    def _add_boolean(self, row: tk.Frame, field: dict, content: any)\
-            -> tk.Checkbutton:
-        self.menuvars[field["Variable"]] = tk.StringVar()
-        ent = ttk.Checkbutton(
-            row, text=field["Label"], variable=self.menuvars[
-                                                field["Variable"]]
-        )
+    def _set_value_for_boolean(self, field: dict, content: dict) -> None:
         self.menuvars[field["Variable"]].set(
             "1"
-            if (len(content) > 0)
+            if content  # and len(content) > 0
             and field["Text"] in content
             and (
                 (content[field["Text"]] == "Ja")
@@ -198,6 +205,15 @@ class Oberflaeche:
             )
             else "0"
         )
+
+    def _add_boolean(self, row: tk.Frame, field: dict, content: dict)\
+            -> tk.Checkbutton:
+        self.menuvars[field["Variable"]] = tk.StringVar()
+        ent = ttk.Checkbutton(
+            row, text=field["Label"], variable=self.menuvars[
+                                                field["Variable"]]
+        )
+        self._set_value_for_boolean(field, content)
         lab = tk.Label(row, width=LABELWIDTH, text=" ", anchor="w")
         row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
         lab.pack(side=tk.LEFT)
@@ -232,7 +248,7 @@ class Oberflaeche:
         return False
 
     def _get_text_of_field(self, field: any) -> str:
-        if isinstance(field, tk.Message):
+        if isinstance(field, tk.Label):
             return ''
         return (
                     field.get("1.0", "end-1c")
@@ -364,10 +380,11 @@ class OberflaecheIniFile(Oberflaeche):
         create the form of IniFile Oberflaeche
         """
         entries = {}
+        content = {}
         if self.ini_file:
             content = self.ini_file.read_ini_file()
-        else:
-            return entries
+        # else:
+        #     return entries
         # print(self.ini_file, content)
         # print(fields)
         for field in self.fields:
@@ -498,10 +515,11 @@ class OberflaecheSteuerung(Oberflaeche):
         create the form of Steuerung (Sonstige) Oberflaeche
         """
         entries = {}
+        content = {}
         if self.ini_file:
             content = self.ini_file.read_ini_file()
-        else:
-            return entries
+        # else:
+        #     return entries
         for field in self.fields:
             if (field["Dest"] == "Steuerung"):
                 row = tk.Frame(self.root)
@@ -720,6 +738,7 @@ class OberflaecheExcel2Zugferd(Oberflaeche):
         """return True on failure"""
         if self.ini_file:
             contentini_file = self.ini_file.read_ini_file()
+            # print("_getStammdatenToInvoiceCollection:\n", contentini_file)
             return self.try_to_fill_stammdaten(self.invoiceCollection,
                                                contentini_file)
         return False

@@ -5,7 +5,8 @@ Module excel_content
 import os
 import math
 import pandas as pd
-from src.handle_other_objects import Adresse
+# from src.handle_other_objects import Adresse
+from src.kunde import Kunde
 import decimal
 import string
 
@@ -104,7 +105,7 @@ class ExcelContent:
         return next((i for i, v in enumerate(df) if v != v), -1)
 
     def _search_anschrift(self, spalte: str, search: str,
-                          customer: Adresse) -> None:
+                          customer: Kunde) -> None:
         """
         Search in specified column until next NaN,
         and fill it into anschrift of customer
@@ -115,6 +116,7 @@ class ExcelContent:
         fromIdx = self.daten.index[an == search].tolist()[0]  # + 1
         nan_idx = self._get_index_of_nan(an)  # get first index of NaN in an
         arr = an[fromIdx:nan_idx].to_list()
+        # print("_search_anschrift:\n", arr)
         if customer:
             customer.anschrift = arr
             customer.landeskennz = "DE"
@@ -154,7 +156,7 @@ class ExcelContent:
 
     def get_address_of_customer(self, spalte: str = "A",
                                 anschrift: str = "An:",
-                                customer: Adresse = None):
+                                customer: Kunde = None):
         """returns address of customer in Excel Sheet with \\n joined values"""
         return self._search_anschrift(spalte, anschrift, customer)
 

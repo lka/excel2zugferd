@@ -7,7 +7,8 @@ import os
 from datetime import datetime, timedelta
 import src.handle_zugferd as handle_zugferd
 import src.handle_pdf as handle_pdf
-from src.handle_other_objects import Adresse
+# from src.handle_other_objects import Adresse
+from src.lieferant import Lieferant
 import decimal
 
 
@@ -112,7 +113,7 @@ xmlns:udt=\"urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100\">\
                     "Verzeichnis": "C:/Users/xxx/Documents",
                     "Zahlungsziel": "14",
                 }
-        lieferant = Adresse()
+        lieferant = Lieferant()
         lieferant.fill_lieferant(daten)
 
         # create pdf infile
