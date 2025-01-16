@@ -35,6 +35,7 @@ class Adresse(object):
  adresszusatz: '{self.adresszusatz}',\
  anschrift_line3: '{self.anschrift_line3}',\
  strasse: '{self.strasse}', hausnummer: '{self.hausnummer}',\
+ postfach: '{self.postfach}',\
  plz: '{self.plz}', ort: {self.ort}',\
  landeskennz: '{self.landeskennz}'\
  bundesland: '{self.bundesland}', telefon: '{self.telefon}',\

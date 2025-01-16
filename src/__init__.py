@@ -12,7 +12,6 @@ KONTO_ERROR = "Kontoinhaber: Name des Kontos\nIBAN: DE12345678901\n\
 BIC: XYZABCDEF\n\n müssen befüllt sein."
 BETRIEB_ERROR = "'Betriebsbezeichnung' muss ausgefüllt sein."
 NAME_ERROR = "'Name' muss ausgefüllt sein."
-ZZIEL_ERROR = "'Zahlungsziel' muss ausgefüllt sein."
 STEUERSATZ_ERR_MSG = "'Steuersatz (in %)' darf nur aus Ziffern und\
  '.' bestehen z.B. 7.5 oder 19"
 

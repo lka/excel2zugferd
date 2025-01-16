@@ -2,7 +2,9 @@
 Module collect_data
 """
 
-from src.handle_other_objects import Konto, Steuerung, Invoice
+from src.invoice import Invoice
+from src.konto import Konto
+from src.steuerung import Steuerung
 from src.lieferant import Lieferant
 from src.kunde import Kunde
 from src.excel_content import ExcelContent

@@ -75,12 +75,15 @@ STAMMDATEN = [
         "Variable": "Kleinunternehmen",
         "Dest": "Stammdaten"
     },
-    {"Text": "Zahlungsziel", "Label": "Zahlungsziel (in Tagen)", "Lines": 1,
+    {"Text": "Zahlungsziel",
+        "Label": "Zahlungsziel (in Tagen)\n(default 14 Tage)",
+        "Lines": 1,
         "Type": "String",
         "Dest": "Steuerung"},
     {"Text": "Abspann", "Label": "Abspann", "Lines": 5, "Type": "String",
         "Dest": "Steuerung"},
-    {"Text": "Steuersatz", "Label": "Steuersatz (in %)", "Lines": 1,
+    {"Text": "Steuersatz", "Label": "Steuersatz (in %)\n(default 19%)",
+        "Lines": 1,
         "Type": "String",
         "Dest": "Steuerung"},
     {

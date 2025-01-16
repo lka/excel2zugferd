@@ -5,7 +5,7 @@ Module Lieferant
 from src import _setNoneIfEmpty
 from datetime import datetime, timedelta
 from src.adresse import Adresse
-from src import STEUERSATZ_ERR_MSG, BETRIEB_ERROR, NAME_ERROR, ZZIEL_ERROR
+from src import STEUERSATZ_ERR_MSG, BETRIEB_ERROR, NAME_ERROR
 
 
 class Lieferant(Adresse):
@@ -149,7 +149,7 @@ class Lieferant(Adresse):
                 '\n' not in ziel:
             self.zahlungsziel = ziel
         else:
-            raise ValueError(ZZIEL_ERROR)
+            self.zahlungsziel = "14"
 
     def fill_lieferant(self, daten: dict = None) -> None:
         """fills Adresse of Lieferant from stammdaten"""

@@ -5,91 +5,69 @@ Module Adresse Test
 import unittest
 from src.adresse import Adresse
 from src import _setNoneIfEmpty
+import random
+import string
 
 
 class TestAdresse(unittest.TestCase):
     """
     Test Class for Class Adresse
     """
+
+    def get_properties(self, obj: object) -> list:
+        """
+        find all properties of class
+        """
+        properties = dir(obj)
+        filtered = [prop for prop in properties if not prop.startswith('_')
+                    and prop not in ['anschrift']]
+        print("properties without __init__:\n", filtered)
+        return filtered
+
+    def randomword(self, length: int) -> str:
+        """ generate random word with length"""
+        letters = string.ascii_lowercase
+        return ''.join(random.choice(letters) for i in range(length))
+
     def test_forNoneOnInit(self):
         """
         Tests that all elements are initialized to None
         after creation of Object
         """
-        adresse = Adresse()
+        obj = Adresse()
         MSG = 'should be None on init'
-        self.assertIsNone(adresse.betriebsbezeichnung, MSG)
-        self.assertIsNone(adresse.name, MSG)
-        self.assertIsNone(adresse.anschrift_line1, MSG)
-        self.assertIsNone(adresse.adresszusatz, MSG)
-        self.assertIsNone(adresse.strasse, MSG)
-        self.assertIsNone(adresse.hausnummer, MSG)
-        self.assertIsNone(adresse.plz, MSG)
-        self.assertIsNone(adresse.ort, MSG)
-        self.assertIsNone(adresse.telefon, MSG)
-        self.assertIsNone(adresse.fax, MSG)
-        self.assertIsNone(adresse.email, MSG)
-        self.assertIsNone(adresse.steuernr, MSG)
-        self.assertIsNone(adresse.steuerid, MSG)
-        self.assertIsNone(adresse.finanzamt, MSG)
-        self.assertIsNone(adresse.zahlungsziel, MSG)
-        self.assertIsNone(adresse.steuersatz, MSG)
+        props = self.get_properties(obj)
+        for prop in props:
+            self.assertIsNone(getattr(obj, prop, 'Attribute not found'),
+                              f"{prop} {MSG}")
+
+    def test_forReprHasAllProperties(self):
+        """
+        Tests that all properties are in __repr__
+        """
+        obj = Adresse()
+        MSG = "should be in __repr__"
+        try:
+            theRepr = repr(obj)
+        except AttributeError:
+            self.fail("repr has property that is not in Class")
+        props = self.get_properties(obj)
+        for prop in props:
+            self.assertIn(prop, theRepr, f"{prop} {MSG}")
 
     def test_forPopulation(self):
         """
         Tests that elements of Class are populatable
         and gives back correct element (getter and setter)
         """
-        adr = Adresse()
+        obj = Adresse()
         MSG = 'should be filled'
-        BEZ = "Software AG"
-        NAME = 'Max Mustermann'
-        AN1 = 'Maximilian Mustermann'
-        AN2 = 'Softwareentwicklung'
-        ORT = 'Musterstadt'
-        PLZ = '12345'
-        STR = 'Musterstrasse'
-        HNR = '17a'
-        TEL = '01234 5678 456'
-        FAX = '01234 5678 457'
-        MAIL = 'mustermann@telekom.de'
-        COUNTY = 'Baden Württemberg'
-        AMT = 'Finanzamt Musterstadt'
-        USTNR = '12345/12345'
-        ZZIEL = '14'
-        SSATZ = '19'
-        adr.betriebsbezeichnung = BEZ
-        self.assertEqual(adr.betriebsbezeichnung, BEZ, MSG)
-        adr.name = NAME
-        self.assertEqual(adr.name, NAME, MSG)
-        adr.anschrift_line1 = AN1
-        self.assertEqual(adr.anschrift_line1, AN1, MSG)
-        adr.anschrift_line2 = AN2
-        self.assertEqual(adr.anschrift_line2, AN2, MSG)
-        adr.ort = ORT
-        self.assertEqual(adr.ort, ORT, MSG)
-        adr.plz = PLZ
-        self.assertEqual(adr.plz, PLZ, MSG)
-        adr.strasse = STR
-        self.assertEqual(adr.strasse, STR, MSG)
-        adr.hausnummer = HNR
-        self.assertEqual(adr.hausnummer, HNR, MSG)
-        adr.telefon = TEL
-        self.assertEqual(adr.telefon, TEL, MSG)
-        adr.fax = FAX
-        self.assertEqual(adr.fax, FAX, MSG)
-        adr.email = MAIL
-        self.assertEqual(adr.email, MAIL, MSG)
-        adr.bundesland = COUNTY
-        self.assertEqual(adr.bundesland, COUNTY, MSG)
-        adr.steuernr = USTNR
-        self.assertEqual(adr.steuernr, USTNR, MSG)
-        adr.finanzamt = AMT
-        self.assertEqual(adr.finanzamt, AMT, MSG)
-        adr.zahlungsziel = ZZIEL
-        self.assertEqual(adr.zahlungsziel, ZZIEL, MSG)
-        adr.steuersatz = SSATZ
-        self.assertEqual(adr.steuersatz, SSATZ, MSG)
+        props = self.get_properties(obj)
+        for prop in props:
+            value = self.randomword(30)
+            setattr(obj, prop, value)
+            self.assertEqual(getattr(obj, prop, 'Attribute not found'),
+                             value, f"{prop} {MSG}")
 
     def test__check_anschrift(self):
         """

@@ -292,22 +292,14 @@ class TestLieferant(unittest.TestCase):
 
     def test_fill_lieferant_throws_cond6(self):
         """
-        Tests that wrong Zahlungsziel in Stammdaten throws ValueError
+        Tests that no Steuersatz / Zahlungsziel in Stammdaten
+        throws no ValueError
         """
         daten = STAMMDATEN | {
-                    "Steuersatz": None,
+                    "Steuersatz": "",
+                    "Zahlungsziel": "",
                 }
         lieferant = Lieferant()
-        daten["Zahlungsziel"] = None
-        with self.assertRaises(ValueError):
-            lieferant.fill_lieferant(daten)
-        daten["Zahlungsziel"] = ""
-        with self.assertRaises(ValueError):
-            lieferant.fill_lieferant(daten)
-        daten["Zahlungsziel"] = "\n"
-        with self.assertRaises(ValueError):
-            lieferant.fill_lieferant(daten)
-        daten["Zahlungsziel"] = "14"
         try:
             lieferant.fill_lieferant(daten)
         except ValueError:
