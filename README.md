@@ -44,6 +44,25 @@ Als Vorlage benutzen Sie bitte die Datei TestRechnung.xlsx.
 
 ## Versionen
 
+### 0.17.0
+
+- Die verwendbaren Einheiten sind erweitert um:
+    'h': Stunden,
+    'min': Minuten,
+    '10 Min.': zehn Sets,
+    'l': Liter,
+    'Liter': Liter,
+    'kg': Kilogramm,
+    'm': Meter,
+    'm²': Quadratmeter,
+    'm³': Kubikmeter,
+    '1': Stück,
+    'Stk.': Stück;
+    der Default liefert Stück
+- Wenn Sie andere Einheiten benötigen, bitte als Issue melden.
+- Die Rundung der aus Excel übernommenen Fliesskommazahlen ist verbessert.
+- Die Validierung des erzeugten ZUGFeRD Dokuments auf https://www.portinvoice.com ist erfolgreich (Ohne Fehler und Warnungen).
+
 ### 0.16.0
 
 - Die Firmendaten sind ab jetzt vereinzelt, um eine bessere Eingabe zu ermöglichen.

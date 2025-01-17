@@ -15,6 +15,20 @@ NAME_ERROR = "'Name' muss ausgefüllt sein."
 STEUERSATZ_ERR_MSG = "'Steuersatz (in %)' darf nur aus Ziffern und\
  '.' bestehen z.B. 7.5 oder 19"
 
+EINHEITEN = {
+    'h': 'HUR',
+    'min': 'MIN',
+    '10 Min.': 'TST',
+    'l': 'LTR',
+    'Liter': 'LTR',
+    'kg': 'KGM',
+    'm': 'MTR',
+    'm²': 'MTK',
+    'm³': 'MTQ',
+    '1': 'C62',
+    'Stk.': 'C62'
+    }
+
 
 def _normalize(arr_in: list) -> list:
     """remove empty elements of array"""

@@ -179,10 +179,12 @@ class ExcelContent:
     def _round(self, value, prec: int) -> decimal.Decimal:
         """round decimal to prec as in excel"""
         precStr = '1.' + '0' * prec
-        return (decimal.Decimal(value)
-                .quantize(decimal.Decimal(precStr),
-                          rounding=decimal.ROUND_05UP)
-                )
+        rounded = (decimal.Decimal(value + 0.0000000001)
+                   .quantize(decimal.Decimal(precStr),
+                             rounding=decimal.ROUND_HALF_UP)
+                   )
+        # print("_round:", value, ' = ', rounded)
+        return rounded
 
     def get_invoice_sums(self,
                          spalte: str = "F",

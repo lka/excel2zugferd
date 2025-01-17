@@ -20,7 +20,7 @@ from drafthorse.models import NS_QDT
 from src.kunde import Kunde
 from src.lieferant import Lieferant
 from src.collect_data import InvoiceCollection
-from src import P19USTG, GERMAN_DATE
+from src import P19USTG, GERMAN_DATE, EINHEITEN
 
 
 class ZugFeRD:
@@ -221,6 +221,11 @@ class ZugFeRD:
                 self.first_date = the_date
             self.last_date = the_date
 
+    def _get_einheit(self, inp: str) -> str:
+        """search converted Einheit in Einheiten, default 'Stück'"""
+        return EINHEITEN[inp] if inp and inp in EINHEITEN.keys()\
+            else EINHEITEN['Stk']
+
     def add_items(self, dat, the_tax: str):
         """add items to invoice"""
         # ("Pos.", "Datum", "Tätigkeit", "Menge", "Typ",
@@ -235,7 +240,7 @@ class ZugFeRD:
                 li.agreement.net.amount = Decimal(f"{einzelpreisnetto:.2f}")
                 li.delivery.billed_quantity = (
                     Decimal(f"{menge:.4f}"),
-                    "HUR" if item[4] == "h" else "MIN",  # BT-130
+                    self._get_einheit(item[4]),  # BT-130
                 )  # C62 == pieces - BT-150 ?
                 self._setOccurrenceInLi(li, item[1])
                 self._setTaxInLi(li, item[6], the_tax)

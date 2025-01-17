@@ -181,7 +181,7 @@ class PDF(FPDF):
                 # Bezeichnung, die ich als
                 # eine variable Spalte haben möchte
                 if index != 2:
-                    arr.append(math.ceil(val * 2.4))
+                    arr.append(math.ceil(val * (2.4 if val > 3 else 2.9)))
             fixeBreite = sum(arr)
             variableBreite = self._getTableWidth() - fixeBreite
             if variableBreite > 1:
@@ -456,6 +456,7 @@ class Pdf(PDF):
         get array with max string length of each column in pandas DataFrame
         """
         lenArr = []
+        # print("get_maxlengths:\n", df)
         for c in df:
             theLength = max(df[c].astype(str).map(len).max(), len(c))
             # print('Max length of column %s: %s' % (c, theLength))
