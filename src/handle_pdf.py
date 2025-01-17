@@ -172,8 +172,15 @@ class PDF(FPDF):
                 else (244, 235, 255)
             )
 
+    def _set_variable_Breite(self, arr: list) -> list:
+        fixeBreite = sum(arr)
+        variableBreite = self._getTableWidth() - fixeBreite
+        if variableBreite > 1:
+            arr.insert(2, variableBreite)
+            return arr
+        return None
+
     def _calcColWidths(self, lengths: list) -> list:
-        retval = None
         if lengths:
             arr = []
             for index, val in enumerate(lengths):
@@ -182,12 +189,7 @@ class PDF(FPDF):
                 # eine variable Spalte haben möchte
                 if index != 2:
                     arr.append(math.ceil(val * (2.4 if val > 3 else 2.9)))
-            fixeBreite = sum(arr)
-            variableBreite = self._getTableWidth() - fixeBreite
-            if variableBreite > 1:
-                arr.insert(2, variableBreite)
-                retval = arr
-        return retval
+        return self._set_variable_Breite(arr)
 
     def _getColWidths(self, lengths: list) -> tuple:
         default = (10, 21, 68, 16, 15, 16, 19)
