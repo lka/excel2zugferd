@@ -221,10 +221,17 @@ class ZugFeRD:
                 self.first_date = the_date
             self.last_date = the_date
 
-    def _get_einheit(self, inp: str) -> str:
+    def _get_einheit(self, inp: str, li: LineItem = None) -> str:
         """search converted Einheit in Einheiten, default 'Stück'"""
-        return EINHEITEN[inp] if inp and inp in EINHEITEN.keys()\
-            else EINHEITEN['Stk']
+        if inp is None:
+            return None
+        if inp in EINHEITEN.keys():
+            return EINHEITEN[inp]
+        else:
+            if li is not None:
+                li.product.description = f"Die Einheit '{inp}' ist nicht\
+ verfügbar und wurde durch 'C62' (Stück) ersetzt."  # BT-154
+            return 'C62'  # Stück
 
     def add_items(self, dat, the_tax: str):
         """add items to invoice"""
@@ -240,7 +247,7 @@ class ZugFeRD:
                 li.agreement.net.amount = Decimal(f"{einzelpreisnetto:.2f}")
                 li.delivery.billed_quantity = (
                     Decimal(f"{menge:.4f}"),
-                    self._get_einheit(item[4]),  # BT-130
+                    self._get_einheit(item[4], li),  # BT-130
                 )  # C62 == pieces - BT-150 ?
                 self._setOccurrenceInLi(li, item[1])
                 self._setTaxInLi(li, item[6], the_tax)

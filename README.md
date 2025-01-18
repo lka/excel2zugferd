@@ -4,7 +4,24 @@ Dieses Programm liest die Daten aus einer Excel Datei aus und hängt sie als ZUG
 
 Alternativ kann das Programm den ZugFeRD - Anteil an eine von Ihnen erstellte PDF anhängen. Dann wird die PDF als IhrPdfName_ZuGFeRD.pdf ins Verzeichnis Ihrer PDF gestellt.
 
-Ich benutze das Programm ausschließlich um meine Stundenabrechnungen zu erledigen. Es werden also nur Stunden "h" als Typen erkannt, alle anderen Typen werden als Minuten im XML-Part dargestellt, auch wenn in der Testrechnung.xlsx beispielsweise "10 Min." stehen.
+Die verwendbaren Einheiten in der Spalte 'Typ' sind:
+* 'h': Stunden,
+* 'min': Minuten,
+* 'Tag(e)': Tage,
+* 'Monat(e)': Monate,
+* 'Jahr(e)': Jahre,
+* 'l': Liter,
+* 'Liter': Liter,
+* 'kg': Kilogramm,
+* 't': Tonne,
+* 'm': Meter,
+* 'm²': Quadratmeter,
+* 'm³': Kubikmeter,
+* '1': Stück,
+* 'Stk.': Stück,
+* 'kWh': Kilowattstunden;
+* der Default liefert Stück und dokumentiert in der Beschreibung (BT-154): "Die Einheit 'NIX' ist nicht\
+ verfügbar und wurde durch 'C62' (Stück) ersetzt."
 
 
 ## Installation
@@ -43,6 +60,13 @@ Die Struktur der Excel Datei ist vorgegeben und kann nicht verändert werden, oh
 Als Vorlage benutzen Sie bitte die Datei TestRechnung.xlsx.
 
 ## Versionen
+
+### 0.18.0
+
+- Die Einheit '10 Min.' gelöscht
+- Die Einheiten 'kWh', 'Tag(e)', 'Monat(e)', 'Jahr(e)' und 't' ergänzt
+- Bei einer nicht bekannten Einheit wird in der Beschreibung eine Erläuterung eingefügt.
+- Die Validierung des erzeugten ZUGFeRD Dokuments auf https://www.portinvoice.com ist erfolgreich (Ohne Fehler und Warnungen).
 
 ### 0.17.0
 

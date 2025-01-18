@@ -226,6 +226,11 @@ xmlns:udt=\"urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100\">\
             except OSError:
                 pass
 
+    def test__get_einheit(self):
+        """Teste die Rückgabe der Einheit"""
+        MSG = 'should be equal'
+        self.assertEqual(self.zugferd._get_einheit('nix'), 'C62', MSG)
+        self.assertEqual(self.zugferd._get_einheit('kg'), 'KGM', MSG)
 
 # if __name__ == "__main__":
 #     unittest.main()

@@ -18,15 +18,19 @@ STEUERSATZ_ERR_MSG = "'Steuersatz (in %)' darf nur aus Ziffern und\
 EINHEITEN = {
     'h': 'HUR',
     'min': 'MIN',
-    '10 Min.': 'TST',
+    'Tag(e)': 'DAY',
+    'Monat(e)': 'MON',
+    'Jahr(e)': 'ANN',
     'l': 'LTR',
     'Liter': 'LTR',
     'kg': 'KGM',
+    't': 'TNE',
     'm': 'MTR',
     'm²': 'MTK',
     'm³': 'MTQ',
     '1': 'C62',
-    'Stk.': 'C62'
+    'Stk.': 'C62',
+    'kWh': 'KWH'
     }
 
 
