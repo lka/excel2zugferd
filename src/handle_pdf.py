@@ -17,7 +17,7 @@ from src.collect_data import InvoiceCollection
 import math
 import locale
 import decimal
-from src import P19USTG, GERMAN_DATE
+from src.constants import P19USTG, GERMAN_DATE
 
 LEFTofABSENDER = 135
 
@@ -478,22 +478,25 @@ class Pdf(PDF):
         replace column Datum with german date %d.%m.%Y and columns Preis and
         Summe as float values with Komma separated"""
         retval = df.copy()
+        headers = list(df.columns)
         # retval.style.format({datum: lambda t: t.strftime("%d.%m.%Y")
         #                      if len(t) > 0 else ""})
-        retval[datum] = pd.to_datetime(retval[datum],
-                                       errors="ignore").dt.strftime("%d.%m.%Y")
-        retval[datum] = retval[datum].fillna("")  # substitute NaN by ""
+        retval[headers[1]] = pd.to_datetime(retval[headers[1]],  # Datum
+                                            errors="ignore")\
+            .dt.strftime("%d.%m.%Y")
+        # substitute NaN by ""
+        retval[headers[1]] = retval[headers[1]].fillna("")
         # print(retval)
-        retval[anzahl] = (
-            retval[anzahl]
+        retval[headers[3]] = (  # Anzahl
+            retval[headers[3]]
             .apply("{:n}".format)
         )
-        retval[preis] = (
-            retval[preis]
+        retval[headers[5]] = (  # Preis
+            retval[headers[5]]
             .apply(lambda x: self._currency(x))
         )
-        retval[summe] = (
-            retval[summe]
+        retval[headers[6]] = (  # Summe
+            retval[headers[6]]
             .apply(lambda x: self._currency(x))
         )
         return retval
@@ -564,12 +567,14 @@ u.a. Konto.\n\n{abspann}"
         self._fill_kleinunternehmen()
         self.print_adress(self.invoice.customer.anschrift)
         rg_nr = self.invoice.invoicenr  # _get_rg_nr()
-        today = datetime.now()
-        datum = today.strftime(GERMAN_DATE)
-        ueberweisungsdatum = self.invoice.supplier.get_ueberweisungsdatum()
+        # today = datetime.now()
+        datum = list(invoice.invoicedate.values())[0]
+        ueberweisungsdatum = self.invoice.supplier\
+            .get_ueberweisungsdatum(datum)
 
         self.print_bezug(
-            f"{list(rg_nr.keys())[0]} {list(rg_nr.values())[0]} vom {datum}"
+            f"{list(rg_nr.keys())[0]} {list(rg_nr.values())[0]} vom\
+ {datum.strftime(GERMAN_DATE)}"
         )
 
         self._fill_positions()
@@ -582,4 +587,5 @@ u.a. Konto.\n\n{abspann}"
         self._fill_abspann(brutto, ueberweisungsdatum)
 
         if self.invoice.management.create_girocode:
-            self._fill_girocode(locale.atof(brutto.strip(" €")), rg_nr, datum)
+            self._fill_girocode(locale.atof(brutto.strip(" €")), rg_nr,
+                                datum.strftime(GERMAN_DATE))

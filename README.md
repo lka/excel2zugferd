@@ -54,12 +54,19 @@ Nach dem Start des Programms:
 ### Stammdateneingabe
 ![Image der Stammdaten](/assets/Stammdaten.png)
 ![Image der Sonstigen Stammdaten](/assets/Sonstige.png)
+![Image der Excel Steuerung](/assets/Excelsteuerung.png)
+![Image der Excel Positionen](/assets/Excelpositionen.png)
 
 ### Excel-Datei
 Die Struktur der Excel Datei ist vorgegeben und kann nicht verändert werden, ohne die Funktion zu verlieren.
 Als Vorlage benutzen Sie bitte die Datei TestRechnung.xlsx.
 
 ## Versionen
+
+### 0.19.0
+
+- Die Stammdaten wurden um 2 Eingabefenster für die Angaben der Koordinaten im Excel Blatt ergänzt, um ein flexibleres Parsing der Rechnungspositionen zu ermöglichen. Werden dort keine Angaben gemacht, bleibt es beim bisherigen Verfahren. Werden jedoch Angaben gemacht, sind diese priorisiert. Die Angaben sind wie im Excel Blatt zu machen: Spalten: A...Z, Zeilen: 1...
+- Wenn im Excel Blatt "Rechnungsdatum: dd.mm.YYYY" steht, wird das verwendet, ansonsten das aktuelle Datum.
 
 ### 0.18.0
 

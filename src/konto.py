@@ -1,7 +1,8 @@
 """
 Modul Konto
 """
-from src import _setNoneIfEmpty, KONTO_ERROR
+from src.constants import KONTO_ERROR
+import src
 
 
 class Konto(object):
@@ -78,10 +79,10 @@ class Konto(object):
         if daten:
             # print("fill_konto:", daten)
             if "Kontoinhaber" in keys:
-                self.name = _setNoneIfEmpty(daten["Kontoinhaber"])
+                self.name = src._setNoneIfEmpty(daten["Kontoinhaber"])
             if "IBAN" in keys:
-                self.iban = _setNoneIfEmpty(daten["IBAN"])
+                self.iban = src._setNoneIfEmpty(daten["IBAN"])
             if "BIC" in keys:
-                self.bic = _setNoneIfEmpty(daten["BIC"])
+                self.bic = src._setNoneIfEmpty(daten["BIC"])
             self._check_konto()
         # print(repr(self))

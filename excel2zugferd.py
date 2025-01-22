@@ -110,18 +110,180 @@ STAMMDATEN = [
         "Variable": "BYOPdf",
         "Dest": "Steuerung"
     },
-    # {
-    #     "Text": "Label1",
-    #     "Label": "↓--------------- Wird automatisch befüllt\
-    #  ---------------↓",
-    #     "Lines": 2,
-    #     "Type": "Label",
-    #     "Variable": "Label1",
-    #     "Dest": "Steuerung"
-    # },
-    {"Text": "Verzeichnis", "Label": "Verzeichnis", "Lines": 1,
+    {
+        "Text": "Verzeichnis", "Label": "Verzeichnis", "Lines": 1,
         "Type": "Label",
-        "Dest": "Steuerung"},
+        "Dest": "Steuerung",
+    },
+    {
+        "Text": "AnschriftSpalte",
+        "Label": "Anschrift Spalte (A...Z)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "AnschriftSpalte",
+        "Dest": "Excel"
+    },
+    {
+        "Text": "AnschriftZeile",
+        "Label": "Anschrift Zeile (1...)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "AnschriftZeile",
+        "Dest": "Excel"
+    },
+    {
+        "Text": "RechnungSpalte",
+        "Label": "Rechnungsnummer\nSpalte (A...Z)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "RechnungSpalte",
+        "Dest": "Excel"
+    },
+    {
+        "Text": "RechnungZeile",
+        "Label": "Rechnungsnummer\nZeile (1...)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "RechnungZeile",
+        "Dest": "Excel"
+    },
+    {
+        "Text": "RGDatumSpalte",
+        "Label": "Rechnungsdatum\nSpalte (A...Z)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "RGDatumSpalte",
+        "Dest": "Excel"
+    },
+    {
+        "Text": "RGDatumZeile",
+        "Label": "Rechnungsdatum\nZeile (1...)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "RGDatumZeile",
+        "Dest": "Excel"
+    },
+    {
+        "Text": "NettosummeSpalte",
+        "Label": "Nettosumme\nSpalte (A...Z)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "NettosummeSpalte",
+        "Dest": "Excel"
+    },
+    {
+        "Text": "NettosummeZeile",
+        "Label": "Nettosumme\nZeile (1...)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "NettosummeZeile",
+        "Dest": "Excel"
+    },
+    {
+        "Text": "MWStsummeSpalte",
+        "Label": "Umsatzsteuersumme\nSpalte (A...Z)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "MWStsummeSpalte",
+        "Dest": "Excel"
+    },
+    {
+        "Text": "MWStsummeZeile",
+        "Label": "Umsatzsteuersumme\nZeile (1...)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "MWStsummeZeile",
+        "Dest": "Excel"
+    },
+    {
+        "Text": "BruttosummeSpalte",
+        "Label": "Bruttosumme\nSpalte (A...Z)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "BruttosummeSpalte",
+        "Dest": "Excel"
+    },
+    {
+        "Text": "BruttosummeZeile",
+        "Label": "Bruttosumme\nZeile (1...)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "BruttosummeZeile",
+        "Dest": "Excel"
+    },
+    {
+        "Text": "Label1",
+        "Label": "↓---------- Einzelpositionen im Excel Blatt:\
+ Spalten A..Z, Zeilen 1...   -------------↓",
+        "Lines": 2,
+        "Type": "Label",
+        "Variable": "Label1",
+        "Dest": "ExcelPos"
+    },
+    {
+        "Text": "PositionenZeile",
+        "Label": "Einzelpositionen:\nÜberschrift in Zeile (1...)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "PositionenZeile",
+        "Dest": "ExcelPos"
+    },
+    {
+        "Text": "PosSpalte",
+        "Label": "Position:\nin Spalte (A...Z)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "PosSpalte",
+        "Dest": "ExcelPos"
+    },
+    {
+        "Text": "DatSpalte",
+        "Label": "Datum:\nin Spalte (A...Z)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "DatSpalte",
+        "Dest": "ExcelPos"
+    },
+    {
+        "Text": "DescSpalte",
+        "Label": "Beschreibung:\nin Spalte (A...Z)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "DescSpalte",
+        "Dest": "ExcelPos"
+    },
+    {
+        "Text": "AnzSpalte",
+        "Label": "Menge:\nin Spalte (A...Z)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "AnzSpalte",
+        "Dest": "ExcelPos"
+    },
+    {
+        "Text": "TypSpalte",
+        "Label": "Einheit:\nin Spalte (A...Z)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "TypSpalte",
+        "Dest": "ExcelPos"
+    },
+    {
+        "Text": "PreisSpalte",
+        "Label": "Einzelpreis:\nin Spalte (A...Z)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "PreisSpalte",
+        "Dest": "ExcelPos"
+    },
+    {
+        "Text": "SumSpalte",
+        "Label": "Summe:\nin Spalte (A...Z)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "SumSpalte",
+        "Dest": "ExcelPos"
+    },
 ]
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@
 Modul Adresse
 """
 
-from src import ANSCHRIFT_ERROR, KONTAKT_ERROR, USTID_ERROR
+from src.constants import ANSCHRIFT_ERROR, KONTAKT_ERROR, USTID_ERROR
 
 
 class Adresse(object):

@@ -3,10 +3,13 @@ Module excel_content
 """
 
 import os
-import math
+from datetime import datetime, time
 import pandas as pd
 # from src.handle_other_objects import Adresse
 from src.kunde import Kunde
+from src.steuerung import Steuerung
+from src.constants import DATUM_NOT_FOUND_ERR, ANSCHRIFT_DEFAULT_SPALTE, \
+    RGNR_DEFAULT_SPALTE, RGDATUM_REFAULT_SPALTE
 import decimal
 import string
 
@@ -40,10 +43,14 @@ class ExcelContent:
         # print(self.daten)
         return self.daten
 
-    def mapReducePositions(self, inp: pd.DataFrame, columns: list)\
-            -> pd.DataFrame:
+    def mapReducePositions(self, inp: pd.DataFrame, columns: list,
+                           start_row: str = "1") -> pd.DataFrame:
         """maps and reduces DataFrame inp to expected columns"""
-        return inp[columns]
+        reduced = inp.loc[int(start_row):, columns]
+        noneIdx = self._get_index_of_nan(reduced[columns[0]])
+        # print(f"NoneIdx = {noneIdx}\n", reduced[columns[0]])
+        reduced.columns = reduced.loc[int(reduced.index[0])]
+        return reduced.iloc[1:noneIdx] if noneIdx != -1 else reduced
 
     def _get_search_err(self, search_value: str, column_name: str) -> str:
         """return ErrorMessage for search_err"""
@@ -71,40 +78,49 @@ class ExcelContent:
             raise COL_ERR
         return arr
 
-    def _truncate_array_at_next_empty_cell(self, arr: list, error_msg: str)\
-            -> list:
-        """return array truncated at next empty cell"""
+    def _check_raise(self, error_msg: str, raiseIfNotFound: bool) -> None:
         SEARCH_ERR = ValueError(error_msg)
-        retval = []
+        if raiseIfNotFound:
+            raise SEARCH_ERR
+
+    def _get_value_of_row_in_next_column(self, arr: list, col: str,
+                                         error_msg: str,
+                                         raiseIfNotFound: bool = True)\
+            -> any:
+        """return value at next cell"""
+        retval = None
         try:
-            retval = arr.iat[0, -1] if not math.isnan(arr.iat[0, -1]) else \
-                arr.iat[0, 1]
+            idx = list(arr.columns).index(col) + 1
+            retval = arr.iat[0, idx]
         except TypeError:
-            raise SEARCH_ERR
+            self._check_raise(error_msg, raiseIfNotFound)
         except IndexError:
-            raise SEARCH_ERR
+            self._check_raise(error_msg, raiseIfNotFound)
+        if pd.isna(retval):
+            retval = None
         return retval
 
-    def search_cell_right_of(self, column_name: str, search_value: str)\
-            -> list:
+    def search_cell_right_of(self, column_name: str, search_value: str,
+                             raiseIfNotFound: bool = True) -> any:
         """
         Search in row with column_name for search_value,
-            return array with values right of the search_value
-            until next empty cell
+            return value right of the search_value
         """
         if self.daten is None:
             return ""
         arr = self._search_cell_in_column(column_name, search_value)
-        return self._truncate_array_at_next_empty_cell(arr,
-                                                       self._get_search_err(
-                                                           search_value,
-                                                           column_name))
+        return self._get_value_of_row_in_next_column(arr,
+                                                     column_name,
+                                                     self._get_search_err(
+                                                        search_value,
+                                                        column_name),
+                                                     raiseIfNotFound)
 
     def _get_index_of_nan(self, df: pd.DataFrame) -> int:
         """get first index of next NaN"""
         return next((i for i, v in enumerate(df) if v != v), -1)
 
-    def _search_anschrift(self, spalte: str, search: str,
+    def _search_anschrift(self, spalte: str, zeile: str, search: str,
                           customer: Kunde) -> None:
         """
         Search in specified column until next NaN,
@@ -113,7 +129,8 @@ class ExcelContent:
         if self.daten is None:
             return None
         an = self.daten[spalte]
-        fromIdx = self.daten.index[an == search].tolist()[0]  # + 1
+        fromIdx = self.daten.index.to_list().index(int(zeile)) if zeile else\
+            self.daten.index[an == search].tolist()[0]
         nan_idx = self._get_index_of_nan(an)  # get first index of NaN in an
         arr = an[fromIdx:nan_idx].to_list()
         # print("_search_anschrift:\n", arr)
@@ -154,26 +171,57 @@ class ExcelContent:
         # print(retval)
         return retval
 
-    def get_address_of_customer(self, spalte: str = "A",
+    def get_address_of_customer(self, spalte: str = ANSCHRIFT_DEFAULT_SPALTE,
                                 anschrift: str = "An:",
-                                customer: Kunde = None):
+                                customer: Kunde = None,
+                                zeile: str = None):
         """returns address of customer in Excel Sheet with \\n joined values"""
-        return self._search_anschrift(spalte, anschrift, customer)
+        return self._search_anschrift(spalte, zeile, anschrift, customer)
 
-    def get_invoice_number(self, spalte: str = "A",
-                           rg_nr: str = "Rechnungs-Nr:"
+    def _get_content_at(self, spalte: str, zeile: int) -> any:
+        return self.daten.at[int(zeile), spalte]
+
+    def get_invoice_number(self, spalte: str = RGNR_DEFAULT_SPALTE,
+                           rg_nr: str = "Rechnungs-Nr:",
+                           zeile: str = None
                            ) -> dict:
         """returns tuple ('InvoiceNumberText', invoiceNumber)"""
-        theDict = {rg_nr: self.search_cell_right_of(spalte, rg_nr)}
+        theDict = {rg_nr: self._get_content_at(spalte, zeile) if zeile else
+                   self.search_cell_right_of(spalte, rg_nr)}
         # self.invoice.invoicenr = theDict   # ToDo. eliminate
+        return theDict
+
+    def get_invoice_date(self, spalte: str = RGDATUM_REFAULT_SPALTE,
+                         rg_date: str = "Rechnungsdatum:",
+                         zeile: str = None
+                         ) -> any:
+        """returns tuple ('InvoiceDateText', invoiceDate)"""
+        if zeile:
+            value = self._get_content_at(spalte, zeile)
+            if pd.isna(value):
+                raise ValueError(DATUM_NOT_FOUND_ERR)
+        else:
+            value = self.search_cell_right_of(spalte, rg_date, False)
+            if value is None:
+                today = datetime.now()
+                value = datetime.combine(today.date(), time.min)
+        theDict = {rg_date:  value}
+
         return theDict
 
     def get_invoice_positions(self, spalte: str = "A",
                               search: str = "Pos.",
+                              mgmnt: Steuerung = None
                               ) -> dict:
         """
         return pandas DataFrame with positions for invoice
         """
+        if mgmnt and mgmnt.positionen_zeile:
+            columns = [mgmnt.pos_spalte, mgmnt.dat_spalte,
+                       mgmnt.desc_spalte, mgmnt.anz_spalte, mgmnt.typ_spalte,
+                       mgmnt.preis_spalte, mgmnt.sum_spalte]
+            return self.mapReducePositions(self.daten, columns,
+                                           mgmnt.positionen_zeile)
         return self._split_dataframe_by_search_value(spalte, search)
 
     def _round(self, value, prec: int) -> decimal.Decimal:
@@ -186,16 +234,44 @@ class ExcelContent:
         # print("_round:", value, ' = ', rounded)
         return rounded
 
+    def _get_netto_sum(self, spalte: str, search: str,
+                       management: Steuerung) -> any:
+        if (management is not None and
+                management.nettosumme_zeile is not None):
+            return self._get_content_at(management.nettosumme_spalte,
+                                        management.nettosumme_zeile)
+        else:
+            return self.search_cell_right_of(spalte, search)
+
+    def _get_ust_sum(self, spalte: str, search: str,
+                     management: Steuerung) -> any:
+        if (management is not None and
+                management.mwstsumme_zeile is not None):
+            return self._get_content_at(management.mwstsumme_spalte,
+                                        management.mwstsumme_zeile)
+        else:
+            return self.search_cell_right_of(spalte, search)
+
+    def _get_brutto_sum(self, spalte: str, search: str,
+                        management: Steuerung) -> any:
+        if (management is not None and
+                management.bruttosumme_zeile is not None):
+            return self._get_content_at(management.bruttosumme_spalte,
+                                        management.bruttosumme_zeile)
+        else:
+            return self.search_cell_right_of(spalte, search)
+
     def get_invoice_sums(self,
                          spalte: str = "F",
                          sum: str = "Summe",
                          USt: str = "Umsatzsteuer 19%",
                          bruttobetr: str = "Bruttobetrag",
+                         management: Steuerung = None
                          ):
         """return array of invoice sums"""
-        netto = self._round(self.search_cell_right_of(spalte, sum), 2)
-        umsatzsteuer = self._round(self.search_cell_right_of(spalte, USt), 2)
-        brutto = self._round(self.search_cell_right_of(spalte, bruttobetr), 2)
-        return [("Summe netto:", netto),
-                ("zzgl. Umsatzsteuer:", umsatzsteuer),
-                ("Bruttobetrag:", brutto)]
+        netto = self._get_netto_sum(spalte, sum, management)
+        umsatzsteuer = self._get_ust_sum(spalte, USt, management)
+        brutto = self._get_brutto_sum(spalte, bruttobetr, management)
+        return [("Summe netto:", self._round(netto, 2)),
+                ("zzgl. Umsatzsteuer:", self._round(umsatzsteuer, 2)),
+                ("Bruttobetrag:", self._round(brutto, 2))]

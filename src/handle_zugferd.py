@@ -20,7 +20,7 @@ from drafthorse.models import NS_QDT
 from src.kunde import Kunde
 from src.lieferant import Lieferant
 from src.collect_data import InvoiceCollection
-from src import P19USTG, GERMAN_DATE, EINHEITEN
+from src.constants import P19USTG, GERMAN_DATE, EINHEITEN
 
 
 class ZugFeRD:
@@ -34,15 +34,16 @@ class ZugFeRD:
         )
         self.doc.header.type_code = "380"
         self.doc.header.name = "RECHNUNG"
-        self.doc.header.issue_date_time = date.today()
         # self.doc.header.languages.add("de")
         self.debug = False
         self.first_date = None
         self.last_date = None
 
-    def add_rgnr(self, rgnr):
+    def add_rgnr(self, rgnr: str, datum: datetime):
         """Set Rechnungsnummer to id in header"""
-        self.doc.header.id = rgnr
+        self.doc.header.id = str(rgnr)
+        self.doc.header.issue_date_time = date.today()\
+            if datum is None else datum.date()
 
     def add_note(self, text):
         """Add note to notes"""
@@ -390,7 +391,9 @@ class ZugFeRD:
 
         self.fill_lieferant_to_note(invoice.supplier)
         self.add_my_company(invoice.supplier)
-        self.add_rgnr(f"{list(invoice.invoicenr.values())[0]}")
+        rg_nr = list(invoice.invoicenr.values())[0]
+        rg_date = list(invoice.invoicedate.values())[0]
+        self.add_rgnr(rg_nr, rg_date)
         self.add_rechnungsempfaenger(None, invoice.customer)
         self._fill_invoice_positions_in_xml(np.r_[[invoice.positions.columns],
                                             invoice.positions.astype(str)
@@ -401,11 +404,13 @@ class ZugFeRD:
         self.add_gesamtsummen(invoice.sums,
                               self._get_the_tax(steuersatz, kleinunternehmen),
                               P19USTG if kleinunternehmen else None)
-        self.add_rechnungsperiode(invoice.positions['Datum'])
+        # Datum
+        self.add_rechnungsperiode(invoice.positions[list(invoice.positions
+                                                         .columns)[1]])
         self.add_zahlungsziel(
             f"Bitte überweisen Sie den Betrag von \
 {self._get_brutto(invoice.sums)} bis zum",
-            invoice.supplier.get_ueberweisungsdatum(),
+            invoice.supplier.get_ueberweisungsdatum(rg_date),
         )
         self.add_verwendungszweck(invoice.invoicenr,
-                                  datetime.now().strftime(GERMAN_DATE))
+                                  rg_date.strftime(GERMAN_DATE))

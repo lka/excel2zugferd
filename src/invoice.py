@@ -17,6 +17,7 @@ class Invoice(object):
         self._supplier_account: Konto = None
         self._positions: pd.DataFrame = None
         self._invoicenr: dict = None
+        self._invoicedate: dict = None
         self._sums: list = None
         self._management: Steuerung = None
 
@@ -26,6 +27,7 @@ class Invoice(object):
  supplier_account: '{repr(self.supplier_account)}',\
  positions: '{self.positions}',\
  invoicenr: '{self.invoicenr}',\
+ invoicedate: '{self.invoicedate}',\
  sums '{self.sums}'\
  management: '{repr(self.management)}'"
 
@@ -68,6 +70,14 @@ class Invoice(object):
     @invoicenr.setter
     def invoicenr(self, value: dict) -> None:
         self._invoicenr = value
+
+    @property
+    def invoicedate(self) -> dict:
+        return self._invoicedate
+
+    @invoicedate.setter
+    def invoicedate(self, value: dict) -> None:
+        self._invoicedate = value
 
     @property
     def sums(self) -> list:

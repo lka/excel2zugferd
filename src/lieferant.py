@@ -2,10 +2,10 @@
 Module Lieferant
 """
 
-from src import _setNoneIfEmpty
 from datetime import datetime, timedelta
 from src.adresse import Adresse
-from src import STEUERSATZ_ERR_MSG, BETRIEB_ERROR, NAME_ERROR
+from src.constants import STEUERSATZ_ERR_MSG, BETRIEB_ERROR, NAME_ERROR
+import src
 
 
 class Lieferant(Adresse):
@@ -60,29 +60,29 @@ class Lieferant(Adresse):
             -> None:
         """use it for Stammdaten only"""
         if "Betriebsbezeichnung" in keys:
-            self.betriebsbezeichnung = _setNoneIfEmpty(
+            self.betriebsbezeichnung = src._setNoneIfEmpty(
                 daten["Betriebsbezeichnung"])
         if "Abteilung" in keys:
-            self.adresszusatz = _setNoneIfEmpty(daten["Abteilung"])
+            self.adresszusatz = src._setNoneIfEmpty(daten["Abteilung"])
         if "Ansprechpartner" in keys:
-            self.name = _setNoneIfEmpty(daten["Ansprechpartner"])
+            self.name = src._setNoneIfEmpty(daten["Ansprechpartner"])
 
     def _fill_Postfach_Strasse_Hausnummer(self, daten: dict, keys: list)\
             -> None:
         """use it for Stammdaten only"""
         if "Postfach" in keys:
-            self.postfach = _setNoneIfEmpty(daten["Postfach"])
+            self.postfach = src._setNoneIfEmpty(daten["Postfach"])
         if "Strasse" in keys:
-            self.strasse = _setNoneIfEmpty(daten["Strasse"])
+            self.strasse = src._setNoneIfEmpty(daten["Strasse"])
         if "Hausnummer" in keys:
-            self.hausnummer = _setNoneIfEmpty(daten["Hausnummer"])
+            self.hausnummer = src._setNoneIfEmpty(daten["Hausnummer"])
 
     def _fill_PLZ_Ort(self, daten: dict, keys: list) -> None:
         """use it for Stammdaten only"""
         if "PLZ" in keys:
-            self.plz = _setNoneIfEmpty(daten["PLZ"])
+            self.plz = src._setNoneIfEmpty(daten["PLZ"])
         if "Ort" in keys:
-            self.ort = _setNoneIfEmpty(daten["Ort"])
+            self.ort = src._setNoneIfEmpty(daten["Ort"])
 
     def _fill_anschrift(self, daten: dict, keys: list = None):
         """use it for Stammdaten only"""
@@ -94,21 +94,21 @@ class Lieferant(Adresse):
     def _fill_kontakt(self, daten: list, keys: list) -> None:
         """use it for Stammdaten only"""
         if "Telefon" in keys:
-            self.telefon = _setNoneIfEmpty(daten["Telefon"])
+            self.telefon = src._setNoneIfEmpty(daten["Telefon"])
         if "Fax" in keys:
-            self.fax = _setNoneIfEmpty(daten["Fax"])
+            self.fax = src._setNoneIfEmpty(daten["Fax"])
         if "Email" in keys:
-            self.email = _setNoneIfEmpty(daten["Email"])
+            self.email = src._setNoneIfEmpty(daten["Email"])
             self._check_kontakt()
 
     def _fill_umsatzsteuer(self, daten: dict, keys: list) -> None:
         """use it for Stammdaten only"""
         if "Steuernummer" in keys:
-            self.steuernr = _setNoneIfEmpty(daten["Steuernummer"])
+            self.steuernr = src._setNoneIfEmpty(daten["Steuernummer"])
         if "Finanzamt" in keys:
-            self.finanzamt = _setNoneIfEmpty(daten["Finanzamt"])
+            self.finanzamt = src._setNoneIfEmpty(daten["Finanzamt"])
         if "UmsatzsteuerID" in keys:
-            self.steuerid = _setNoneIfEmpty(daten["UmsatzsteuerID"])
+            self.steuerid = src._setNoneIfEmpty(daten["UmsatzsteuerID"])
             if self.steuerid is not None:
                 self.finanzamt = None
                 self.steuernr = None
@@ -130,7 +130,7 @@ class Lieferant(Adresse):
 
     def _fill_betrieb(self, daten):
         """use it for Stammdaten only"""
-        self.betriebsbezeichnung = _setNoneIfEmpty(
+        self.betriebsbezeichnung = src._setNoneIfEmpty(
             daten['Betriebsbezeichnung'])
         if not self.betriebsbezeichnung:
             raise ValueError(BETRIEB_ERROR)
@@ -138,7 +138,7 @@ class Lieferant(Adresse):
     def _fill_name(self, daten: dict, keys: list) -> None:
         """use it for Stammdaten only"""
         if "Ansprechpartner" in keys:
-            self.name = _setNoneIfEmpty(daten["Ansprechpartner"])
+            self.name = src._setNoneIfEmpty(daten["Ansprechpartner"])
         if not self.name:
             raise ValueError(NAME_ERROR)
 
@@ -165,9 +165,9 @@ class Lieferant(Adresse):
             self._fill_steuersatz(daten)
             # print(repr(self))
 
-    def get_ueberweisungsdatum(self) -> datetime:
+    def get_ueberweisungsdatum(self, datum: datetime = None) -> datetime:
         return (
-            datetime.now()
+            datetime.now() if datum is None else datum
             + timedelta(
                 days=int(
                     self.zahlungsziel
