@@ -4,8 +4,9 @@ Module handle_zugferd
 # import re
 import numpy as np
 import pandas as pd
+import math
 
-from datetime import date, datetime
+from datetime import datetime
 from decimal import Decimal
 
 from drafthorse.models.accounting import ApplicableTradeTax
@@ -38,11 +39,12 @@ class ZugFeRD:
         self.debug = False
         self.first_date = None
         self.last_date = None
+        self.rg_date: datetime = None
 
     def add_rgnr(self, rgnr: str, datum: datetime):
         """Set Rechnungsnummer to id in header"""
         self.doc.header.id = str(rgnr)
-        self.doc.header.issue_date_time = date.today()\
+        self.doc.header.issue_date_time = self.rg_date.date()\
             if datum is None else datum.date()
 
     def add_note(self, text):
@@ -208,7 +210,7 @@ class ZugFeRD:
     def _set_date(self, item: str) -> datetime:
         if item == 'nan' or item == "":
             return self.last_date if self.last_date is not None\
-                else datetime.today()
+                else self.rg_date  # datetime.today()
         else:
             return datetime.strptime(item, '%Y-%m-%d %H:%M:%S')
 
@@ -242,6 +244,7 @@ class ZugFeRD:
             if i > 0:
                 li = LineItem()
                 self._fillPosAndNameOfLi(li, item)
+                self._setOccurrenceInLi(li, item[1])
                 menge = float(item[3])
                 einzelpreisnetto = float(item[5])
                 # self._replaceCommaWithDot(item[5])
@@ -250,7 +253,6 @@ class ZugFeRD:
                     Decimal(f"{menge:.4f}"),
                     self._get_einheit(item[4], li),  # BT-130
                 )  # C62 == pieces - BT-150 ?
-                self._setOccurrenceInLi(li, item[1])
                 self._setTaxInLi(li, item[6], the_tax)
                 self.doc.trade.items.add(li)
 
@@ -381,6 +383,14 @@ class ZugFeRD:
     def _get_brutto(self, sums: list = None) -> str:
         return self._get_float_value(sums[-1])
 
+    def _set_first_datum(self, df: pd.DataFrame, headers: list) -> None:
+        """ I expect 'Datum' at second position in df """
+        tmp = df.loc[df[headers[1]].index[0], headers[1]]
+        if isinstance(tmp, datetime):
+            return
+        if math.isnan(tmp):
+            df.loc[df[headers[1]].index[0], headers[1]] = self.rg_date
+
     def fill_xml(self, invoice: InvoiceCollection = None) -> None:
         """
         fills data into ZugFeRD part
@@ -393,11 +403,14 @@ class ZugFeRD:
         self.fill_lieferant_to_note(invoice.supplier)
         self.add_my_company(invoice.supplier)
         rg_nr = list(invoice.invoicenr.values())[0]
-        rg_date = list(invoice.invoicedate.values())[0]
-        self.add_rgnr(rg_nr, rg_date)
+        self.rg_date = list(invoice.invoicedate.values())[0]
+        self.add_rgnr(rg_nr, self.rg_date)
         self.add_rechnungsempfaenger(None, invoice.customer)
-        self._fill_invoice_positions_in_xml(np.r_[[invoice.positions.columns],
-                                            invoice.positions.astype(str)
+        positions = invoice.positions.copy()
+        headers = list(positions.columns)
+        self._set_first_datum(positions, headers)
+        self._fill_invoice_positions_in_xml(np.r_[[positions.columns],
+                                            positions.astype(str)
                                             .values],
                                             self.
                                             _get_the_tax(steuersatz,
@@ -406,12 +419,11 @@ class ZugFeRD:
                               self._get_the_tax(steuersatz, kleinunternehmen),
                               P19USTG if kleinunternehmen else None)
         # Datum
-        self.add_rechnungsperiode(invoice.positions[list(invoice.positions
-                                                         .columns)[1]])
+        self.add_rechnungsperiode(positions[headers[1]])
         self.add_zahlungsziel(
             f"Bitte überweisen Sie den Betrag von \
 {self._get_brutto(invoice.sums)} bis zum",
-            invoice.supplier.get_ueberweisungsdatum(rg_date),
+            invoice.supplier.get_ueberweisungsdatum(self.rg_date),
         )
         self.add_verwendungszweck(invoice.invoicenr,
-                                  rg_date.strftime(GERMAN_DATE))
+                                  self.rg_date.strftime(GERMAN_DATE))

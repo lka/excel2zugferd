@@ -213,6 +213,7 @@ class PDF(FPDF):
         prints Table with Positions
         """
         self._printTableHeader()
+        last = None
         with self.table(
             borders_layout="NO_HORIZONTAL_LINES",
             cell_fill_color=self._getCellFillColor(),
@@ -235,6 +236,9 @@ class PDF(FPDF):
             v_align="TOP",
         ) as table:
             for data_row in arr:
+                if data_row[1] == "":  # Datum
+                    data_row[1] = last
+                last = data_row[1]
                 table.row(data_row)
 
     def _printSummenHeader(self) -> None:
@@ -469,24 +473,29 @@ class Pdf(PDF):
         """return str as locale currency"""
         return locale.currency(amount, grouping=True)
 
-    def _change_values_to_german(self, df: pd.DataFrame,
-                                 datum: str = "Datum",
-                                 preis: str = "Preis",
-                                 summe: str = "Summe",
-                                 anzahl: str = "Anzahl") -> pd.DataFrame:
+    def _set_first_datum(self, df: pd.DataFrame, headers: list) -> None:
+        """ I expect Datum at second position in df """
+        if df.loc[df[headers[1]].index[0], headers[1]] == "":
+            df.loc[df[headers[1]].index[0], headers[1]] =\
+                list(self.invoice.invoicedate.values())[0]\
+                .strftime(GERMAN_DATE)
+
+    def _change_values_to_german(self, df: pd.DataFrame) -> pd.DataFrame:
         """
-        replace column Datum with german date %d.%m.%Y and columns Preis and
-        Summe as float values with Komma separated"""
+        replace column Datum with german date %d.%m.%Y and columns Anzahl,
+        Preis and Summe as float values with Komma separated
+        """
         retval = df.copy()
         headers = list(df.columns)
         # retval.style.format({datum: lambda t: t.strftime("%d.%m.%Y")
         #                      if len(t) > 0 else ""})
         retval[headers[1]] = pd.to_datetime(retval[headers[1]],  # Datum
                                             errors="ignore")\
-            .dt.strftime("%d.%m.%Y")
+            .dt.strftime(GERMAN_DATE)
         # substitute NaN by ""
         retval[headers[1]] = retval[headers[1]].fillna("")
-        # print(retval)
+        self._set_first_datum(retval, headers)
+        # print("_change_values_to_german:\n", retval)
         retval[headers[3]] = (  # Anzahl
             retval[headers[3]]
             .apply("{:n}".format)

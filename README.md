@@ -59,9 +59,18 @@ Nach dem Start des Programms:
 
 ### Excel-Datei
 Die Struktur der Excel Datei ist vorgegeben und kann nicht verändert werden, ohne die Funktion zu verlieren.
-Als Vorlage benutzen Sie bitte die Datei TestRechnung.xlsx.
+Als Vorlage benutzen Sie bitte die Datei "TestRechnung.xlsx".
+
+Alternativ können Sie die XY-Positionen im Excel Blatt (Spalten: A...Z, Zeilen: 1...) in den Stammdaten "Excel Steuerung" und "Excel Positionen" angeben.
+Damit können die XY-Positionen verändert werden und die Suchfunktion wird abgeschaltet. Durch die Angabe der "Excel Positionen" können Sie auch die Überschriften der Einzelpositionen anpassen z.B: Pos. -> Nr., Typ -> EH usw..
 
 ## Versionen
+
+### 0.20.0
+
+- Für eine Funktionalität wie *"Das Datum der Rechnung entspricht dem Datum der Leistungserbringung, sofern nicht anders angegeben."* wird das Rechnungsdatum in die erste Position (wenn sie leer ist) geschrieben und dann fortgeführt.
+- Die Sourcen wurden so verändert, dass sie einer Zyklomatischen Komplexität <= 5 entsprechen.
+- Der Workaround für die fehlenden Bestandteile der Bibliothek drafthorse wurde entfernt und die Version 2025.1.0 von drafthorse eingeführt.
 
 ### 0.19.0
 

@@ -3,13 +3,13 @@ Modul zugferd_test
 """
 
 import unittest
-import os
-from datetime import datetime, timedelta
+# import os
+# from datetime import datetime, timedelta
 import src.handle_zugferd as handle_zugferd
 import src.handle_pdf as handle_pdf
 # from src.handle_other_objects import Adresse
-from src.lieferant import Lieferant
-import decimal
+# from src.lieferant import Lieferant
+# import decimal
 
 
 class TestZugFerd(unittest.TestCase):
@@ -89,144 +89,147 @@ xmlns:udt=\"urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100\">\
         except Exception:
             self.fail("raised Exceptionr unexpectedly!")
 
-    @unittest.skip("no way of currently testing this")
-    def test_add_xml2pdf(self):
-        """
-        check whether demo creates the file hello_world.pdf
-        """
-        try:
-            os.remove("hello_world_zugferd.pdf")
-        except OSError:
-            pass
-        try:
-            os.remove("hello_world.pdf")
-        except OSError:
-            pass
+#     @unittest.skip("no way of currently testing this")
+#     def test_add_xml2pdf(self):
+#         """
+#         check whether demo creates the file hello_world.pdf
+#         """
+#         try:
+#             os.remove("hello_world_zugferd.pdf")
+#         except OSError:
+#             pass
+#         try:
+#             os.remove("hello_world.pdf")
+#         except OSError:
+#             pass
 
-        daten = {
-                    "Anschrift": "Max Mustermann\nSoftware\nMusterstr. 17a\
-\n12345 Musterstadt",
-                    "Betriebsbezeichnung": "Max Mustermann - Software",
-                    "Bundesland": "Baden-Württemberg",
-                    "Kontakt": "Tel.: 01234-1234567\nEmail: max@mustermann.de",
-                    "Name": "Max Mustermann",
-                    "Umsatzsteuer": "Steuernummer: 12345/12345\
-\nFinanzamt Musterstadt",
-                    "Verzeichnis": "C:/Users/xxx/Documents",
-                    "Zahlungsziel": "14",
-                }
-        lieferant = Lieferant()
-        lieferant.fill_lieferant(daten)
+#         daten = {
+#                     "Anschrift": "Max Mustermann\nSoftware\nMusterstr. 17a\
+# \n12345 Musterstadt",
+#                     "Betriebsbezeichnung": "Max Mustermann - Software",
+#                     "Bundesland": "Baden-Württemberg",
+#                     "Kontakt": "Tel.: 01234-1234567\
+# \nEmail: max@mustermann.de",
+#                     "Name": "Max Mustermann",
+#                     "Umsatzsteuer": "Steuernummer: 12345/12345\
+# \nFinanzamt Musterstadt",
+#                     "Verzeichnis": "C:/Users/xxx/Documents",
+#                     "Zahlungsziel": "14",
+#                 }
+#         lieferant = Lieferant()
+#         lieferant.fill_lieferant(daten)
 
-        # create pdf infile
-        # self.pdf.demo()
-        self.assertTrue(os.path.isfile("hello_world.pdf"))
+#         # create pdf infile
+#         # self.pdf.demo()
+#         self.assertTrue(os.path.isfile("hello_world.pdf"))
 
-        self.zugferd.add_rgnr("2024000000000123")
-        self.zugferd.add_note(
-            "Max Mustermann - Softwareentwicklung\nMusterstr. 1\n\
-                12345 Musterstadt"
-        )
-        self.zugferd.add_rechnungsempfaenger(
-            "Musterfrauen GmbH & CoKG\nAnette Musterfrau\nAm Bild 19\n\
-                98766 Unterschleißheim"
-        )
-        self.zugferd.add_zahlungsempfaenger(
-            "Max Mustermann\nIBAN: DE97 xxx xxx xxx xxx xxx xxx\n\
-                BIC: SOLADES1XYZ"
-        )
-        self.zugferd.add_my_company(lieferant)
-        self.zugferd.add_items(
-            [
-                ("Pos.", "Datum", "Tätigkeit", "Menge", "Typ", "Einzel €",
-                 "Gesamt €"),
-                (
-                    "1",
-                    "2024-01-01 00:00:00",
-                    "Irgendwas, das länger ist als zwei Zeilen in der Ausgabe \
-                        mit einer Dokumentation dessen, was geleistet wurde.",
-                    "3",
-                    "10 Min.",
-                    "22.00",
-                    "66.00",
-                ),
-                (
-                    "2",
-                    "2024-01-02 00:00:00",
-                    "Irgendwas, das länger ist als eine Zeilen und einer \
-                        Dokumentation dessen, was geleistet wurde.",
-                    "1",
-                    "h",
-                    "75.00",
-                    "75.00",
-                ),
-                (
-                    "3",
-                    "2024-01-02 00:00:00",
-                    "Irgendwas, das länger ist als eine Zeilen und einer \
-                        Dokumentation dessen, was geleistet wurde.",
-                    "1",
-                    "h",
-                    "75.00",
-                    "75.00",
-                ),
-                (
-                    "4",
-                    "2024-01-02 00:00:00",
-                    "Irgendwas, das länger ist als eine Zeilen und einer \
-                        Dokumentation dessen, was geleistet wurde.",
-                    "1",
-                    "h",
-                    "75.00",
-                    "75.00",
-                ),
-                (
-                    "5",
-                    "2024-01-02 00:00:00",
-                    "Irgendwas, das länger ist als eine Zeilen und einer \
-                        Dokumentation dessen, was geleistet wurde.",
-                    "1",
-                    "h",
-                    "75.00",
-                    "75.00",
-                ),
-                (
-                    "6",
-                    "2024-01-02 00:00:00",
-                    "Irgendwas, das länger ist als eine Zeilen und einer \
-                        Dokumentation dessen, was geleistet wurde.",
-                    "1",
-                    "h",
-                    "75.00",
-                    "75.00",
-                ),
-            ], "19.0"
-        )
+#         self.zugferd.add_rgnr("2024000000000123")
+#         self.zugferd.add_note(
+#             "Max Mustermann - Softwareentwicklung\nMusterstr. 1\n\
+#                 12345 Musterstadt"
+#         )
+#         self.zugferd.add_rechnungsempfaenger(
+#             "Musterfrauen GmbH & CoKG\nAnette Musterfrau\nAm Bild 19\n\
+#                 98766 Unterschleißheim"
+#         )
+#         self.zugferd.add_zahlungsempfaenger(
+#             "Max Mustermann\nIBAN: DE97 xxx xxx xxx xxx xxx xxx\n\
+#                 BIC: SOLADES1XYZ"
+#         )
+#         self.zugferd.add_my_company(lieferant)
+#         self.zugferd.add_items(
+#             [
+#                 ("Pos.", "Datum", "Tätigkeit", "Menge", "Typ", "Einzel €",
+#                  "Gesamt €"),
+#                 (
+#                     "1",
+#                     "2024-01-01 00:00:00",
+#                     "Irgendwas, das länger ist als zwei\
+#  Zeilen in der Ausgabe mit einer Dokumentation dessen,\
+#  was geleistet wurde.",
+#                     "3",
+#                     "10 Min.",
+#                     "22.00",
+#                     "66.00",
+#                 ),
+#                 (
+#                     "2",
+#                     "2024-01-02 00:00:00",
+#                     "Irgendwas, das länger ist als eine Zeilen und einer \
+#                         Dokumentation dessen, was geleistet wurde.",
+#                     "1",
+#                     "h",
+#                     "75.00",
+#                     "75.00",
+#                 ),
+#                 (
+#                     "3",
+#                     "2024-01-02 00:00:00",
+#                     "Irgendwas, das länger ist als eine Zeilen und einer \
+#                         Dokumentation dessen, was geleistet wurde.",
+#                     "1",
+#                     "h",
+#                     "75.00",
+#                     "75.00",
+#                 ),
+#                 (
+#                     "4",
+#                     "2024-01-02 00:00:00",
+#                     "Irgendwas, das länger ist als eine Zeilen und einer \
+#                         Dokumentation dessen, was geleistet wurde.",
+#                     "1",
+#                     "h",
+#                     "75.00",
+#                     "75.00",
+#                 ),
+#                 (
+#                     "5",
+#                     "2024-01-02 00:00:00",
+#                     "Irgendwas, das länger ist als eine Zeilen und einer \
+#                         Dokumentation dessen, was geleistet wurde.",
+#                     "1",
+#                     "h",
+#                     "75.00",
+#                     "75.00",
+#                 ),
+#                 (
+#                     "6",
+#                     "2024-01-02 00:00:00",
+#                     "Irgendwas, das länger ist als eine Zeilen und einer \
+#                         Dokumentation dessen, was geleistet wurde.",
+#                     "1",
+#                     "h",
+#                     "75.00",
+#                     "75.00",
+#                 ),
+#             ], "19.0"
+#         )
 
-        self.zugferd.add_gesamtsummen(
-            [
-                ("netto:", decimal.Decimal("1540.00")),
-                ("USt.:", decimal.Decimal("84.98")),
-                ("brutto:", decimal.Decimal("1690.98")),
-            ], "19.0"
-        )
+#         self.zugferd.add_gesamtsummen(
+#             [
+#                 ("netto:", decimal.Decimal("1540.00")),
+#                 ("USt.:", decimal.Decimal("84.98")),
+#                 ("brutto:", decimal.Decimal("1690.98")),
+#             ], "19.0"
+#         )
 
-        self.zugferd.add_zahlungsziel(
-            "Zahlbar ohne Abschlag bis", datetime.now() +
-            timedelta(days=int(14))
-        )
-        self.zugferd.add_xml2pdf("hello_world.pdf", "hello_world_zugferd.pdf")
-        self.assertTrue(os.path.isfile("hello_world_zugferd.pdf"))
+#         self.zugferd.add_zahlungsziel(
+#             "Zahlbar ohne Abschlag bis", datetime.now() +
+#             timedelta(days=int(14))
+#         )
+#         self.zugferd.add_xml2pdf("hello_world.pdf",
+#               "hello_world_zugferd.pdf")
+#         self.assertTrue(os.path.isfile("hello_world_zugferd.pdf"))
 
-        if self.mydebug is None:
-            try:
-                os.remove("hello_world_zugferd.pdf")
-            except OSError:
-                pass
-            try:
-                os.remove("hello_world.pdf")
-            except OSError:
-                pass
+#         if self.mydebug is None:
+#             try:
+#                 os.remove("hello_world_zugferd.pdf")
+#             except OSError:
+#                 pass
+#             try:
+#                 os.remove("hello_world.pdf")
+#             except OSError:
+#                 pass
 
     def test__get_einheit(self):
         """Teste die Rückgabe der Einheit"""

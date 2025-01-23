@@ -69,7 +69,7 @@ class TestAdresse(unittest.TestCase):
             self.assertEqual(getattr(obj, prop, 'Attribute not found'),
                              value, f"{prop} {MSG}")
 
-    def test__check_anschrift(self):
+    def test__check_anschrift1(self):
         """
         Tests that wrong Anschrift in Adresse throws ValueError
         """
@@ -87,6 +87,13 @@ class TestAdresse(unittest.TestCase):
         adresse.strasse = _setNoneIfEmpty("")
         with self.assertRaises(ValueError):
             adresse._check_anschrift()
+
+    def test__check_anschrift2(self):
+        """
+        Tests that wrong Anschrift in Adresse throws ValueError
+        """
+        adresse = Adresse()
+        adresse.betriebsbezeichnung = _setNoneIfEmpty("Software AG")
         adresse.strasse = _setNoneIfEmpty("Am kleinen Weg")
         adresse.plz = _setNoneIfEmpty("12345")
         adresse.ort = _setNoneIfEmpty("Musterstadt (Ortsteil Klein)")
@@ -100,6 +107,13 @@ class TestAdresse(unittest.TestCase):
             adresse._check_anschrift()
         except ValueError:
             self.fail("raised ValueError unexpectedly!")
+
+    def test__check_anschrift3(self):
+        """
+        Tests that wrong Anschrift in Adresse throws ValueError
+        """
+        adresse = Adresse()
+        adresse.betriebsbezeichnung = _setNoneIfEmpty("Software AG")
         adresse.strasse = _setNoneIfEmpty("An der Musterstrasse")
         adresse.hausnummer = "17a"
         adresse.postfach = None

@@ -132,30 +132,43 @@ class ExcelContent:
         fromIdx = self.daten.index.to_list().index(int(zeile)) if zeile else\
             self.daten.index[an == search].tolist()[0]
         nan_idx = self._get_index_of_nan(an)  # get first index of NaN in an
-        arr = an[fromIdx:nan_idx].to_list()
+        # arr = an[fromIdx:nan_idx].to_list()
+        arr = ('\n'.join(an[fromIdx:nan_idx].to_list())).splitlines()
         # print("_search_anschrift:\n", arr)
         if customer:
             customer.anschrift = arr
             customer.landeskennz = "DE"
 
-    def _split_dataframe_by_search_value(self, column_name: str,
-                                         search_value: str) -> dict:
-        """
-        Search in specified column for search_value return rows until next NaN
-        as pandas dataFrame
-        """
-        if self.daten is None:
-            return None
+    def _get_err_objects(self, column_name: str, search_value: str) -> list:
         SEARCH_ERR = ValueError(f"Ich konnte '{search_value}'\
  in Spalte '{column_name}' nicht finden.")
         COL_ERR = ValueError(f"Ich konnte\
  die Spalte '{column_name}' nicht finden.")
+        return [SEARCH_ERR, COL_ERR]
+
+    def _get_line_with_search_value_in_column(self, column_name: str,
+                                              search_value: str)\
+            -> pd.DataFrame:
+        SEARCH_ERR, COL_ERR = self._get_err_objects(column_name, search_value)
         try:
             line = self.daten[self.daten[column_name] == search_value]
         except KeyError:
             raise COL_ERR
         except IndexError:
             raise SEARCH_ERR
+        return line
+
+    def _split_dataframe_by_search_value(self, column_name: str,
+                                         search_value: str) -> pd.DataFrame:
+        """
+        Search in specified column for search_value return rows until next NaN
+        as pandas dataFrame
+        """
+        if self.daten is None:
+            return None
+        line = self._get_line_with_search_value_in_column(column_name,
+                                                          search_value)
+        SEARCH_ERR, COL_ERR = self._get_err_objects(column_name, search_value)
         # print(line)
         try:
             start_index = int(line.index[0])  # + 1
