@@ -21,6 +21,7 @@ class TestZugFerd(unittest.TestCase):
         self.mydebug = None
         return super().setUp()
 
+    @unittest.skip("not more necessary testing this")
     def test_modify_xml(self):
         """Test that xmlns:qdt is added"""
         xml = "<?xml version='1.0' encoding='UTF-8'?>\
@@ -39,6 +40,7 @@ xmlns:udt=\"urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100\">\
         self.assertEqual(count, 1, 'should only be 1')
         # self.assertIn('show me the content of mod_xml', mod_xml)
 
+    @unittest.skip("not more necessary testing this")
     def test_modify_xml_already_in(self):
         """Test that xmlns:qdt is added"""
         xml = "<?xml version='1.0' encoding='UTF-8'?>\

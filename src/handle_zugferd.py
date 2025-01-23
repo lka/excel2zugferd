@@ -1,7 +1,7 @@
 """
 Module handle_zugferd
 """
-import re
+# import re
 import numpy as np
 import pandas as pd
 
@@ -15,7 +15,7 @@ from drafthorse.models.tradelines import LineItem
 from drafthorse.models.payment import PaymentTerms
 from drafthorse.models.party import TaxRegistration
 from drafthorse.pdf import attach_xml
-from drafthorse.models import NS_QDT
+# from drafthorse.models import NS_QDT
 
 from src.kunde import Kunde
 from src.lieferant import Lieferant
@@ -318,7 +318,8 @@ class ZugFeRD:
     def add_xml2pdf(self, in_file=None, out_file=None) -> None:
         """add xml content to out_file"""
         # Generate XML file
-        xml = self.modify_xml(self.doc.serialize(schema="FACTUR-X_EXTENDED"))
+        # xml = self.modify_xml(self.doc.serialize(schema="FACTUR-X_EXTENDED"))
+        xml = self.doc.serialize(schema="FACTUR-X_EXTENDED")
 
         # print ('XML:', xml[:512])
 
@@ -337,21 +338,21 @@ class ZugFeRD:
             with open(out_file, "wb") as f:
                 f.write(new_pdf_bytes)
 
-    def modify_xml(self, xml=None):
-        """insert xmlns:qdt if it is not in namespaces"""
-        decoded = xml.decode('utf-8')
-        searchstr = re.search(r'<rsm:CrossIndustryInvoice(.*)>',
-                              decoded).group()
-        # print(searchstr)
-        nsmap = searchstr.split(' ')
-        _QDT = 'xmlns:qdt='
-        QDT = _QDT + '\"' + NS_QDT + '\"'
-        if QDT not in nsmap:
-            nsmap.insert(1, QDT)
-            decoded = decoded.replace(searchstr, ' '.join(nsmap))
-        # print ('MAP:', nsmap)
+    # def modify_xml(self, xml=None):
+    #     """insert xmlns:qdt if it is not in namespaces"""
+    #     decoded = xml.decode('utf-8')
+    #     searchstr = re.search(r'<rsm:CrossIndustryInvoice(.*)>',
+    #                           decoded).group()
+    #     # print(searchstr)
+    #     nsmap = searchstr.split(' ')
+    #     _QDT = 'xmlns:qdt='
+    #     QDT = _QDT + '\"' + NS_QDT + '\"'
+    #     if QDT not in nsmap:
+    #         nsmap.insert(1, QDT)
+    #         decoded = decoded.replace(searchstr, ' '.join(nsmap))
+    #     # print ('MAP:', nsmap)
 
-        return decoded.encode('utf-8')
+    #     return decoded.encode('utf-8')
 
     def fill_lieferant_to_note(self, lieferant: Lieferant) -> None:
         """
