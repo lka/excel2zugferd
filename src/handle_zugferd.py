@@ -27,7 +27,7 @@ from src.constants import P19USTG, GERMAN_DATE, EINHEITEN
 class ZugFeRD:
     """Class ZugFeRD"""
 
-    def __init__(self):
+    def __init__(self, invoice: InvoiceCollection = None):
         # Build data structure
         self.doc = Document()
         self.doc.context.guideline_parameter.id = (
@@ -40,6 +40,7 @@ class ZugFeRD:
         self.first_date = None
         self.last_date = None
         self.rg_date: datetime = None
+        self.fill_xml(invoice)
 
     def add_rgnr(self, rgnr: str, datum: datetime):
         """Set Rechnungsnummer to id in header"""

@@ -4,6 +4,8 @@ Module for handle_ini_file_test
 
 import os
 import unittest
+from pathlib import Path
+
 import src.handle_ini_file as handle_ini_file
 
 
@@ -18,7 +20,8 @@ class TestIniFile(unittest.TestCase):
             os.remove(self.file)
         except FileNotFoundError:
             pass
-        self.ini_file_class = handle_ini_file.IniFile(self.file)
+        self.ini_file_class = handle_ini_file.IniFile(
+            path_to_inifile=self.file)
         return super().setUp()
 
     def tearDown(self) -> None:
@@ -79,6 +82,13 @@ class TestIniFile(unittest.TestCase):
         }
         self.ini_file_class.merge_content_of_ini_file(modification)
         self.assertDictEqual(self.ini_file_class.content, expected, MSG)
+
+    def test_raise_error_on_false_ini_file(self):
+        """
+        Test the raise error if ini directory is not creatable
+        """
+        with self.assertRaises(ValueError):
+            handle_ini_file.IniFile(dir=Path("I:/Laber"))
 
 # if __name__ == '__main__':
 #     unittest.main()

@@ -3,7 +3,6 @@ Module handle_ini_file
 """
 import os
 import json
-from tkinter import messagebox
 from pathlib import Path
 import src
 
@@ -12,25 +11,24 @@ class IniFile:
     """
     Class IniFile
     """
-    def __init__(self, path: str = None):
+    def __init__(self, path_to_inifile: str = None, dir: Path = None):
         self.fn: str = "config.ini"
-        self.dir: str = None
-        self.path: str = path
+        self.dir: Path = dir if dir is not None else Path.joinpath(
+            Path(os.getenv("APPDATA")).resolve(), Path("excel2zugferd")
+        )
+        self.path: str = path_to_inifile
         self.content: dict = {}
         if self.path is None:
             self._create_inifile_directory()
 
     def _create_inifile_directory(self) -> None:
-        self.dir = Path.joinpath(
-            Path(os.getenv("APPDATA")).resolve(), Path("excel2zugferd")
-        )
         if not Path.exists(self.dir):
             try:
                 os.mkdir(self.dir)
             except IOError as e:
                 msg = f"Ich kann das Verzeichnis {self.dir} nicht erstellen.\n\
                         {src.format_ioerr(e)}"
-                messagebox.showerror("Fehler", msg)
+                raise ValueError(msg)
         self.path = os.path.join(self.dir, self.fn)
 
     def exists_ini_file(self):

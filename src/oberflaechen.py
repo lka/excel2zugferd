@@ -14,12 +14,6 @@ import src.excel_content
 from src.handle_ini_file import IniFile
 from src.collect_data import InvoiceCollection
 from src.handle_zugferd import ZugFeRD
-# from src.oberflaeche_base import Oberflaeche
-# from src.oberflaeche_excelsteuerung import OberflaecheExcelSteuerung
-# from src.oberflaeche_ini import OberflaecheIniFile
-# from src.oberflaeche_steuerung import OberflaecheSteuerung
-# from src.oberflaeche_excelpositions import OberflaecheExcelPositions, \
-#     Oberflaeche, OberflaecheIniFile, OberflaecheSteuerung
 from src.constants import PADX, PADY
 import src
 import src.oberflaeche_base
@@ -223,17 +217,23 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
         """returns True if error in stammdaten occurs"""
         try:
             invoiceCollection.set_daten(daten)
-        except ValueError as e:
-            messagebox.showerror("Fehler in den Excel-Daten", e)
+        except ValueError as ex:
+            messagebox.showerror(f"Fehler in den Excel-Daten.\n\
+                                 {src.format_ioerr(ex)}")
             return True
-        # print('excel2zugferd:567: ', repr(invoiceCollection))
+        # print('excel2zugferd:223: ', repr(invoiceCollection))
         return False
 
     def create_ZugFeRD(self) -> bool:
         """returns True on Failure"""
-        self.zugferd = ZugFeRD()
-        # print('create_ZugFeRD:572', repr(self.invoiceCollection))
-        self.zugferd.fill_xml(self.invoiceCollection)
+        try:
+            self.zugferd = ZugFeRD(self.invoiceCollection)
+        except Exception as ex:
+            mymsg = f"ZUGFeRD kann nicht erstellt werden.\n\
+                {src.format_ioerr(ex)}"
+            messagebox.showerror("Fehler", mymsg)
+            return True
+        # print('create_ZugFeRD:235', repr(self.invoiceCollection))
         return False
 
     def _getStammdatenToInvoiceCollection(self) -> bool:
@@ -424,7 +424,7 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
         self.file_name_label = tk.Label(
             self.root,
             text="Bitte erst die Excel Datei auswählen\
-                 (über Datei -> Öffnen...).",
+ (über Datei -> Öffnen...).",
         )
         self.file_name_label.pack()
         self.lb = tk.Listbox(self.root, height=20)
