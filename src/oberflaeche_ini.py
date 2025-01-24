@@ -9,7 +9,7 @@ from pathlib import Path
 import shutil
 
 from src.handle_ini_file import IniFile
-from src.collect_data import InvoiceCollection
+from src.invoice_collection import InvoiceCollection
 # from src.oberflaeche_base import Oberflaeche
 # from src.oberflaeche_excelsteuerung import OberflaecheExcelSteuerung
 # from src.oberflaeche_steuerung import OberflaecheSteuerung

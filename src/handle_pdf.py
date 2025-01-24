@@ -13,7 +13,7 @@ from fpdf.enums import TableCellFillMode, OutputIntentSubType
 import src.handle_girocode as gc
 import pandas as pd
 import numpy as np
-from src.collect_data import InvoiceCollection
+from src.invoice_collection import InvoiceCollection
 import math
 import locale
 import decimal

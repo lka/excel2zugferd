@@ -1,5 +1,5 @@
 """
-Module collect_data
+Module invoice_collection
 """
 
 from src.invoice import Invoice

@@ -20,7 +20,7 @@ from drafthorse.pdf import attach_xml
 
 from src.kunde import Kunde
 from src.lieferant import Lieferant
-from src.collect_data import InvoiceCollection
+from src.invoice_collection import InvoiceCollection
 from src.constants import P19USTG, GERMAN_DATE, EINHEITEN
 
 
@@ -396,6 +396,8 @@ class ZugFeRD:
         """
         fills data into ZugFeRD part
         """
+        if invoice is None:
+            return
         kleinunternehmen = invoice.management.is_kleinunternehmen
         steuersatz = invoice.supplier.steuersatz
         self.add_zahlungsempfaenger(

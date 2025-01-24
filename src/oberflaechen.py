@@ -12,7 +12,7 @@ from src.handle_pdf import Pdf
 
 import src.excel_content
 from src.handle_ini_file import IniFile
-from src.collect_data import InvoiceCollection
+from src.invoice_collection import InvoiceCollection
 from src.handle_zugferd import ZugFeRD
 from src.constants import PADX, PADY
 import src
@@ -142,9 +142,8 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
                 return self._add_xml_with_perhaps_modify_outfile(file_name,
                                                                  outfile)
         except IOError as ex:
-            mymsg = f"Konnte {file_name} nicht erstellen, \
-                da ein Problem aufgetreten ist.\n{src.format_ioerr(ex)}"
-            messagebox.showerror("Fehler:", mymsg)
+            messagebox.showerror(f"Konnte {file_name} nicht erstellen, \
+                da ein Problem aufgetreten ist.\n{src.format_ioerr(ex)}")
             return True
         return False
 
@@ -152,8 +151,9 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
         """returns True if Daten have failures"""
         try:
             self.pdf.fill_pdf(self.invoiceCollection)
-        except ValueError as e:
-            messagebox.showerror("Fehler in den Daten", e)
+        except ValueError as ex:
+            messagebox.showerror(f"Fehler in den Daten\n\
+                                 {src.format_ioerr(ex)}")
             return True
         return False
 
@@ -197,8 +197,9 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
             self.pdf = Pdf(
                 self.logo_fn if Path(self.logo_fn).exists() else None
             )
-        except ValueError as e:
-            messagebox.showerror("Fehler in den Stammdaten", e)
+        except ValueError as ex:
+            messagebox.showerror(f"Fehler in den Stammdaten\n\
+                                 {src.format_ioerr(ex)}")
             return True
         return False
 
@@ -207,8 +208,9 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
         """returns True if error in stammdaten occurs"""
         try:
             invoiceCollection.set_stammdaten(stammdaten)
-        except ValueError as e:
-            messagebox.showerror("Fehler in den Stammdaten", e)
+        except ValueError as ex:
+            messagebox.showerror(f"Fehler in den Stammdaten\n\
+                                 {src.format_ioerr(ex)}")
             return True
         return False
 
@@ -229,9 +231,8 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
         try:
             self.zugferd = ZugFeRD(self.invoiceCollection)
         except Exception as ex:
-            mymsg = f"ZUGFeRD kann nicht erstellt werden.\n\
-                {src.format_ioerr(ex)}"
-            messagebox.showerror("Fehler", mymsg)
+            messagebox.showerror(f"ZUGFeRD kann nicht erstellt werden.\n\
+                {src.format_ioerr(ex)}")
             return True
         # print('create_ZugFeRD:235', repr(self.invoiceCollection))
         return False
