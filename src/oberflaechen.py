@@ -92,12 +92,9 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
         """returns true if failure"""
         try:
             self.zugferd.add_xml2pdf(file_name, outfile)
-        except IOError as ex:
-            mymsg = f"Konnte {outfile} aus {file_name} \
-                        nicht erstellen, \
-                        da ein Problem aufgetreten ist.\n\
-                        {src.format_ioerr(ex)}"
-            messagebox.showerror("Fehler:", mymsg)
+        except OSError as ex:
+            messagebox.showerror("Fehler:", f"Konnte {outfile} aus \
+{file_name} nicht erstellen, da ein Problem aufgetreten ist.\n{ex}")
             return True
         # msg = f"Die Datei {fileName} wurde erstellt"
         # messagebox.showinfo("Debug-Information", msg)
@@ -141,9 +138,9 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
                 )  # doesn't matter, cannot exist twice
                 return self._add_xml_with_perhaps_modify_outfile(file_name,
                                                                  outfile)
-        except IOError as ex:
-            messagebox.showerror(f"Konnte {file_name} nicht erstellen, \
-                da ein Problem aufgetreten ist.\n{src.format_ioerr(ex)}")
+        except OSError as ex:
+            messagebox.showerror("IO-Fehler", f"Konnte {file_name} nicht \
+erstellen, da ein Problem aufgetreten ist.\n{ex}")
             return True
         return False
 
@@ -152,8 +149,7 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
         try:
             self.pdf.fill_pdf(self.invoiceCollection)
         except ValueError as ex:
-            messagebox.showerror(f"Fehler in den Daten\n\
-                                 {src.format_ioerr(ex)}")
+            messagebox.showerror("Fehler in den Daten", ex.args[0])
             return True
         return False
 
@@ -198,8 +194,7 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
                 self.logo_fn if Path(self.logo_fn).exists() else None
             )
         except ValueError as ex:
-            messagebox.showerror(f"Fehler in den Stammdaten\n\
-                                 {src.format_ioerr(ex)}")
+            messagebox.showerror("Fehler in den Stammdaten (PDF)", ex.args[0])
             return True
         return False
 
@@ -209,8 +204,7 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
         try:
             invoiceCollection.set_stammdaten(stammdaten)
         except ValueError as ex:
-            messagebox.showerror(f"Fehler in den Stammdaten\n\
-                                 {src.format_ioerr(ex)}")
+            messagebox.showerror("Fehler in den Stammdaten", ex.args[0])
             return True
         return False
 
@@ -220,8 +214,7 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
         try:
             invoiceCollection.set_daten(daten)
         except ValueError as ex:
-            messagebox.showerror(f"Fehler in den Excel-Daten.\n\
-                                 {src.format_ioerr(ex)}")
+            messagebox.showerror("Fehler in den Excel-Daten.", ex.args[0])
             return True
         # print('excel2zugferd:223: ', repr(invoiceCollection))
         return False
@@ -231,8 +224,8 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
         try:
             self.zugferd = ZugFeRD(self.invoiceCollection)
         except Exception as ex:
-            messagebox.showerror(f"ZUGFeRD kann nicht erstellt werden.\n\
-                {src.format_ioerr(ex)}")
+            messagebox.showerror("ZUGFeRD kann nicht erstellt werden.",
+                                 ', '.join(ex.args))
             return True
         # print('create_ZugFeRD:235', repr(self.invoiceCollection))
         return False
@@ -350,10 +343,10 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
                 self.ini_file.create_ini_file(
                     {**contentini_file, "Verzeichnis": mydir}
                 )
-        except IOError as ex:
-            mymsg = f"Ini-File kann nicht beschrieben werden.\n\
-                {src.format_ioerr(ex)}"
-            messagebox.showerror("Fehler", mymsg)
+        except OSError as ex:
+            messagebox.showerror("IO-Fehler",
+                                 f"Ini-File kann nicht beschrieben werden.\n\
+{ex}")
 
     def _open_file(self, init_dir, contentini_file):
         # print(init_dir, "Verzeichnis" in contentini_file, contentini_file)

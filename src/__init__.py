@@ -6,13 +6,6 @@ import src.oberflaeche_excelpositions
 import src.oberflaeche_excelsteuerung  # noqa F404
 
 
-def format_ioerr(err: IOError) -> str:
-    """
-    format IOError corresponding to errno and string
-    """
-    return f"Error ({0}): {1}".format(err.errno, err.strerror)
-
-
 def _normalize(arr_in: list) -> list:
     """remove empty elements of array"""
     return list(filter(None, arr_in))

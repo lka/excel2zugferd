@@ -105,7 +105,7 @@ class OberflaecheExcelPositions(src.oberflaeche_base.Oberflaeche):
         try:
             InvoiceCollection(stammdaten=content)
         except ValueError as e:
-            messagebox.showerror("Fehler in den Stammdaten", e)
+            messagebox.showerror("Fehler in den Stammdaten", e.args[0])
             return True
         return False
 

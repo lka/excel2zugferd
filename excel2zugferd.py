@@ -7,6 +7,7 @@ from src.handle_ini_file import IniFile
 from tkinter import messagebox
 import src.oberflaeche_ini
 import src.oberflaechen
+# from pathlib import Path
 from src.stammdaten import STAMMDATEN
 import src
 
@@ -14,9 +15,9 @@ import src
 if __name__ == "__main__":
     # print(argv)
     try:
-        ini = IniFile()
+        ini = IniFile()  # dir=Path('Z:/data'))
     except ValueError as e:
-        messagebox.showerror("Fehler", e.msg)
+        messagebox.showerror("Fehler", e.args[0])
         exit(-1)
 
     oberfl = None

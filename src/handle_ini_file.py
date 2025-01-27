@@ -4,7 +4,6 @@ Module handle_ini_file
 import os
 import json
 from pathlib import Path
-import src
 
 
 class IniFile:
@@ -25,9 +24,9 @@ class IniFile:
         if not Path.exists(self.dir):
             try:
                 os.mkdir(self.dir)
-            except IOError as e:
-                msg = f"Ich kann das Verzeichnis {self.dir} nicht erstellen.\n\
-                        {src.format_ioerr(e)}"
+            except OSError as e:
+                msg = f"Ich kann das Verzeichnis \
+{self.dir} nicht erstellen.\n{e}"
                 raise ValueError(msg)
         self.path = os.path.join(self.dir, self.fn)
 
@@ -39,7 +38,7 @@ class IniFile:
         try:
             with open(self.path, encoding="utf-8") as file:
                 return file
-        except IOError:
+        except OSError:
             return None
 
     def merge_content_of_ini_file(self, content: dict = None) -> dict:
@@ -69,7 +68,7 @@ class IniFile:
                 with open(self.path, 'r', encoding='utf-8') as f_in:
                     self.content = json.load(f_in)
                     self._modify_entries_to_version2()
-            except IOError:
+            except OSError:
                 return ()
         return self.content
 

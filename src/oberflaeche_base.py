@@ -10,7 +10,6 @@ from pathlib import Path
 from PIL import Image, ImageTk
 from src.handle_ini_file import IniFile
 from src.constants import LABELWIDTH, TEXTWIDTH, PADX, PADY
-import src
 
 
 class Oberflaeche:
@@ -119,8 +118,9 @@ class Oberflaeche:
                 version = json.load(f_in)
                 my_msg = f"Copyright © H.Lischka, 2024\n\
         Version {version['version'] if version is not None else 'unbekannt'}"
-        except IOError as ex:
-            my_msg = f"IOError ({0}): {1}".format(ex.errno, ex.strerror)
+        except OSError as ex:
+            my_msg = f"OSError: {ex}"
+            raise ValueError(my_msg)
 
         messagebox.showinfo("Info", my_msg)
         self.root.lift()
@@ -206,10 +206,10 @@ class Oberflaeche:
         try:
             if ini_file:
                 ini_file.create_ini_file(content)
-        except IOError as ex:
-            mymsg = f"Erstellen der Ini-Datei fehlgeschlagen.\n\
-            {src.format_ioerr(ex)}"
-            messagebox.showerror("Fehler:", mymsg)
+        except OSError as ex:
+            messagebox.showerror("IO-Fehler:",
+                                 f"Erstellen der Ini-Datei \
+fehlgeschlagen.\n{ex}")
             return True
         return False
 
