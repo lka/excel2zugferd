@@ -265,6 +265,8 @@ class Steuerung(object):
         if name not in thekeys:
             return None
         if not daten[name].strip().isdigit():
+            if not daten[name] == "":
+                raise ValueError(f"{name} muss ein Integer sein.")
             return None
         return daten[name]
 
@@ -277,6 +279,8 @@ class Steuerung(object):
         if name not in thekeys:
             return None
         if not daten[name].strip().isupper():
+            if not daten[name] == "":
+                raise ValueError(f"{name} muss ein Grossbuchstabe sein sein.")
             return None
         return daten[name][0]
 

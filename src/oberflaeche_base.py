@@ -27,6 +27,8 @@ class Oberflaeche:
         self.root.resizable(False, False)
         self.canvas = None
         self.img_area = None
+        self.ents = None
+        self.menuvars = {}
         self.logo_fn = os.path.join(
             os.getenv("APPDATA"), "excel2zugferd", "logo.jpg"  # type: ignore
         )  # type: ignore

@@ -1,5 +1,5 @@
 """
-Module Oberflaechen
+Modul OberflaecheIniFile
 """
 
 import tkinter as tk
@@ -8,12 +8,8 @@ import os
 from pathlib import Path
 import shutil
 
-from src.handle_ini_file import IniFile
+from src.middleware import Middleware
 from src.invoice_collection import InvoiceCollection
-# from src.oberflaeche_base import Oberflaeche
-# from src.oberflaeche_excelsteuerung import OberflaecheExcelSteuerung
-# from src.oberflaeche_steuerung import OberflaecheSteuerung
-# from src. oberflaeche_excelpositions import OberflaecheExcelPositions
 from src.constants import PADX, PADY
 import src
 import src.oberflaeche_base
@@ -27,12 +23,11 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
     Oberflaeche for Ini File Inputs
     """
 
-    def __init__(self, thefields: dict, myini_file: IniFile = None,
+    def __init__(self, thefields: dict, middleware: Middleware = None,
                  window=None) -> None:
         super().__init__(window=window)  # tk.Toplevel())
         self.fields: dict = thefields
-        self.menuvars = {}
-        self.ini_file: IniFile = myini_file
+        self.middleware: Middleware = middleware
         self.root.title("Stammdateneingabe - Firmendaten")
         self.make_menu_bar(
             [
@@ -90,41 +85,44 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
 
     def pre_open_steuerung(self):
         self.fetch_values_from_entries()
-        self.open_steuerung(self.fields, self.ini_file)
+        self.open_steuerung(self.fields, self.middleware)
 
-    def open_steuerung(self, fields: dict = None, ini_file: str = None):
+    def open_steuerung(self, fields: dict = None,
+                       middleware: Middleware = None):
         """
         Open Steuerung for editing
         """
         self.root.quit()
         s_oberfl = src.oberflaeche_steuerung\
-            .OberflaecheSteuerung(fields, ini_file, self.root)
+            .OberflaecheSteuerung(fields, middleware, self.root)
         s_oberfl.loop()
 
     def pre_open_excelsteuerung(self):
         self.fetch_values_from_entries()
-        self.open_excelsteuerung(self.fields, self.ini_file)
+        self.open_excelsteuerung(self.fields, self.middleware)
 
-    def open_excelsteuerung(self, fields: dict = None, ini_file: str = None):
+    def open_excelsteuerung(self, fields: dict = None,
+                            middleware: Middleware = None):
         """
         Open ExcelSteuerung for editing
         """
         self.root.quit()
         s_oberfl = src.oberflaeche_excelsteuerung\
-            .OberflaecheExcelSteuerung(fields, ini_file, self.root)
+            .OberflaecheExcelSteuerung(fields, middleware, self.root)
         s_oberfl.loop()
 
     def pre_open_excelpositions(self):
         self.fetch_values_from_entries()
-        self.open_excelpositions(self.fields, self.ini_file)
+        self.open_excelpositions(self.fields, self.middleware)
 
-    def open_excelpositions(self, fields: dict = None, ini_file: str = None):
+    def open_excelpositions(self, fields: dict = None,
+                            middleware: Middleware = None):
         """
         Open Steuerung for editing
         """
         self.root.quit()
         s_oberfl = src.oberflaeche_excelpositions\
-            .OberflaecheExcelPositions(fields, ini_file, self.root)
+            .OberflaecheExcelPositions(fields, middleware, self.root)
         s_oberfl.loop()
 
     def _check_content_of_stammdaten(self, content: dict) -> bool:
@@ -146,7 +144,8 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
             for key, field in self.ents.items():
                 content[key] = self._get_text_of_field(field)
             if content:
-                return self.ini_file.merge_content_of_ini_file(content)
+                return self.middleware.ini_file\
+                    .merge_content_of_ini_file(content)
         return content
 
     def fetch(self):
@@ -157,7 +156,7 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
         ini_has_failure = False
         if content:
             ini_has_failure = self._create_iniFile(
-                self.ini_file, None)
+                self.middleware.ini_file, None)
             ini_has_failure = ini_has_failure or \
                 self._check_content_of_stammdaten(content)
             if ini_has_failure:
@@ -170,8 +169,8 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
         """
         entries = {}
         content = {}
-        if self.ini_file:
-            content = self.ini_file.read_ini_file()
+        if self.middleware.ini_file:
+            content = self.middleware.ini_file.read_ini_file()
         # else:
         #     return entries
         # print(self.ini_file, content)
@@ -208,7 +207,7 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
         """
         resp = messagebox.askyesno(
             "Löschen des Logos",
-            "Sind Sie sicher, dass Sie das Logolöschen möchten?"
+            "Sind Sie sicher, dass Sie das Logo löschen möchten?"
         )
         # print(resp)
         if resp is True:

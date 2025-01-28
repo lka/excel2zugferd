@@ -9,6 +9,10 @@ from pathlib import Path
 class IniFile:
     """
     Class IniFile
+        reads ini_file and stores it to self.content()\n
+        returns self.content on read_ini_file()\n
+        updates self.content on create_ini_file(new_content)\n
+        and merge_content_of_ini_file(new_content)
     """
     def __init__(self, path_to_inifile: str = None, dir: Path = None):
         self.fn: str = "config.ini"
@@ -19,6 +23,8 @@ class IniFile:
         self.content: dict = {}
         if self.path is None:
             self._create_inifile_directory()
+        if self.exists_ini_file() is not None:
+            self.read_ini_file()
 
     def _create_inifile_directory(self) -> None:
         if not Path.exists(self.dir):
@@ -67,10 +73,30 @@ class IniFile:
             try:
                 with open(self.path, 'r', encoding='utf-8') as f_in:
                     self.content = json.load(f_in)
-                    self._modify_entries_to_version2()
+                    self._modify_entries_to_version2()  # noqa E501 should be eliminated in Version 1.0.0 
             except OSError:
-                return ()
+                return {}
         return self.content
+
+    def _get_documents_directory(self):
+        doc_dir = Path.home()
+        if Path(Path.joinpath(doc_dir, "Documents")).is_dir():
+            doc_dir = Path.joinpath(doc_dir, "Documents")
+        return doc_dir
+
+    def get_working_directory(self) -> Path:
+        """get the working directory"""
+        return Path(self.content["Verzeichnis"]) if (
+            self.content
+            and "Verzeichnis" in self.content
+            and len(self.content["Verzeichnis"]) > 0
+            ) else self._get_documents_directory()
+
+    def save_working_directory(self, filename: str = None) -> None:
+        directory = os.path.dirname(filename)
+        self.create_ini_file(
+                    {**self.content, "Verzeichnis": directory}
+                )
 
 # should be eliminated in Version 1.0.0
 
