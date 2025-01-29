@@ -61,15 +61,6 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
         self.save_button.pack(side=tk.LEFT, padx=PADX, pady=PADY)
         self.save_button.bind("<Return>", (lambda event: self.create_pdf()))
         self.middleware.setStammdatenToInvoiceCollection()
-        self.check_args(args)
-
-    def check_args(self, args: list) -> None:
-        """check arguments from main call"""
-        # messagebox.showinfo("Information", f"Args: {args}")
-        if len(args) > 1:
-            self.filename = args[-1]
-            if len(self.filename) > 0 and Path(self.filename).exists():
-                self._read_sheet_list()
 
     def _check_tabellenblatt(self) -> bool:
         """return True on failure"""

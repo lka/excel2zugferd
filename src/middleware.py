@@ -6,11 +6,13 @@ from pathlib import Path
 import shutil
 import tempfile
 import os
+import sys
 from src.handle_ini_file import IniFile
 from src.invoice_collection import InvoiceCollection
 from src.excel_content import ExcelContent
 from src.handle_pdf import Pdf
 from src.handle_zugferd import ZugFeRD
+import src
 
 
 class Middleware():
@@ -22,18 +24,53 @@ class Middleware():
         self.invoiceCollection: InvoiceCollection = InvoiceCollection()
         self.excel_file: ExcelContent = None
         self.zugferd: ZugFeRD = None
+        self.quiet: bool = False
 
         self.set_iniFile()
 
+    def _error_msg(self, header: str, msg: str) -> None:
+        if self.quiet:
+            sys.stderr.write(header + "\n" + msg)
+        else:
+            messagebox.showerror(header, msg)
+
+    def _usage(self, args: list) -> bool:
+        if len(args) == 2 or len(args) > 3:
+            sys.stdout.write('Benutzung:\nexcel2zugferd.exe\
+ -BlattNr Pfad_zur_Exceldatei.xlsx\n\
+BlattNr 0..n, 0 ist das erste Tabellenblatt\n\
+beide Parameter sind als Zeichenketten anzugeben.')
+            return True
+        return False
+
+    def check_args(self, args: list) -> bool:
+        """check arguments from main call\n
+           return True if args are valid
+        """
+        if len(args) == 1:
+            return False
+        if len(args) == 3:
+            filename = args[2]
+            sheetnr = args[1]
+            if len(filename) > 0 and Path(filename).exists():
+                self.quiet = True
+                self.quiet_workflow(filename, abs(int(sheetnr)))
+                return True
+        self._usage(args)
+        return True
+
     def _success_message(self, outfile: str) -> None:
         mymsg = f"Die Datei {outfile} wurde erstellt."
-        messagebox.showinfo("Information", mymsg)
+        if self.quiet:
+            sys.stdout.write("Information: \n" + mymsg)
+        else:
+            messagebox.showinfo("Information", mymsg)
 
     def set_iniFile(self) -> None:
         try:
             self.ini_file = IniFile()  # dir=Path('Z:/data'))
         except ValueError as e:
-            messagebox.showerror("Schwerer Fehler", e.args[0])
+            self._error_msg("Schwerer Fehler:", e.args[0])
             exit(-1)
 
     def get_filenames(self, infile: str = None) -> list:
@@ -66,11 +103,11 @@ class Middleware():
         try:
             invoiceCollection.set_stammdaten(stammdaten)
         except ValueError as ex:
-            messagebox.showerror("Fehler in den Stammdaten", ex.args[0])
+            self._error_msg("Fehler in den Stammdaten:", ex.args[0])
             return True
         return False
 
-    def setExcelDatenToInvoiceCollection(self, sheet_name: str) -> bool:
+    def setExcelDatenToInvoiceCollection(self, sheet_name: str | int) -> bool:
         """return True on failure"""
         if self.excel_file is not None:
             self.excel_file.read_sheet(sheet_name)
@@ -84,7 +121,7 @@ class Middleware():
         try:
             invoiceCollection.set_daten(daten)
         except ValueError as ex:
-            messagebox.showerror("Fehler in den Excel-Daten.", ex.args[0])
+            self._error_msg("Fehler in den Excel-Daten:", ex.args[0])
             return True
         # print('excel2zugferd:223: ', repr(invoiceCollection))
         return False
@@ -94,7 +131,8 @@ class Middleware():
         try:
             self.pdf = Pdf(logo_fn if Path(logo_fn).exists() else None)
         except ValueError as ex:
-            messagebox.showerror("Fehler in den Stammdaten (PDF)", ex.args[0])
+            self._error_msg("Fehler in den Stammdaten (PDF):",
+                            ex.args[0])
             return True
         return False
 
@@ -103,7 +141,7 @@ class Middleware():
         try:
             self.pdf.fill_pdf(self.invoiceCollection)
         except ValueError as ex:
-            messagebox.showerror("Fehler in den Daten", ex.args[0])
+            self._error_msg("Fehler in den Daten:", ex.args[0])
             return True
         return False
 
@@ -112,8 +150,8 @@ class Middleware():
         try:
             self.zugferd = ZugFeRD(self.invoiceCollection)
         except Exception as ex:
-            messagebox.showerror("ZUGFeRD kann nicht erstellt werden.",
-                                 ', '.join(ex.args))
+            self._error_msg("ZUGFeRD kann nicht erstellt werden:",
+                            ', '.join(ex.args))
             return True
         # print('create_ZugFeRD:235', repr(self.invoiceCollection))
         return False
@@ -136,7 +174,7 @@ class Middleware():
         try:
             self.zugferd.add_xml2pdf(file_name, outfile)
         except OSError as ex:
-            messagebox.showerror("IO-Fehler:", f"Konnte {outfile} aus \
+            self._error_msg("IO-Fehler:", f"Konnte {outfile} aus \
 {file_name} nicht erstellen, da ein Problem aufgetreten ist.\n{ex}")
             return True
         # msg = f"Die Datei {fileName} wurde erstellt"
@@ -182,7 +220,7 @@ class Middleware():
                 return self._add_xml_with_perhaps_modify_outfile(file_name,
                                                                  outfile)
         except OSError as ex:
-            messagebox.showerror("IO-Fehler", f"Konnte {file_name} nicht \
+            self._error_msg("IO-Fehler:", f"Konnte {file_name} nicht \
 erstellen, da ein Problem aufgetreten ist.\n{ex}")
             return True
         return False
@@ -203,3 +241,14 @@ erstellen, da ein Problem aufgetreten ist.\n{ex}")
 
     def save_working_directory(self, filename: str) -> None:
         self.ini_file.save_working_directory(filename)
+
+    def quiet_workflow(self, filename: str, sheetnr: int) -> None:
+        self.excel_file = ExcelContent(filename, "")
+        self.setStammdatenToInvoiceCollection()
+        self.invoiceCollection.management.BYOPdf = False
+        self.save_working_directory(filename)
+        self.setExcelDatenToInvoiceCollection(sheetnr)
+        self.try_to_init_pdf(src.logo_fn())
+        arr = self.excel_file.read_sheet_list()
+        outfile = arr[sheetnr]
+        self.fill_pdf(outfile)

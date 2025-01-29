@@ -10,6 +10,7 @@ from pathlib import Path
 from PIL import Image, ImageTk
 from src.handle_ini_file import IniFile
 from src.constants import LABELWIDTH, TEXTWIDTH, PADX, PADY
+import src
 
 
 class Oberflaeche:
@@ -17,7 +18,7 @@ class Oberflaeche:
     Creates Parts of Oberflaeche
     """
 
-    def __init__(self, window=None) -> None:
+    def __init__(self, window: tk.Tk = None) -> None:
         if window:
             # print('Oberflaeche destroying window')
             self.destroy_children(window)
@@ -25,13 +26,11 @@ class Oberflaeche:
         self.root = tk.Tk() if window is None else window
         # self.myFont = Font(family="Helvetica", size=12)
         self.root.resizable(False, False)
-        self.canvas = None
-        self.img_area = None
-        self.ents = None
-        self.menuvars = {}
-        self.logo_fn = os.path.join(
-            os.getenv("APPDATA"), "excel2zugferd", "logo.jpg"  # type: ignore
-        )  # type: ignore
+        self.canvas: tk.Canvas = None
+        self.img_area: tk.Image = None
+        self.ents: dict = None
+        self.menuvars: dict = {}
+        self.logo_fn: str = src.logo_fn()  # type: ignore
         try:
             # windows only (remove the minimize/maximize button)
             self.root.attributes("-toolwindow", True)
@@ -39,7 +38,8 @@ class Oberflaeche:
             print("Not supported on your platform")
         return self.root
 
-    def _add_menu_items(self, menu, key, command) -> None:
+    def _add_menu_items(self, menu: tk.Menu, key: str,
+                        command: callable) -> None:
         if key == "Separator":
             menu.add_separator()
         else:
@@ -85,7 +85,7 @@ class Oberflaeche:
         self._add_items(menu_bar, menu_items)
         self.root.config(menu=menu_bar)
 
-    def make_logo(self, fn):
+    def make_logo(self, fn: str):
         """
         set logo to position
         """

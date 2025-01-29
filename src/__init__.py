@@ -1,3 +1,4 @@
+import os
 import src.oberflaeche_base
 import src.oberflaeche_excel2zugferd
 import src.oberflaeche_ini
@@ -18,3 +19,9 @@ def _setNoneIfEmpty(str_in: str) -> str | None:
     trimmed = str_in.strip()
     trimmed = ' '.join(trimmed.split())
     return trimmed if trimmed != "" else None
+
+
+def logo_fn() -> str:
+    return os.path.join(
+        os.getenv("APPDATA"), "excel2zugferd", "logo.jpg"  # type: ignore
+    )

@@ -14,6 +14,9 @@ if __name__ == "__main__":
     # print(argv)
     middleware: Middleware = Middleware()
 
+    if middleware.check_args(argv):
+        exit(0)
+
     oberfl = None
     if middleware.ini_file.exists_ini_file() is None:
         oberfl = src.oberflaeche_ini.OberflaecheIniFile(STAMMDATEN,

@@ -36,7 +36,9 @@ class ExcelContent:
 
     def read_sheet(self, sheet_name) -> pd.DataFrame:
         """Read the specified sheet content"""
-        self.daten = self.xlsx.parse(sheet_name, header=None)
+        # self.daten = self.xlsx.parse(sheet_name, header=None)
+        self.daten = pd.read_excel(io=self.xlsx, sheet_name=sheet_name,
+                                   header=None)
         self.daten.columns = list(string.ascii_uppercase)[0:len(self.daten
                                                                 .columns)]
         self.daten.index = range(1, len(self.daten.index)+1)

@@ -23,6 +23,13 @@ Die verwendbaren Einheiten in der Spalte 'Typ' sind:
 * der Default liefert Stück und dokumentiert in der Beschreibung (BT-154): "Die Einheit 'NIX' ist nicht\
  verfügbar und wurde durch 'C62' (Stück) ersetzt."
 
+ ## Für die Automatisierer:
+
+Das Programm kann auch ohne Oberfläche verwendet werden (nach der Einstellung der Stammdaten):
+
+`excel2zugferd.exe -BlattNr Pfad_zur_Exceldatei.xlsx`
+* BlattNr 0..n: 0 ist das erste Tabellenblatt
+* beide Parameter sind als Zeichenketten anzugeben.
 
 ## Installation
 
@@ -65,6 +72,10 @@ Alternativ können Sie die XY-Positionen im Excel Blatt (Spalten: A...Z, Zeilen:
 Damit können die XY-Positionen verändert werden und die Suchfunktion wird abgeschaltet. Durch die Angabe der "Excel Positionen" können Sie auch die Überschriften der Einzelpositionen anpassen z.B: Pos. -> Nr., Typ -> EH usw..
 
 ## Versionen
+
+### 0.21.0
+
+- Das Programm kann jetzt auch ohne Oberfläche verwendet werden (gedacht für Automatisierungen).
 
 ### 0.20.0
 

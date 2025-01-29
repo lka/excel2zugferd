@@ -89,7 +89,7 @@ class OberflaecheExcelPositions(src.oberflaeche_base.Oberflaeche):
         self.fetch_values_from_entries()
         self.open_excelsteuerung(self.fields, self.middleware)
 
-    def open_excelsteuerung(self, fields: dict = None, 
+    def open_excelsteuerung(self, fields: dict = None,
                             middleware: Middleware = None):
         """
         Open ExcelSteuerung for editing
