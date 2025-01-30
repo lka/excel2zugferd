@@ -5,13 +5,14 @@ a = Analysis(
     ['excel2zugferd.py'],
     pathex=[],
     binaries=[],
-    datas=[('_internal/Fonts', 'Fonts'), ('./.venv/Lib/site-packages/drafthorse/schema', 'drafthorse/schema'), ('_internal/version.json', '.'), ('_internal/sRGB2014.icc', '.')],
+    datas=[('_internal/Fonts', 'Fonts'), ('./.venv/Lib/site-packages/drafthorse/schema', 'drafthorse/schema'), ('version.json', '.'), ('_internal/sRGB2014.icc', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[],
     noarchive=False,
+    optimize=0,
 )
 pyz = PYZ(a.pure)
 
@@ -25,7 +26,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,
+    console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

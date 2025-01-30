@@ -23,13 +23,17 @@ Die verwendbaren Einheiten in der Spalte 'Typ' sind:
 * der Default liefert Stück und dokumentiert in der Beschreibung (BT-154): "Die Einheit 'NIX' ist nicht\
  verfügbar und wurde durch 'C62' (Stück) ersetzt."
 
- ## Für die Automatisierer:
+ ### Für die Automatisierer:
 
 Das Programm kann auch ohne Oberfläche verwendet werden (nach der Einstellung der Stammdaten):
 
 `excel2zugferd.exe -BlattNr Pfad_zur_Exceldatei.xlsx`
 * BlattNr 0..n: 0 ist das erste Tabellenblatt
 * beide Parameter sind als Zeichenketten anzugeben.
+
+- Fehler werden auf stderr ausgegeben und das Programm mit exit Code -1 beendet
+- bei fehlerfreiem Durchlauf wird die Erfolgsmeldung auf stdout ausgegeben und
+das Programm mit exit Code 0 beendet
 
 ## Installation
 

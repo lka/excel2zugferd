@@ -10,3 +10,4 @@ junit
 .pytest_cache
 node_modules
 excel2zugferd.code-workspace
+version.json

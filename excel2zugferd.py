@@ -2,7 +2,7 @@
 Module excel2zugferd
 """
 
-from sys import argv
+from sys import argv, exit
 import src.oberflaeche_ini
 import src.oberflaeche_excel2zugferd
 from src.stammdaten import STAMMDATEN

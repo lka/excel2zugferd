@@ -26,37 +26,39 @@ class Middleware():
         self.zugferd: ZugFeRD = None
         self.quiet: bool = False
 
-        self.set_iniFile()
-
     def _error_msg(self, header: str, msg: str) -> None:
+        """
+        bei Benutzung ohne Oberfläche wird die Fehlermeldung
+        ausgegeben und mit das Programm mit exit(-1) beendet
+        """
         if self.quiet:
             sys.stderr.write(header + "\n" + msg)
+            sys.exit(-1)
         else:
             messagebox.showerror(header, msg)
 
-    def _usage(self, args: list) -> bool:
-        if len(args) == 2 or len(args) > 3:
-            sys.stdout.write('Benutzung:\nexcel2zugferd.exe\
+    def _usage(self) -> None:
+        sys.stdout.write('Benutzung:\nexcel2zugferd.exe\
  -BlattNr Pfad_zur_Exceldatei.xlsx\n\
 BlattNr 0..n, 0 ist das erste Tabellenblatt\n\
 beide Parameter sind als Zeichenketten anzugeben.')
-            return True
-        return False
 
     def check_args(self, args: list) -> bool:
         """check arguments from main call\n
-           return True if args are valid
+           return True if called without arguments
         """
         if len(args) == 1:
+            self.set_iniFile()
             return False
+        self.quiet = True
+        self.set_iniFile()
         if len(args) == 3:
             filename = args[2]
             sheetnr = args[1]
             if len(filename) > 0 and Path(filename).exists():
-                self.quiet = True
                 self.quiet_workflow(filename, abs(int(sheetnr)))
                 return True
-        self._usage(args)
+        self._usage()
         return True
 
     def _success_message(self, outfile: str) -> None:
@@ -67,11 +69,18 @@ beide Parameter sind als Zeichenketten anzugeben.')
             messagebox.showinfo("Information", mymsg)
 
     def set_iniFile(self) -> None:
+        """
+        wenn das Verzeichnis für die Init-Datei nicht erzeugt werden kann
+        wird der Fehler ausgegeben und das Programm mit exit(-1) beendet
+        """
         try:
             self.ini_file = IniFile()  # dir=Path('Z:/data'))
         except ValueError as e:
-            self._error_msg("Schwerer Fehler:", e.args[0])
-            exit(-1)
+            if self.quiet:
+                sys.stderr.write("Schwerer Fehler:\n" + e.args[0])
+            else:
+                self._error_msg("Schwerer Fehler:", e.args[0])
+            sys.exit(-1)
 
     def get_filenames(self, infile: str = None) -> list:
         """
