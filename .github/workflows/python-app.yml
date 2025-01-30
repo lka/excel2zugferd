@@ -68,7 +68,7 @@ jobs:
     - name: Build with pyinstaller
       run: |
         .venv/Scripts/activate
-        pyinstaller excel2zugferd.py --noconsole --add-data _internal/Fonts:Fonts --add-data ./.venv/Lib/site-packages/drafthorse/schema:drafthorse/schema --add-data version.json:. --add-data _internal/sRGB2014.icc:. --noconfirm
+        pyinstaller excel2zugferd.py --add-data _internal/Fonts:Fonts --add-data ./.venv/Lib/site-packages/drafthorse/schema:drafthorse/schema --add-data version.json:. --add-data _internal/sRGB2014.icc:. --noconfirm
     - name: Compile .ISS to .EXE Installer
       uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
       with:
