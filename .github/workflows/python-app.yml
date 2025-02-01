@@ -153,16 +153,16 @@ jobs:
         # run_number: ${{ github.run_number }}
         # search_artifacts: true
         skip_unpack: true
-    - name: Download Setup Artifact
-      if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
-      uses: dawidd6/action-download-artifact@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        name: setup_excel2zugferd
-        workflow_conclusion: 'in_progress'
-        # run_number: ${{ github.run_number }}
-        # search_artifacts: true
-        skip_unpack: true
+    # - name: Download Setup Artifact
+    #   if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
+    #   uses: dawidd6/action-download-artifact@v3
+    #   with:
+    #     github_token: ${{ secrets.GITHUB_TOKEN }}
+    #     name: setup_excel2zugferd
+    #     workflow_conclusion: 'in_progress'
+    #     # run_number: ${{ github.run_number }}
+    #     # search_artifacts: true
+    #     skip_unpack: true
     - name: Download MSI Setup Artifact
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
       uses: dawidd6/action-download-artifact@v3
