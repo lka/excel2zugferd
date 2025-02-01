@@ -102,7 +102,9 @@ jobs:
       id: setup_msi_artifact
       with:
           name: setup_msi_excel2zugferd
-          path: ./setup_excel2zugferd_x6432_${{steps.vars.outputs.MyAppVersion}}.0.msi
+          path: |
+            ./setup_excel2zugferd_x6432_${{steps.vars.outputs.MyAppVersion}}.0.msi
+            ./*.cab
           if-no-files-found: error
   
   release:
@@ -172,7 +174,7 @@ jobs:
           workflow_conclusion: 'in_progress'
           # run_number: ${{ github.run_number }}
           # search_artifacts: true
-          skip_unpack: false
+          skip_unpack: true
     - name: Upload Release Asset
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
       env:
@@ -190,5 +192,5 @@ jobs:
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-          gh release upload ${{ steps.get_next_version.outputs.version }} ./setup_excel2zugferd_x6432_${{steps.get_next_version.outputs.version}}.0.msi
+          gh release upload ${{ steps.get_next_version.outputs.version }} ./setup_msi_excel2zugferd.zip
   
