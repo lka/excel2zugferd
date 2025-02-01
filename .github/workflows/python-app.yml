@@ -172,7 +172,7 @@ jobs:
           workflow_conclusion: 'in_progress'
           # run_number: ${{ github.run_number }}
           # search_artifacts: true
-          skip_unpack: true
+          skip_unpack: false
     - name: Upload Release Asset
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
       env:
@@ -190,5 +190,5 @@ jobs:
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-          gh release upload ${{ steps.get_next_version.outputs.version }} ././setup_excel2zugferd_x6432_${{steps.get_next_version.outputs.version}}.0.msi
+          gh release upload ${{ steps.get_next_version.outputs.version }} ./setup_excel2zugferd_x6432_${{steps.get_next_version.outputs.version}}.0.msi
   
