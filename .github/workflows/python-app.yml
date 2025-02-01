@@ -69,11 +69,11 @@ jobs:
       run: |
         .venv/Scripts/activate
         pyinstaller excel2zugferd.py --add-data _internal/Fonts:Fonts --add-data ./.venv/Lib/site-packages/drafthorse/schema:drafthorse/schema --add-data version.json:. --add-data _internal/sRGB2014.icc:. --noconfirm
-    - name: Compile .ISS to .EXE Installer
-      uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
-      with:
-        path: ./_inno_setup4excel2zugferd.iss
-        options: /dMyAppVersion="${{steps.vars.outputs.MyAppVersion}}"
+    # - name: Compile .ISS to .EXE Installer
+    #   uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+    #   with:
+    #     path: ./_inno_setup4excel2zugferd.iss
+    #     options: /dMyAppVersion="${{steps.vars.outputs.MyAppVersion}}"
     - name: Deploy artifacts
       uses: actions/upload-artifact@v4
       id: artifact
@@ -81,13 +81,13 @@ jobs:
           name: excel2zugferd
           path: dist/excel2zugferd*
           if-no-files-found: error
-    - name: Deploy artifacts
-      uses: actions/upload-artifact@v4
-      id: setup_artifact
-      with:
-          name: setup_excel2zugferd
-          path: dist/setup_excel2zugferd.exe
-          if-no-files-found: error
+    # - name: Deploy artifacts
+    #   uses: actions/upload-artifact@v4
+    #   id: setup_artifact
+    #   with:
+    #       name: setup_excel2zugferd
+    #       path: dist/setup_excel2zugferd.exe
+    #       if-no-files-found: error
     # Create MSI from dist directory
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
@@ -179,16 +179,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         gh release upload ${{ steps.get_next_version.outputs.version }} ./excel2zugferd.zip
-    - name: Upload Release Setup Asset
+    # - name: Upload Release Setup Asset
+    #   if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
+    #   env:
+    #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   run: |
+    #     gh release upload ${{ steps.get_next_version.outputs.version }} ./setup_excel2zugferd.zip
+    - name: Upload Release MSI Setup Asset
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh release upload ${{ steps.get_next_version.outputs.version }} ./setup_excel2zugferd.zip
-    - name: Upload Release Setup Asset
-      if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
-      env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-          gh release upload ${{ steps.get_next_version.outputs.version }} ./setup_excel2zugferd_x6432_${{steps.get_next_version.outputs.version}}.0.msi
+          gh release upload ${{ steps.get_next_version.outputs.version }} ./setup_msi_excel2zugferd.zip
   
