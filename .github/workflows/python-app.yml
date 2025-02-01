@@ -179,6 +179,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         gh release upload ${{ steps.get_next_version.outputs.version }} ./excel2zugferd.zip
+        ls
     # - name: Upload Release Setup Asset
     #   if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
     #   env:
