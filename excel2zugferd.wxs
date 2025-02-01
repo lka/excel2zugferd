@@ -1,0 +1,25 @@
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Package Name="Excel2ZUGFeRD"
+        Version="$(var.ProductVersion)"
+        Manufacturer="Lka"
+        UpgradeCode="c723620c-7213-4dea-8369-70f4dc3ec525">
+        <StandardDirectory Id="ProgramFiles6432Folder">
+            <Directory
+        	    Id="INSTALLFOLDER" 
+            	Name="!(bind.Property.ProductName)" 
+    	    />
+        </StandardDirectory>
+        <Files Include=".\dist\excel2zugferd\**" />
+        <StandardDirectory Id="DesktopFolder">
+            <Component Id="DesktopShortcutComponent" Guid="25800b96-196f-43a8-bdec-442b7d69de8e">
+                <Shortcut Id="DesktopShortcut" 
+                        Name="Excel2ZUGFeRD" 
+                        Description="Macht aus Excel Daten eine ZUGFeRD PDF" 
+                        Target="[INSTALLFOLDER]/excel2zugferd.exe"
+                        WorkingDirectory="INSTALLFOLDER"/>
+                <RemoveFolder Id="RemoveDesktopFolder" Directory="DesktopFolder" On="uninstall"/>
+                <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+            </Component>
+        </StandardDirectory>
+    </Package>
+</Wix>

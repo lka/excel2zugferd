@@ -88,7 +88,15 @@ jobs:
           name: setup_excel2zugferd
           path: dist/setup_excel2zugferd.exe
           if-no-files-found: error
-
+    # Create MSI from dist directory
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+    - name: Insatll WiX
+      run: dotnet tool install --global wix
+    - name: Build WiX on Windows
+      run: |
+        wix build .\excel2zugferd.wxs -d ProductVersion="${{steps.vars.outputs.MyAppVersion}}.0" -o excel2zugferd_setup_x6432_${{steps.vars.outputs.MyAppVersion}}.0.msi
+        ls
 
   release:
     name: Release

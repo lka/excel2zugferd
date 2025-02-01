@@ -11,3 +11,6 @@ junit
 node_modules
 excel2zugferd.code-workspace
 version.json
+*.cab
+*.msi
+*.wixpdb
