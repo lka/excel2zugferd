@@ -3,6 +3,7 @@
         Version="$(var.ProductVersion)"
         Manufacturer="Lka"
         UpgradeCode="c723620c-7213-4dea-8369-70f4dc3ec525">
+        <MediaTemplate EmbedCab="yes" />
         <StandardDirectory Id="ProgramFiles6432Folder">
             <Directory
         	    Id="INSTALLFOLDER" 
