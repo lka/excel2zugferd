@@ -96,7 +96,6 @@ jobs:
     - name: Build msi package with WiX on Windows
       run: |
         wix build .\excel2zugferd.wxs -d ProductVersion="${{steps.vars.outputs.MyAppVersion}}.0" -o setup_excel2zugferd_x6432_${{steps.vars.outputs.MyAppVersion}}.0.msi
-        ls
     - name: Deploy artifacts
       uses: actions/upload-artifact@v4
       id: setup_msi_artifact
@@ -104,7 +103,12 @@ jobs:
           name: setup_msi_excel2zugferd
           path: ./setup_excel2zugferd_x6432_${{steps.vars.outputs.MyAppVersion}}.0.msi
           if-no-files-found: error
-  
+    - name: Use WingetCreate Update to update existing manifest
+      run: |
+            Invoke-WebRequest -Uri https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
+            .\wingetcreate.exe update Lka.Excel2ZUGFeRD -u https://github.com/lka/excel2zugferd/releases/download/${{steps.vars.outputs.MyAppVersion}}/setup_excel2zugferd_x6432_${{steps.vars.outputs.MyAppVersion}}.0.msi -v ${{steps.vars.outputs.MyAppVersion}}.0 -t ${{ secrets.GITHUB_TOKEN }} -s
+      shell: pwsh
+    
   release:
     name: Release
     runs-on: ubuntu-latest
