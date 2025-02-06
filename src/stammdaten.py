@@ -202,8 +202,8 @@ STAMMDATEN = [
     },
     {
         "Text": "Label1",
-        "Label": "↓---------- Einzelpositionen im Excel Blatt:\
- Spalten A..Z, Zeilen 1...   -------------↓",
+        "Label": "↓-- Einzelpositionen im Excel Blatt:\
+ Spalten A..Z --↓\n Zeilen 1... ",
         "Lines": 2,
         "Type": "Label",
         "Variable": "Label1",

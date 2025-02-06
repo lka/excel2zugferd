@@ -27,26 +27,28 @@ Die verwendbaren Einheiten in der Spalte 'Typ' sind:
 
 Das Programm kann auch ohne Oberfläche verwendet werden (nach der Einstellung der Stammdaten):
 
-`excel2zugferd.exe -BlattNr Pfad_zur_Exceldatei.xlsx`
+`"C:\Program Files (x86)\Excel2ZUGFeRD\excel2zugferd.exe" -BlattNr Pfad_zur_Exceldatei.xlsx`
 * BlattNr 0..n: 0 ist das erste Tabellenblatt
 * beide Parameter sind als Zeichenketten anzugeben.
 
-- Fehler werden auf stderr ausgegeben und das Programm mit exit Code -1 beendet
-- bei fehlerfreiem Durchlauf wird die Erfolgsmeldung auf stdout ausgegeben und
-das Programm mit exit Code 0 beendet
+- Die Anwendung schreibt Meldungen in die Windows Ereignisanzeige unter 'Windows-Protokolle' -> 'Anwendung' mit der Quelle 'Excel2ZUGFeRD'
+- Fehler werden dort als 'Fehler' ausgegeben und das Programm mit exit Code -1 beendet; bitte die Details ansehen
+- bei fehlerfreiem Durchlauf wird die Erfolgsmeldung als 'Informationen' ausgegeben und das Programm mit exit Code 0 beendet
 
 ## Installation
 
-1. Aus dem Release-Verzeichnis in github die neueste Version "setup_excel2zugferd.zip" herunterladen und entpacken.
-1. Die Datei "setup_excel2zugferd.exe" als Administrator ausführen. Der Defender Smart Screen sagt dann, dass diese Datei nicht ausgeführt werden sollte, was ich aber will und auf "trotzdem ausführen" klicke. Das Programm wird in das Verzeichnis "C:\Program Files (x86)\Excel2ZugFeRD" installiert.
-1. Eine Verknüpfung auf die Datei "excel2zugferd.exe" auf den Desktop kann vom Setup-Programm erstellt werden.
+1. Aus dem Release-Verzeichnis in github die neueste Version "setup_excel2zugferd_x6432_VERSION.msi" herunterladen und als Administrator ausführen.
+1. Der Defender Smart Screen sagt dann, dass diese Datei nicht ausgeführt werden sollte, was ich aber will und auf "trotzdem ausführen" klicke. Das Programm wird in das Verzeichnis "C:\Program Files (x86)\Excel2ZugFeRD" installiert.
+1. Eine Verknüpfung auf die Datei "excel2zugferd.exe" auf dem Desktop wird vom Setup-Programm erstellt.
+
+- Alternativ: In einem CMD Fenster `wget excel2zugferd` ausführen.
 
 - Wenn eine neue Version des Setup-Programms herauskommt, meckert der Virenscanner bei der Ausführung, dass das eine Datei sei, die einen Virus enthalten könnte, das ist die am Anfang fehlende Hash-Signatur für das Python Setup. Ich sage dann "Download beibehalten" und lasse das Ganze vom Virenprogramm im Internet Scannen. Nach ca. 14 Tagen hat sich das bisher immer gegeben.
 
 ## Updates
 
 - Die Vorgehensweise ist Identisch zur Installation.
-- Bei der Ausführung des Setup-Programms keine neue Verknüpfung erstellen lassen.
+- Alternativ: In einem CMD Fenster `wget update excel2zugferd` ausführen.
 
 ## Programmablauf
 
@@ -76,6 +78,14 @@ Alternativ können Sie die XY-Positionen im Excel Blatt (Spalten: A...Z, Zeilen:
 Damit können die XY-Positionen verändert werden und die Suchfunktion wird abgeschaltet. Durch die Angabe der "Excel Positionen" können Sie auch die Überschriften der Einzelpositionen anpassen z.B: Pos. -> Nr., Typ -> EH usw..
 
 ## Versionen
+
+### 0.22.0
+
+- Umstellung des Installers von InnoSetup auf das WiX Toolset zur Erstellung einer Windows MSI Installer Datei.
+- Vereinfachung der Codestruktur der Oberfläche und Umstellung auf ttk für eine modernere Darstellung.
+- Für mehr als 20 Tabellenblätter in der Excel-Datei hat das Auswahlfeld jetzt eine Scrollbar.
+- Das Speichern der Setup-Daten beendet nicht mehr das Programm und unter Datei -> Excel2ZUGFeRD kann vom Setup in das eigentliche Programm gewechselt werden.
+- Fehlermeldungen und Programmausführung werden in der Ereignisanzeige unter Anwendungen protokolliert.
 
 ### 0.21.0
 

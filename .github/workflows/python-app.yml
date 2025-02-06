@@ -68,7 +68,7 @@ jobs:
     - name: Build with pyinstaller
       run: |
         .venv/Scripts/activate
-        pyinstaller excel2zugferd.py --add-data _internal/Fonts:Fonts --add-data ./.venv/Lib/site-packages/drafthorse/schema:drafthorse/schema --add-data version.json:. --add-data _internal/sRGB2014.icc:. --noconfirm
+        pyinstaller excel2zugferd.py --noconsole --add-data _internal/Fonts:Fonts --add-data ./.venv/Lib/site-packages/drafthorse/schema:drafthorse/schema --add-data version.json:. --add-data _internal/sRGB2014.icc:. --noconfirm
     # - name: Compile .ISS to .EXE Installer
     #   uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
     #   with:
@@ -111,7 +111,7 @@ jobs:
     
   release:
     name: Release
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     # don't create Release on pull request
     if: ${{github.ref == 'refs/heads/master'}} && job.status == 'success'
     needs: build
@@ -195,4 +195,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
           gh release upload ${{ steps.get_next_version.outputs.version }} ./setup_excel2zugferd_x6432_${{steps.get_next_version.outputs.version}}.0.msi
+    - name: Use WingetCreate Update to update existing manifest
+      run: |
+            Invoke-WebRequest -Uri https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
+            .\wingetcreate.exe update Lka.Excel2ZUGFeRD -u https://github.com/lka/excel2zugferd/releases/download/${{steps.get_next_version.outputs.version}}/setup_excel2zugferd_x6432_${{steps.get_next_version.outputs.version}}.0.msi -v ${{steps.get_next_version.outputs.version}}.0 -t ${{ secrets.GITHUB_TOKEN }} -s true
+      shell: pwsh
   

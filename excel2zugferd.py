@@ -24,6 +24,5 @@ if __name__ == "__main__":
     else:
         oberfl = src.oberflaeche_excel2zugferd\
             .OberflaecheExcel2Zugferd(STAMMDATEN,
-                                      middleware,
-                                      argv)
+                                      middleware)
     oberfl.loop()

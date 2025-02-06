@@ -8,9 +8,12 @@ import json
 import os
 from pathlib import Path
 from PIL import Image, ImageTk
+import webbrowser
 from src.handle_ini_file import IniFile
 from src.constants import LABELWIDTH, TEXTWIDTH, PADX, PADY
+from src.middleware import Middleware
 import src
+from src.invoice_collection import InvoiceCollection
 
 
 class Oberflaeche:
@@ -18,25 +21,65 @@ class Oberflaeche:
     Creates Parts of Oberflaeche
     """
 
-    def __init__(self, window: tk.Tk = None) -> None:
+    def __init__(self, window: tk.Tk = None, wsize: str = "480x420") -> None:
         if window:
             # print('Oberflaeche destroying window')
             self.destroy_children(window)
 
         self.root = tk.Tk() if window is None else window
-        # self.myFont = Font(family="Helvetica", size=12)
-        self.root.resizable(False, False)
+        self.root.geometry(wsize)
         self.canvas: tk.Canvas = None
         self.img_area: tk.Image = None
         self.ents: dict = None
         self.menuvars: dict = {}
+        self.middleware: Middleware = None
         self.logo_fn: str = src.logo_fn()  # type: ignore
-        try:
-            # windows only (remove the minimize/maximize button)
-            self.root.attributes("-toolwindow", True)
-        except tk.TclError:
-            print("Not supported on your platform")
-        return self.root
+        # make content_frame as grid
+        self.icanvas: tk.Canvas = None
+        self.content_frame: ttk.Frame = None
+        self._add_window_with_scrollbar()
+
+    def _add_window_with_scrollbar(self) -> None:
+        # Create a frame to hold the listbox and scrollbar
+        frame = ttk.Frame(self.root)
+        frame.grid(row=0, column=0, sticky="nsew")
+        # create inner canvas and scrollbar side by side
+        self.icanvas = tk.Canvas(frame)
+        scrollbar = tk.Scrollbar(frame, orient="vertical",
+                                 command=self.icanvas.yview)
+        self.icanvas.configure(yscrollcommand=scrollbar.set)
+        # create frame for scrollable content
+        self.content_frame = ttk.Frame(self.icanvas)
+        self.content_frame.bind("<Configure>", lambda e:
+                                self.icanvas.configure(
+                                    scrollregion=self.icanvas
+                                    .bbox("all")))
+        # Pack Widgets onto the Window
+        self.icanvas.create_window((0, 0), window=self.content_frame,
+                                   anchor="nw")
+        self.icanvas.grid(row=0, column=0, sticky="nsew")
+        scrollbar.grid(row=0, column=1, sticky="ns")
+        # create window resizing configuration
+        self.root.columnconfigure(0, weight=1)
+        self.root.rowconfigure(0, weight=1)
+        frame.columnconfigure(0, weight=1)
+        frame.rowconfigure(0, weight=1)
+        # bind canvas to mousewheel events
+        self.icanvas.bind_all("<MouseWheel>", self._on_mousewheel)
+
+    def _add_quit_save_buttons(self, at_row: int, save_cmd: any) -> None:
+        quit_button = ttk.Button(self.content_frame, text="Beenden",
+                                 command=self.quit_cmd)
+        quit_button.grid(row=at_row, column=0, pady=PADY)
+        quit_button.bind("<Return>", (lambda event: self.quit_cmd()))
+        save_button = ttk.Button(
+            self.content_frame, text="Speichern", command=save_cmd
+        )
+        save_button.grid(row=at_row, column=1, padx=PADX, pady=PADY)
+        save_button.bind("<Return>", (lambda event: save_cmd()))
+
+    def _on_mousewheel(self, event):
+        self.icanvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
     def _add_menu_items(self, menu: tk.Menu, key: str,
                         command: callable) -> None:
@@ -108,6 +151,25 @@ class Oberflaeche:
         if confirm:
             self.root.destroy()
 
+    def open_link(self, link: str) -> None:
+        webbrowser.open(link)
+
+    def show_custom_messagebox(self, header: str, msg: str, dest: str) -> None:
+        custom_box = tk.Toplevel()
+        custom_box.title(header)
+        ttk.Label(custom_box, text=msg, padding=(20, 10)).pack()
+        # padx=20, pady=10).pack()
+        link = ttk.Label(custom_box, text=dest,
+                         foreground="blue",
+                         cursor="hand2",
+                         padding=(20, 10))  # padx=20, pady=10)
+        link.pack()
+        link.bind("<Button-1>", lambda e: self.open_link(dest))
+        ttk.Button(custom_box, text="OK", command=custom_box.destroy,
+                   padding=(30, 4)).pack(side="right", padx=10, pady=10)
+        # padding=(20, 10))
+        # padx=10, pady=10)
+
     def info_cmd(self):
         """
         show Info
@@ -119,15 +181,18 @@ class Oberflaeche:
             ) as f_in:
                 version = json.load(f_in)
                 my_msg = f"Copyright © H.Lischka, 2024\n\
-        Version {version['version'] if version is not None else 'unbekannt'}"
+Version {version['version'] if version is not None else 'unbekannt'}\n\n\
+Dokumentation: "
         except OSError as ex:
             my_msg = f"OSError: {ex}"
             raise ValueError(my_msg)
 
-        messagebox.showinfo("Info", my_msg)
+#        messagebox.showinfo("Info", my_msg)
+        self.show_custom_messagebox("Info", my_msg,
+                                    "https://github.com/lka/excel2zugferd")
         self.root.lift()
 
-    def destroy_children(self, parent):
+    def destroy_children(self, parent: tk.Tk) -> None:
         """
         recursive destroy all children of current window
         """
@@ -136,46 +201,42 @@ class Oberflaeche:
                 self.destroy_children(child)
             child.destroy()
 
-    def _add_string(self, row: tk.Frame, field: dict, content: any) -> tk.Text:
-        lab = tk.Label(
+    def _add_string(self, row: tk.Frame, field: dict, content: any,
+                    index: int) -> tk.Text:
+        lab = ttk.Label(
             row, width=LABELWIDTH, text=field["Label"] + ": ",
             anchor="w"
         )
-        # ent = Entry(row)
-        # ent.insert(0, "")
         ent = tk.Text(row, width=TEXTWIDTH, height=field["Lines"])
-        # ent.configure(font=self.myFont)
         if content:
             ent.insert(
                 tk.END,
                 content[field["Text"]] if field["Text"] in content else "",
             )
-        row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
-        lab.pack(side=tk.LEFT)
-        ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
+        lab.grid(row=index, column=0, padx=PADX, pady=PADY)
+        ent.grid(row=index, column=1, padx=PADX, pady=PADY)
         return ent
 
-    def _add_label(self, row: tk.Frame, field: dict, content: dict)\
-            -> tk.Message:
+    def _add_label(self, row: tk.Frame, field: dict, content: dict,
+                   index: int) -> ttk.Label:
         msg = content[field["Text"]] if\
             content and field["Text"] in content else ""
         if msg != "":
-            lab = tk.Label(
+            lab = ttk.Label(
                 row, width=LABELWIDTH, text=field["Label"] + ": ",
                 anchor="w"
             )
         else:
-            lab = tk.Label(
+            lab = ttk.Label(
                 row, width=LABELWIDTH, text="",
                 anchor="w"
             )
             msg = field["Label"]
-        ent = tk.Label(
+        ent = ttk.Label(
                 row, text=msg, width=TEXTWIDTH, anchor="w"
         )
-        row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
-        lab.pack(side=tk.LEFT)
-        ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
+        lab.grid(row=index, column=0, padx=PADX, pady=PADY)
+        ent.grid(row=index, column=1, padx=PADX, pady=PADY, sticky="W")
         return ent
 
     def _set_value_for_boolean(self, field: dict, content: dict) -> None:
@@ -190,18 +251,18 @@ class Oberflaeche:
             else "0"
         )
 
-    def _add_boolean(self, row: tk.Frame, field: dict, content: dict)\
-            -> tk.Checkbutton:
+    def _add_boolean(self, row: tk.Frame, field: dict, content: dict,
+                     index: int)\
+            -> ttk.Checkbutton:
         self.menuvars[field["Variable"]] = tk.StringVar()
         ent = ttk.Checkbutton(
             row, text=field["Label"], variable=self.menuvars[
                                                 field["Variable"]]
         )
         self._set_value_for_boolean(field, content)
-        lab = tk.Label(row, width=LABELWIDTH, text=" ", anchor="w")
-        row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
-        lab.pack(side=tk.LEFT)
-        ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
+        lab = ttk.Label(row, width=LABELWIDTH, text=" ", anchor="w")
+        lab.grid(row=index, column=0, padx=PADX, pady=PADY)
+        ent.grid(row=index, column=1, padx=PADX, pady=PADY, sticky="W")
         return ent
 
     def _create_iniFile(self, ini_file: IniFile, content: dict = None) -> bool:
@@ -215,24 +276,113 @@ fehlgeschlagen.\n{ex}")
             return True
         return False
 
-    def _get_text_of_field(self, field: any) -> str:
-        if isinstance(field, tk.Label):
-            return ''
+    def _get_text_of_field(self, field: any, key: str = None) -> str:
+        if isinstance(field, ttk.Label):
+            return self.middleware.ini_file.content[key]\
+                if self.middleware else ''
         return (
                     field.get("1.0", "end-1c")
                     if hasattr(field, "get")
                     else "Ja" if field.instate(["selected"]) else "Nein"
                 )
 
-    def get_entries_from_type(self, row: tk.Frame, field: dict, content: dict):
+    def get_entries_from_type(self, row: ttk.Frame, field: dict, content: dict,
+                              index: int):
         ent = None
         if field["Type"] == "String":
-            ent = self._add_string(row, field, content)
+            ent = self._add_string(row, field, content, index)
         if field["Type"] == "Boolean":
-            ent = self._add_boolean(row, field, content)
+            ent = self._add_boolean(row, field, content, index)
         if field["Type"] == "Label":
-            ent = self._add_label(row, field, content)
+            ent = self._add_label(row, field, content, index)
         return ent
+
+    def makeform(self, type: str = None, offset: int = 0) -> dict:
+        """
+        create the form of Stammdaten Oberflaeche
+        """
+        entries = {}
+        content = {}
+        if self.middleware.ini_file:
+            content = self.middleware.ini_file.read_ini_file()
+        for field in self.fields:
+            if (field["Dest"] == type):
+                # row = tk.Frame(self.root)
+                entries[field["Text"]] = self\
+                    .get_entries_from_type(self.content_frame,
+                                           field,
+                                           content,
+                                           len(entries) + offset)
+        return entries
+
+    def pre_open_excel2zugferd(self):
+        obj = src.oberflaeche_excel2zugferd.OberflaecheExcel2Zugferd
+        self.open_new_window(obj)
+
+    def pre_open_stammdaten(self):
+        obj = src.oberflaeche_ini.OberflaecheIniFile
+        self.open_new_window(obj)
+
+    def pre_open_steuerung(self):
+        obj = src.oberflaeche_steuerung.OberflaecheSteuerung
+        self.open_new_window(obj)
+
+    def pre_open_excelsteuerung(self):
+        obj = src.oberflaeche_excelsteuerung.OberflaecheExcelSteuerung
+        self.open_new_window(obj)
+
+    def pre_open_excelpositions(self):
+        obj = src.oberflaeche_excelpositions.OberflaecheExcelPositions
+        self.open_new_window(obj)
+
+    def open_new_window(self, Obj: object = None):
+        """
+        Open Object for editing
+        """
+        self.fetch_values_from_entries()
+        self.root.quit()
+        s_oberfl = Obj(self.fields, self.middleware, self.root)
+        s_oberfl.loop()
+
+    def _check_content_of_stammdaten(self, content: dict) -> bool:
+        """return whether stammdaten have failures"""
+        try:
+            InvoiceCollection(stammdaten=content)
+        except ValueError as e:
+            messagebox.showerror("Fehler in den Stammdaten", e.args[0])
+            return True
+        return False
+
+    def fetch_values_from_entries(self) -> dict:
+        """
+        get all values from items in Oberfläche
+        and merge them to ini_file.content
+        """
+        content = {}
+        if self.ents:
+            for key, field in self.ents.items():
+                content[key] = self._get_text_of_field(field, key)
+            if content:
+                return self.middleware.ini_file\
+                    .merge_content_of_ini_file(content)
+        return content
+
+    def fetch(self):
+        """
+        get all values for IniFile
+        """
+        content = self.fetch_values_from_entries()
+        ini_has_failure = False
+        if content:
+            ini_has_failure = self._create_iniFile(
+                self.middleware.ini_file, None)
+            ini_has_failure = ini_has_failure or \
+                self._check_content_of_stammdaten(content)
+            if ini_has_failure:
+                messagebox.showinfo("Info",
+                                    "Stammdaten mit Fehlern gespeichert.")
+                return
+            messagebox.showinfo("Info", "Stammdaten gespeichert.")
 
     def loop(self):
         """

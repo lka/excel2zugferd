@@ -3,6 +3,7 @@ Modul Middleware
 """
 from tkinter import messagebox, filedialog
 from pathlib import Path
+import logging
 import shutil
 import tempfile
 import os
@@ -12,6 +13,7 @@ from src.invoice_collection import InvoiceCollection
 from src.excel_content import ExcelContent
 from src.handle_pdf import Pdf
 from src.handle_zugferd import ZugFeRD
+from src.windowseventlog import WindowsEventLogHandler
 import src
 
 
@@ -25,23 +27,39 @@ class Middleware():
         self.excel_file: ExcelContent = None
         self.zugferd: ZugFeRD = None
         self.quiet: bool = False
+        self.logger: logging.Logger = None
+        self.initLogger()
+
+    def initLogger(self) -> None:
+        myAppName = 'Excel2ZUGFeRD'
+        self.logger = logging.getLogger(myAppName)
+        self.logger.setLevel(logging.DEBUG)
+
+        event_log_handler = WindowsEventLogHandler(appname=myAppName)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s \
+- %(message)s')
+        event_log_handler.setFormatter(formatter)
+        self.logger.addHandler(event_log_handler)
 
     def _error_msg(self, header: str, msg: str) -> None:
         """
         bei Benutzung ohne Oberfläche wird die Fehlermeldung
-        ausgegeben und mit das Programm mit exit(-1) beendet
+        ausgegeben und das Programm mit exit(-1) beendet
         """
+        self.logger.error(msg=f"{header}\n{msg}")
         if self.quiet:
-            sys.stderr.write(header + "\n" + msg)
+            # sys.stderr.write(header + "\n" + msg)
             sys.exit(-1)
         else:
             messagebox.showerror(header, msg)
 
     def _usage(self) -> None:
-        sys.stdout.write('Benutzung:\nexcel2zugferd.exe\
+        msg = 'Benutzung:\nexcel2zugferd.exe\
  -BlattNr Pfad_zur_Exceldatei.xlsx\n\
 BlattNr 0..n, 0 ist das erste Tabellenblatt\n\
-beide Parameter sind als Zeichenketten anzugeben.')
+beide Parameter sind als Zeichenketten anzugeben.'
+        # sys.stdout.write(msg)
+        self.logger.info(msg)
 
     def check_args(self, args: list) -> bool:
         """check arguments from main call\n
@@ -63,9 +81,8 @@ beide Parameter sind als Zeichenketten anzugeben.')
 
     def _success_message(self, outfile: str) -> None:
         mymsg = f"Die Datei {outfile} wurde erstellt."
-        if self.quiet:
-            sys.stdout.write("Information: \n" + mymsg)
-        else:
+        self.logger.info("Information: \n" + mymsg)
+        if not self.quiet:
             messagebox.showinfo("Information", mymsg)
 
     def set_iniFile(self) -> None:
@@ -76,9 +93,8 @@ beide Parameter sind als Zeichenketten anzugeben.')
         try:
             self.ini_file = IniFile()  # dir=Path('Z:/data'))
         except ValueError as e:
-            if self.quiet:
-                sys.stderr.write("Schwerer Fehler:\n" + e.args[0])
-            else:
+            self.logger.critical("Schwerer Fehler:\n" + e.args[0])
+            if not self.quiet:
                 self._error_msg("Schwerer Fehler:", e.args[0])
             sys.exit(-1)
 
