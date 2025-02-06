@@ -140,9 +140,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ steps.get_next_version.outputs.version }}
       run: |
-        gh release create ${{ steps.get_next_version.outputs.version }} \
-          --title="Version ${tag}" \
-          --generate-notes
+        gh release create ${{ steps.get_next_version.outputs.version }} --repo="$GITHUB_REPOSITORY" --title="Version ${tag}" --generate-notes
     - name: Download Artifact
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
       uses: dawidd6/action-download-artifact@v3
