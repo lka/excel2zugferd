@@ -132,9 +132,8 @@ jobs:
     - name: Create new tag
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
       run: |
-        NEXT_VERSION=${{ steps.get_next_version.outputs.version }}
-        git tag $NEXT_VERSION
-        git push origin $NEXT_VERSION
+        git tag ${{ steps.get_next_version.outputs.version }}
+        git push origin ${{ steps.get_next_version.outputs.version }}
     - name: Create Release
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
       env:
@@ -194,6 +193,7 @@ jobs:
       run: |
           gh release upload ${{ steps.get_next_version.outputs.version }} ./setup_excel2zugferd_x6432_${{steps.get_next_version.outputs.version}}.0.msi
     - name: Use WingetCreate Update to update existing manifest
+      if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
       run: |
             Invoke-WebRequest -Uri https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
             .\wingetcreate.exe update Lka.Excel2ZUGFeRD -u https://github.com/lka/excel2zugferd/releases/download/${{steps.get_next_version.outputs.version}}/setup_excel2zugferd_x6432_${{steps.get_next_version.outputs.version}}.0.msi -v ${{steps.get_next_version.outputs.version}}.0 -t ${{ secrets.GITHUB_TOKEN }} -s true
