@@ -59,11 +59,8 @@ jobs:
       id: vars
       run: |
         Invoke-WebRequest -uri https://github.com/thenativeweb/get-next-version/releases/download/2.6.1/get-next-version-windows-amd64.exe -outfile get-next-version-windows-amd64.exe
-        ls
         .\get-next-version-windows-amd64.exe  -p 'v' --target json > version.json
-        # echo "MyAppVersion=$(./get-next-version-windows-amd64.exe)"
         echo "MyAppVersion=$(./get-next-version-windows-amd64.exe)" >> $env:GITHUB_OUTPUT
-        more version.json
       shell: powershell
     - name: Build with pyinstaller
       run: |
@@ -103,11 +100,6 @@ jobs:
           name: setup_msi_excel2zugferd
           path: ./setup_excel2zugferd_x6432_${{steps.vars.outputs.MyAppVersion}}.0.msi
           if-no-files-found: error
-    # - name: Use WingetCreate Update to update existing manifest
-    #   run: |
-    #         Invoke-WebRequest -Uri https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
-    #         .\wingetcreate.exe update Lka.Excel2ZUGFeRD -u https://github.com/lka/excel2zugferd/releases/download/${{steps.vars.outputs.MyAppVersion}}/setup_excel2zugferd_x6432_${{steps.vars.outputs.MyAppVersion}}.0.msi -v ${{steps.vars.outputs.MyAppVersion}}.0 -t ${{ secrets.GITHUB_TOKEN }} -s
-    #   shell: pwsh
     
   release:
     name: Release
@@ -126,11 +118,17 @@ jobs:
       with:
         fetch-depth: 0
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Semantic Release
-      uses: thenativeweb/get-next-version@2.6.1
-      with:
-        prefix: ''
+    # - name: Semantic Release
+    #   uses: thenativeweb/get-next-version@2.6.1
+    #   with:
+    #     prefix: ''
+    #   id: get_next_version
+    - name: get next version
       id: get_next_version
+      run: |
+        Invoke-WebRequest -uri https://github.com/thenativeweb/get-next-version/releases/download/2.6.1/get-next-version-windows-amd64.exe -outfile get-next-version-windows-amd64.exe
+        .\get-next-version-windows-amd64.exe  --target github-action
+      shell: powershell
     - name: Create new tag
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
       run: |
