@@ -437,7 +437,7 @@ class Pdf(PDF):
         self.print_logo(self.logo_fn)
         self.print_absender(self.invoice.supplier.anschrift)
         bundesland = self.invoice.supplier.bundesland
-        if len(bundesland) > 0:
+        if bundesland and len(bundesland) > 0:
             self.print_bundesland(bundesland)
         self.print_kontakt(
             self.invoice.supplier.kontakt + "\n\n" +

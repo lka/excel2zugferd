@@ -278,6 +278,8 @@ fehlgeschlagen.\n{ex}")
 
     def _get_text_of_field(self, field: any, key: str = None) -> str:
         if isinstance(field, ttk.Label):
+            if key not in self.middleware.ini_file.content.keys():
+                return ''
             return self.middleware.ini_file.content[key]\
                 if self.middleware else ''
         return (

@@ -443,5 +443,7 @@ class Steuerung(object):
             )
             self._fill_bools(thekeys, daten)
             self._fill_positions_for_excel(thekeys, daten)
-            self.directory = daten['Verzeichnis']
+            self.directory = (
+                daten['Verzeichnis'] if "Verzeichnis" in thekeys else None
+            )
             # print(repr(self))

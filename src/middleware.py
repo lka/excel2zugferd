@@ -266,12 +266,16 @@ erstellen, da ein Problem aufgetreten ist.\n{ex}")
 
     def save_working_directory(self, filename: str) -> None:
         self.ini_file.save_working_directory(filename)
+        self.invoiceCollection.management.directory = os.path.dirname(filename)
+        # self.setStammdatenToInvoiceCollection()
 
     def quiet_workflow(self, filename: str, sheetnr: int) -> None:
-        self.excel_file = ExcelContent(filename, "")
+        if self.ini_file.exists_ini_file() is None:
+            self.ini_file.create_ini_file(self.ini_file.set_default_content())
         self.setStammdatenToInvoiceCollection()
-        self.invoiceCollection.management.BYOPdf = False
         self.save_working_directory(filename)
+        self.excel_file = ExcelContent(filename, "")
+        self.invoiceCollection.management.BYOPdf = False
         self.setExcelDatenToInvoiceCollection(sheetnr)
         self.try_to_init_pdf(src.logo_fn())
         arr = self.excel_file.read_sheet_list()

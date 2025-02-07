@@ -19,6 +19,8 @@ if __name__ == "__main__":
 
     oberfl = None
     if middleware.ini_file.exists_ini_file() is None:
+        middleware.ini_file.create_ini_file(middleware.ini_file
+                                            .set_default_content())
         oberfl = src.oberflaeche_ini.OberflaecheIniFile(STAMMDATEN,
                                                         middleware)
     else:

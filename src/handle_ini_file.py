@@ -65,6 +65,23 @@ class IniFile:
             json.dump(self.content, f_out, sort_keys=True, ensure_ascii=False,
                       indent=4)
 
+    def set_default_content(self) -> dict:
+        return {
+            "Ansprechpartner": "Max Mustermann",
+            "BIC": "XYZBCAY",
+            "Betriebsbezeichnung": "Max Mustermann - Software",
+            "Finanzamt": "Musterstadt",
+            "Hausnummer": "17a",
+            "IBAN": "DEXX YYYY ZZZZ AAAA BBBB CC",
+            "Kontoinhaber": "Max Mustermann",
+            "Ort": "Musterstadt",
+            "PLZ": "12345",
+            "Steuernummer": "12345/12345",
+            "Strasse": "Musterstr.",
+            "Telefon": "01234-5678",
+            "ZugFeRD": "Ja"
+        }
+
     def read_ini_file(self) -> dict:
         """
         read IniFile

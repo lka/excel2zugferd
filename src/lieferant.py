@@ -142,14 +142,20 @@ class Lieferant(Adresse):
         if not self.name:
             raise ValueError(NAME_ERROR)
 
-    def _fill_zahlungsziel(self, daten):
+    def _fill_zahlungsziel(self, daten: dict, keys: list):
         """use it for Stammdaten only"""
-        ziel = daten["Zahlungsziel"]
+        ziel = None
+        if "Zahlungsziel" in keys:
+            ziel = src._setNoneIfEmpty(daten["Zahlungsziel"])
         if ziel is not None and len(ziel) > 0 and\
                 '\n' not in ziel:
             self.zahlungsziel = ziel
         else:
             self.zahlungsziel = "14"
+
+    def _fill_bundesland(self, daten: dict, keys: list):
+        if "Bundesland" in keys:
+            self.bundesland = src._setNoneIfEmpty(daten["Bundesland"])
 
     def fill_lieferant(self, daten: dict = None) -> None:
         """fills Adresse of Lieferant from stammdaten"""
@@ -158,10 +164,10 @@ class Lieferant(Adresse):
             self._fill_betrieb(daten)
             # self._fill_name(daten, keys)
             self._fill_anschrift(daten, keys)
-            self.bundesland = daten["Bundesland"]
+            self._fill_bundesland(daten, keys)
             self._fill_kontakt(daten, keys)
             self._fill_umsatzsteuer(daten, keys)
-            self._fill_zahlungsziel(daten)
+            self._fill_zahlungsziel(daten, keys)
             self._fill_steuersatz(daten)
             # print(repr(self))
 
