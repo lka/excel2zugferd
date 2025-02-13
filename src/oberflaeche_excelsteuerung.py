@@ -32,8 +32,9 @@ class OberflaecheExcelSteuerung(src.oberflaeche_base.Oberflaeche):
                                 "Excel Positionen":
                                     self.pre_open_excelpositions,
                             },
-                        "Separator": 0,
+                        "Separator1": 0,
                         "Excel2ZUGFeRD": self.pre_open_excel2zugferd,
+                        "Separator2": 0,
                         "Beenden": self.quit_cmd,
                         }
                 },

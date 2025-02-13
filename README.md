@@ -41,7 +41,7 @@ Das Programm kann auch ohne Oberfläche verwendet werden (nach der Einstellung d
 1. Der Defender Smart Screen sagt dann, dass diese Datei nicht ausgeführt werden sollte, was ich aber will und auf "trotzdem ausführen" klicke. Das Programm wird in das Verzeichnis "C:\Program Files (x86)\Excel2ZugFeRD" installiert.
 1. Eine Verknüpfung auf die Datei "excel2zugferd.exe" auf dem Desktop wird vom Setup-Programm erstellt.
 
-- Alternativ: In einem CMD Fenster `wget excel2zugferd` ausführen.
+- Alternativ: In einem Administrator - CMD Fenster `wget excel2zugferd` ausführen.
 - Die Freigabe durch freiwillige Helfer bei WingetCreate findet normalerweise ca. 6 - 12 h nach der neuen Release statt.
 
 - Wenn eine neue Version des Setup-Programms herauskommt, meckert der Virenscanner bei der Ausführung, dass das eine Datei sei, die einen Virus enthalten könnte, das ist die am Anfang fehlende Hash-Signatur für das Python Setup. Ich sage dann "Download beibehalten" und lasse das Ganze vom Virenprogramm im Internet Scannen. Nach ca. 14 Tagen hat sich das bisher immer gegeben.
@@ -49,7 +49,7 @@ Das Programm kann auch ohne Oberfläche verwendet werden (nach der Einstellung d
 ## Updates
 
 - Die Vorgehensweise ist Identisch zur Installation.
-- Alternativ: In einem CMD Fenster `wget update excel2zugferd` ausführen.
+- Alternativ: In einem Administrator - CMD Fenster `wget update excel2zugferd` ausführen.
 
 ## Programmablauf
 
