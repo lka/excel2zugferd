@@ -1,6 +1,6 @@
 # Excel2ZugFeRD
 
-Dieses Programm liest die Daten aus einer Excel Datei aus und hängt sie als ZUGFeRD - kompatible XML-Daten an die erstellte PDF an.
+Dieses Programm liest die Daten aus einer Excel Datei aus und hängt sie als ZUGFeRD - kompatible XML-Daten an die neu erstellte Rechnungs-PDF an.
 
 Alternativ kann das Programm den ZugFeRD - Anteil an eine von Ihnen erstellte PDF anhängen. Dann wird die PDF als IhrPdfName_ZuGFeRD.pdf ins Verzeichnis Ihrer PDF gestellt.
 
@@ -28,8 +28,12 @@ Die verwendbaren Einheiten in der Spalte 'Typ' sind:
 Das Programm kann auch ohne Oberfläche verwendet werden (nach der Einstellung der Stammdaten):
 
 `"C:\Program Files (x86)\Excel2ZUGFeRD\excel2zugferd.exe" -BlattNr Pfad_zur_Exceldatei.xlsx`
+
+oder
+
+`"C:\Program Files (x86)\Excel2ZUGFeRD\excel2zugferd.exe" -BlattNr Pfad_zur_eigenen_PDF.pdf Pfad_zur_Exceldatei.xlsx`
 * BlattNr 0..n: 0 ist das erste Tabellenblatt
-* beide Parameter sind als Zeichenketten anzugeben.
+* alle Parameter sind als Zeichenketten anzugeben.
 
 - Die Anwendung schreibt Meldungen in die Windows Ereignisanzeige unter 'Windows-Protokolle' -> 'Anwendung' mit der Quelle 'Excel2ZUGFeRD'
 - Fehler werden dort als 'Fehler' ausgegeben und das Programm mit exit Code -1 beendet; bitte die Details ansehen
@@ -79,6 +83,10 @@ Alternativ können Sie die XY-Positionen im Excel Blatt (Spalten: A...Z, Zeilen:
 Damit können die XY-Positionen verändert werden und die Suchfunktion wird abgeschaltet. Durch die Angabe der "Excel Positionen" können Sie auch die Überschriften der Einzelpositionen anpassen z.B: Pos. -> Nr., Typ -> EH usw..
 
 ## Versionen
+
+### 0.23.x
+
+- Erweiterung der Benutzung für 'Automatisierer' um die Möglichkeit, eine eigene PDF Datei anzugeben, an die der ZUGFeRD Anteil angehängt werden soll. Dann wird die PDF als IhrPdfName_ZuGFeRD.pdf ins Verzeichnis Ihrer PDF gestellt.
 
 ### 0.22.x
 

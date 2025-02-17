@@ -6,7 +6,8 @@
             "request": "launch",
             "program": "${file}",
             "args": [
-                "C:/users/herbe/documents/development/excel2zugferd/TestRechnung.xlsx"
+                "Hallo-1",
+                "C:/users/herbe/documents/development/excel2zugferd/TestRechnung.xlsx",
             ],
             "console": "integratedTerminal"
         },

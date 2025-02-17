@@ -16,6 +16,7 @@ class Steuerung(object):
         self._is_kleinunternehmen = None
         self._abspann = None
         self._BYOPdf = None
+        self._pdf_filename = None
         self._directory = None
         self._anschrift_spalte = None
         self._anschrift_zeile = None
@@ -41,6 +42,7 @@ class Steuerung(object):
  create_girocode: '{self.create_girocode}',\
  is_kleinunternehmen: '{self.is_kleinunternehmen}', abspann: '{self.abspann}',\
  BYOPdf: '{self.BYOPdf}',\
+ pdf_filename: '{self.pdf_filename}',\
  directory: '{self.directory}',\
  anschrift_spalte: '{self.anschrift_spalte}',\
  anschrift_zeile: '{self.anschrift_zeile}'\
@@ -99,6 +101,14 @@ class Steuerung(object):
     @BYOPdf.setter
     def BYOPdf(self, value):
         self._BYOPdf = value
+
+    @property
+    def pdf_filename(self):
+        return self._pdf_filename
+
+    @pdf_filename.setter
+    def pdf_filename(self, value):
+        self._pdf_filename = value
 
     @property
     def directory(self):

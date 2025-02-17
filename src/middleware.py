@@ -28,6 +28,7 @@ class Middleware():
         self.zugferd: ZugFeRD = None
         self.quiet: bool = False
         self.logger: logging.Logger = None
+        self.pdf_filename: str = None
         self.initLogger()
 
     def initLogger(self) -> None:
@@ -54,27 +55,113 @@ class Middleware():
             messagebox.showerror(header, msg)
 
     def _usage(self) -> None:
-        msg = 'Benutzung:\nexcel2zugferd.exe\
- -BlattNr Pfad_zur_Exceldatei.xlsx\n\
-BlattNr 0..n, 0 ist das erste Tabellenblatt\n\
-beide Parameter sind als Zeichenketten anzugeben.'
+        msg = (
+            "Benutzung:\nexcel2zugferd.exe"
+            " -BlattNr Pfad_zur_Exceldatei.xlsx\noder\n"
+            "excel2zugferd.exe"
+            " -BlattNr Pfad_zur_eigenen_PDF.pdf Pfad_zur_Exceldatei.xlsx\n\n"
+            "BlattNr 0..n, 0 ist das erste Tabellenblatt\n"
+            "alle Parameter sind als Zeichenketten anzugeben."
+        )
         # sys.stdout.write(msg)
         self.logger.info(msg)
+
+    def _check_existance(self, fn) -> str | None:
+        """check existance of file
+
+        Args:
+            fn (function): filename with path
+
+        Returns:
+            str | None: None if File does not exist
+        """
+        print(fn)
+        if fn and len(fn) > 0 and Path(fn).exists():
+            return fn
+        return None
+
+    def _is_pdf(self, fn: str) -> str | None:
+        """check whether fn is a pdf file
+
+        Args:
+            fn (str): filename
+
+        Returns:
+            str | None: None if File has no pdf extension
+        """
+        parts = os.path.splitext(fn)
+        if parts[1].lower() == '.pdf':
+            return fn
+        return None
+
+    def _check_with_pdf(self, args: list) -> str | None:
+        """check wether pdf and excel file exist
+
+        Args:
+            args (list): arguments from program start
+
+        Returns:
+            str | None: excel filename;
+            pdf filename is written to self.pdf_filename
+        """
+        pdf_filename = self._is_pdf(args[2])
+        if self._check_existance(pdf_filename):
+            self.pdf_filename = pdf_filename
+            filename = args[3]
+            if len(filename) > 0 and Path(filename).exists():
+                return filename
+        return None
+
+    def check_filenames(self, args: list) -> str | None:
+        """check filenames and existance of the files
+
+        Args:
+            args (list): arguments from program start
+
+        Returns:
+            str: None if failure occurs, filename of excelfile if all is OK
+        """
+        length = len(args)
+        if length == 3:
+            filename = args[2]
+            if self._is_pdf(filename):
+                return None
+            return self._check_existance(filename)
+        elif length == 4:
+            return self._check_with_pdf(args)
+        return None
+
+    def _isNumber(self, num: str) -> bool:
+        """checks whether num is number
+
+        Args:
+            num (str): string to be checked
+
+        Returns:
+            bool: True if number
+        """
+        try:
+            abs(int(num))
+        except ValueError:
+            return False
+        return True
 
     def check_args(self, args: list) -> bool:
         """check arguments from main call\n
            return True if called without arguments
         """
-        if len(args) == 1:
+        length = len(args)
+        if length == 1:
             self.set_iniFile()
             return False
         self.quiet = True
         self.set_iniFile()
-        if len(args) == 3:
-            filename = args[2]
+        if self._isNumber(args[1]) and length in [3, 4]:
             sheetnr = args[1]
-            if len(filename) > 0 and Path(filename).exists():
-                self.quiet_workflow(filename, abs(int(sheetnr)))
+            filename = self.check_filenames(args)
+            if filename:
+                self.quiet_workflow(filename, abs(int(sheetnr)),
+                                    self.pdf_filename)
                 return True
         self._usage()
         return True
@@ -209,7 +296,9 @@ beide Parameter sind als Zeichenketten anzugeben.'
     def _populate_temp_file(self, file_name: str) -> str:
         """returns own pdf filename with path"""
         if self.invoiceCollection.management.BYOPdf:
-            theFile = self._get_own_pdf()
+            theFile = self.invoiceCollection.management.pdf_filename
+            if theFile is None:
+                theFile = self._get_own_pdf()
             shutil.copyfile(theFile, file_name)
             return theFile
         else:
@@ -269,13 +358,18 @@ erstellen, da ein Problem aufgetreten ist.\n{ex}")
         self.invoiceCollection.management.directory = os.path.dirname(filename)
         # self.setStammdatenToInvoiceCollection()
 
-    def quiet_workflow(self, filename: str, sheetnr: int) -> None:
+    def quiet_workflow(self, filename: str, sheetnr: int,
+                       pdf_filename: str = None) -> None:
         if self.ini_file.exists_ini_file() is None:
             self.ini_file.create_ini_file(self.ini_file.set_default_content())
         self.setStammdatenToInvoiceCollection()
         self.save_working_directory(filename)
         self.excel_file = ExcelContent(filename, "")
-        self.invoiceCollection.management.BYOPdf = False
+        if pdf_filename is not None:
+            self.invoiceCollection.management.pdf_filename = pdf_filename
+            self.invoiceCollection.management.BYOPdf = True
+        else:
+            self.invoiceCollection.management.BYOPdf = False
         self.setExcelDatenToInvoiceCollection(sheetnr)
         self.try_to_init_pdf(src.logo_fn())
         arr = self.excel_file.read_sheet_list()
