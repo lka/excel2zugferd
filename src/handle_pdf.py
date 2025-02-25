@@ -9,7 +9,7 @@ import os
 from fpdf import FPDF
 from fpdf.fonts import FontFace
 from fpdf.enums import TableCellFillMode, OutputIntentSubType
-from fpdf.output import ICCProfileStreamDict
+from fpdf.output import PDFICCProfileObject
 # import src.handle_zugferd as handle_zugferd
 import src.handle_girocode as gc
 import pandas as pd
@@ -402,17 +402,19 @@ class Pdf(PDF):
         self.set_lang("de_DE")
         # set left, top and right margin for document
         self.set_margins(25, 16.9, 20)
-        dest_output_profile = ICCProfileStreamDict(
-            fn=os.path.join("_internal", "sRGB2014.icc"),
-            N=3,
-            alternate="DeviceRGB"
-        )
+        with open(os.path.join("_internal", "sRGB2014.icc"), "rb") as\
+                iccp_file:
+            icc_profile = PDFICCProfileObject(
+                contents=iccp_file.read(),
+                n=3,
+                alternate="DeviceRGB"
+            )
         self.set_output_intent(
             OutputIntentSubType.PDFA,
             "sRGB",
             "IEC 61966-2-1:1999",
             "http://www.color.org",
-            dest_output_profile,
+            icc_profile,
             "sRGB2014 (v2)",
         )
 
