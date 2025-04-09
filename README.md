@@ -84,6 +84,12 @@ Damit können die XY-Positionen verändert werden und die Suchfunktion wird abge
 
 ## Versionen
 
+### 0.24.x
+
+- In der PDF wird jetzt unterhalb der Rechnungsnummer `Leistungszeitraum VON - BIS` angezeigt.
+Die Kennzeichnung für die Kleinunternehmerregelung ist von dieser Position jetzt hinter die Rechnungssummen verschoben worden.
+- Es gibt Probleme mit dem wix toolset, es kann also sein, dass die Funktion mit wget für die Installation nicht mehr vorhanden ist.
+
 ### 0.23.x
 
 - Erweiterung der Benutzung für 'Automatisierer' um die Möglichkeit, eine eigene PDF Datei anzugeben, an die der ZUGFeRD Anteil angehängt werden soll. Dann wird die PDF als IhrPdfName_ZuGFeRD.pdf ins Verzeichnis Ihrer PDF gestellt.
