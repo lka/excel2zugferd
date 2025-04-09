@@ -120,12 +120,12 @@ class PDF(FPDF):
         self._set_section("Bundesland", LEFTofABSENDER, 54.5, "", 10)
         self.cell(105, 1, bundesland)
 
-    def print_kleinunternehmerregelung(self, grund: str) -> None:
+    def print_leistungszeitraum(self, von: str, bis: str) -> None:
         """
-        prints Begründung Kleinunternehmerregelung
+        prints Rechnungszeitraum
         """
-        self._set_section("Kleinunternehmen", 25, 105, "", 10)
-        self.cell(105, 1, grund)
+        self._set_section("Leistungszeitraum", 25, 105, "", 10)
+        self.cell(105, 1, f"Leistungszeitraum: {von} - {bis}")
 
     def print_kontakt(self, daten: str) -> None:
         """
@@ -297,6 +297,14 @@ class PDF(FPDF):
             for data_row in arr:
                 table.row(data_row)
         self.ln()
+
+    def print_kleinunternehmerregelung(self, grund: str) -> None:
+        """
+        prints Begründung Kleinunternehmerregelung
+        """
+        self.start_section("Kleinunternehmen", 0)
+        self.cell(105, 1, grund)
+        self.ln(2)
 
     def print_abspann(self, text: str) -> None:
         """
@@ -478,6 +486,21 @@ class Pdf(PDF):
         """return str as locale currency"""
         return locale.currency(amount, grouping=True)
 
+    def get_von_bis_dates(self) -> list:
+        """get min and max dates from positions
+
+        Returns:
+            list: min and max as list
+        """
+        df = self.invoice.positions
+        retval = df.copy()
+        headers = list(df.columns)
+        retval[headers[1]] = pd.to_datetime(retval[headers[1]],  # Datum
+                                            errors="ignore")
+        von = min(retval[headers[1]])
+        bis = max(retval[headers[1]])
+        return [von, bis]
+
     def _set_first_datum(self, df: pd.DataFrame, headers: list) -> None:
         """ I expect Datum at second position in df """
         if df.loc[df[headers[1]].index[0], headers[1]] == "":
@@ -578,11 +601,11 @@ u.a. Konto.\n\n{abspann}"
         self.invoice = invoice
         self.fill_header()
 
-        self._fill_kleinunternehmen()
         self.print_adress(self.invoice.customer.anschrift)
         rg_nr = self.invoice.invoicenr  # _get_rg_nr()
         # today = datetime.now()
         datum = list(invoice.invoicedate.values())[0]
+        von, bis = self.get_von_bis_dates()
         ueberweisungsdatum = self.invoice.supplier\
             .get_ueberweisungsdatum(datum)
 
@@ -591,11 +614,15 @@ u.a. Konto.\n\n{abspann}"
  {datum.strftime(GERMAN_DATE)}"
         )
 
+        self.print_leistungszeitraum(von.strftime(GERMAN_DATE),
+                                     bis.strftime(GERMAN_DATE))
         self._fill_positions()
 
         summen = self.get_invoice_sums()
         brutto = self._get_value(summen[-1])
         self.print_summen(summen)
+
+        self._fill_kleinunternehmen()
         # if self.lieferantensteuerung.create_xml:
         #     self.fill_xml(rg_nr, summen, brutto, ueberweisungsdatum, datum)
         self._fill_abspann(brutto, ueberweisungsdatum)
