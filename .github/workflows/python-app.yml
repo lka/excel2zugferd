@@ -191,9 +191,10 @@ jobs:
     - name: Use WingetCreate Update to update existing manifest
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
       env:
-        WINCREATE_TOKEN: ${{ secrets.WINCREATE_TOKEN }}
+        # WINCREATE_TOKEN: ${{ secrets.WINCREATE_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.WINCREATE_TOKEN }} 
       run: |
             Invoke-WebRequest -Uri https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
-            .\wingetcreate.exe update --submit -t ${{ secrets.WINCREATE_TOKEN }} -u https://github.com/lka/excel2zugferd/releases/download/${{steps.get_next_version.outputs.version}}/setup_excel2zugferd_x6432_${{steps.get_next_version.outputs.version}}.0.msi -v ${{steps.get_next_version.outputs.version}}.0 Lka.Excel2ZUGFeRD
+            .\wingetcreate.exe update --submit -t ${{ secrets.GITHUB_TOKEN }} -u https://github.com/lka/excel2zugferd/releases/download/${{steps.get_next_version.outputs.version}}/setup_excel2zugferd_x6432_${{steps.get_next_version.outputs.version}}.0.msi -v ${{steps.get_next_version.outputs.version}}.0 Lka.Excel2ZUGFeRD
       shell: pwsh
   
