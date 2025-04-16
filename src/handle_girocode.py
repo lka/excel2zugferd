@@ -1,19 +1,20 @@
 """
 Module handle_girocode
 """
+
 import qrcode
 
 
 # replace german umlauts
 def uml2ascii(str):
     uml_dict = {
-        'Ä': 'Ae',
-        'ä': 'ae',
-        'Ö': 'Oe',
-        'ö': 'oe',
-        'Ü': 'Ue',
-        'ü': 'ue',
-        'ß': 'ss',
+        "Ä": "Ae",
+        "ä": "ae",
+        "Ö": "Oe",
+        "ö": "oe",
+        "Ü": "Ue",
+        "ü": "ue",
+        "ß": "ss",
     }
 
     for u in uml_dict.keys():
@@ -31,8 +32,7 @@ class Handle_Girocode:
     Class Handle_Girocode
     """
 
-    def __init__(self, bic: str, iban: str, receiver: str,
-                 verbose: bool = False):
+    def __init__(self, bic: str, iban: str, receiver: str, verbose: bool = False):
         self._check_bic(bic)
         self.bic = bic[:11]
         self._check_iban(iban)
@@ -45,30 +45,36 @@ class Handle_Girocode:
     def _check_bic(self, bic: str) -> None:
         """check bic for str and length, raise ValueError if faulty"""
         if not (isinstance(bic, (str)) and len(bic) > 0):
-            raise ValueError(f"parameter BIC as string \
-expected but got {bic}")
+            raise ValueError(
+                f"parameter BIC as string \
+expected but got {bic}"
+            )
 
     def _check_iban(self, iban: str) -> None:
         """check iban for str and length, raise ValueError if faulty"""
         if not (isinstance(iban, (str)) and len(iban) > 0):
-            raise ValueError(f"parameter IBAN as string \
-expected but got {iban}")
+            raise ValueError(
+                f"parameter IBAN as string \
+expected but got {iban}"
+            )
 
     def _check_receiver(self, receiver: str) -> None:
         """check receiver for str and length, raise ValueError if faulty"""
         if not (isinstance(receiver, (str)) and len(receiver) > 0):
-            raise ValueError(f"parameter receiver as string \
-expected but got {receiver}")
+            raise ValueError(
+                f"parameter receiver as string \
+expected but got {receiver}"
+            )
 
     def girocodegen(self, amount: float, purpose: str):
         """generate qrcode"""
         # first line is static
-        qrdata = 'BCD\n001\n2\nSCT\n'
-        qrdata += self.bic + '\n'
-        qrdata += self.receiver + '\n'
-        qrdata += self.iban + '\n'
-        qrdata += 'EUR' + str(abs(amount)) + '\n'
-        qrdata += '\n\n' + uml2ascii(purpose)[:140] + '\n'
+        qrdata = "BCD\n001\n2\nSCT\n"
+        qrdata += self.bic + "\n"
+        qrdata += self.receiver + "\n"
+        qrdata += self.iban + "\n"
+        qrdata += "EUR" + str(abs(amount)) + "\n"
+        qrdata += "\n\n" + uml2ascii(purpose)[:140] + "\n"
 
         if self.verbose:
             self.qrdata = qrdata

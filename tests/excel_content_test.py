@@ -131,7 +131,7 @@ von Hrn. F",
             "h",
             "75,00 €",
             "37,50 €",
-        ]
+        ],
     ]
 )
 
@@ -153,8 +153,7 @@ class TestExcelContent(TestCase):
         expected = ["Tabelle1", "Rechnung2", "Rechnung für Kleinunternehmen"]
         retval = self.xlsx.read_sheet_list()
         # print (retval)
-        self.assertEqual(retval, expected,
-                         "Excel File should contain expected sheets")
+        self.assertEqual(retval, expected, "Excel File should contain expected sheets")
 
     def test_read_sheet(self):
         """
@@ -163,8 +162,7 @@ class TestExcelContent(TestCase):
         self.xlsx.read_sheet("Rechnung2")
         # print(retval)
         if self.xlsx and self.xlsx.daten is not None:
-            self.assertGreater(len(self.xlsx.daten), 0,
-                               "Should contain any content")
+            self.assertGreater(len(self.xlsx.daten), 0, "Should contain any content")
 
     def test_get_invoice_number(self):
         """Lies die Rechnungsnummer aus dem Excel Sheet aus"""
@@ -172,8 +170,7 @@ class TestExcelContent(TestCase):
         expected = 20240001
         retval = self.xlsx.get_invoice_number()
         # print(retval)
-        self.assertEqual(retval[list(retval.keys())[0]], expected,
-                         "should be equal")
+        self.assertEqual(retval[list(retval.keys())[0]], expected, "should be equal")
 
     def test_get_invoice_number_at_spalte_zeile(self):
         """Lies die Rechnungsnummer aus dem Excel Sheet aus"""
@@ -181,8 +178,7 @@ class TestExcelContent(TestCase):
         expected = 20240001
         retval = self.xlsx.get_invoice_number(spalte="B", zeile="7")
         # print(retval)
-        self.assertEqual(retval[list(retval.keys())[0]], expected,
-                         "should be equal")
+        self.assertEqual(retval[list(retval.keys())[0]], expected, "should be equal")
 
     def test_get_invoice_date_found(self):
         """Lies das Rechnungsdatum aus dem Excel Sheet aus"""
@@ -190,8 +186,7 @@ class TestExcelContent(TestCase):
         expected = datetime(2024, 1, 30, 0, 0)
         retval = self.xlsx.get_invoice_date()
         print(retval)
-        self.assertEqual(retval[list(retval.keys())[0]], expected,
-                         "should be equal")
+        self.assertEqual(retval[list(retval.keys())[0]], expected, "should be equal")
 
     def test_get_invoice_date_not_found(self):
         """Lies das Rechnungsdatum aus dem Excel Sheet aus"""
@@ -200,8 +195,7 @@ class TestExcelContent(TestCase):
         expected = datetime.combine(today.date(), time.min)
         retval = self.xlsx.get_invoice_date(spalte="C")
         print(retval)
-        self.assertEqual(retval[list(retval.keys())[0]], expected,
-                         "should be equal")
+        self.assertEqual(retval[list(retval.keys())[0]], expected, "should be equal")
 
     def test_get_invoice_date_not_found_with_zeile(self):
         """Lies das Rechnungsdatum aus dem Excel Sheet aus"""
@@ -213,11 +207,10 @@ class TestExcelContent(TestCase):
         try:
             retval = self.xlsx.get_invoice_date(spalte="B", zeile="8")
         except ValueError:
-            self.fail('raised ValueError unexpectedly!')
+            self.fail("raised ValueError unexpectedly!")
 
         print(retval)
-        self.assertEqual(retval[list(retval.keys())[0]], expected,
-                         "should be equal")
+        self.assertEqual(retval[list(retval.keys())[0]], expected, "should be equal")
 
     def test_get_address_of_customer(self):
         """
@@ -239,8 +232,9 @@ class TestExcelContent(TestCase):
         self.xlsx.read_sheet("Rechnung2")
         expected = ADDRESS_EXPECTED
         customer = Kunde()
-        self.xlsx._search_anschrift("A", None, "An:", customer=customer)\
-            # pylint: disable=protected-access
+        self.xlsx._search_anschrift(
+            "A", None, "An:", customer=customer
+        )  # pylint: disable=protected-access
         # print(customer.anschrift)
         self.assertEqual(customer.anschrift, expected, MSG)
 
@@ -252,8 +246,9 @@ class TestExcelContent(TestCase):
         self.xlsx.read_sheet("Rechnung2")
         expected = ADDRESS_EXPECTED
         customer = Kunde()
-        self.xlsx._search_anschrift("A", "2", "An:", customer=customer)\
-            # pylint: disable=protected-access
+        self.xlsx._search_anschrift(
+            "A", "2", "An:", customer=customer
+        )  # pylint: disable=protected-access
         # print(customer.anschrift)
         self.assertEqual(customer.anschrift, expected, MSG)
 
@@ -266,20 +261,19 @@ class TestExcelContent(TestCase):
         exp_arr = expected.splitlines()
         MSG = "should be equal"
         customer = Kunde()
-        self.xlsx._search_anschrift("A", None, "An:", customer=customer)\
-            # pylint: disable=protected-access
+        self.xlsx._search_anschrift(
+            "A", None, "An:", customer=customer
+        )  # pylint: disable=protected-access
         # print(value)
         self.assertEqual(customer.anschrift, expected, MSG)
         # print(repr(kunde))
         self.assertEqual(customer.betriebsbezeichnung, exp_arr[0], MSG)
         self.assertEqual(customer.name, exp_arr[1], MSG)
-        self.assertEqual(customer.strasse, exp_arr[2].split(' ')[0],
-                         MSG)
-        self.assertEqual(customer.hausnummer,
-                         exp_arr[2].split(' ')[1], MSG)
-        self.assertEqual(customer.plz, exp_arr[3].split(' ')[0], MSG)
-        self.assertEqual(customer.ort, exp_arr[3].split(' ')[1], MSG)
-        self.assertEqual(customer.landeskennz, 'DE', MSG)
+        self.assertEqual(customer.strasse, exp_arr[2].split(" ")[0], MSG)
+        self.assertEqual(customer.hausnummer, exp_arr[2].split(" ")[1], MSG)
+        self.assertEqual(customer.plz, exp_arr[3].split(" ")[0], MSG)
+        self.assertEqual(customer.ort, exp_arr[3].split(" ")[1], MSG)
+        self.assertEqual(customer.landeskennz, "DE", MSG)
 
     def test__get_index_of_nan(self):
         """
@@ -290,10 +284,9 @@ class TestExcelContent(TestCase):
         if self.xlsx.daten is not None:
             an = self.xlsx.daten["A"]
             fromIdx = self.xlsx.daten.index[an == "An:"].tolist()[0]  # + 1
-            nan_idx = self.xlsx\
-                ._get_index_of_nan(  # pylint: disable=protected-access
-                    an
-                )
+            nan_idx = self.xlsx._get_index_of_nan(  # pylint: disable=protected-access
+                an
+            )
             value = "\n".join(an[fromIdx:nan_idx])
             # print(value)
             self.assertEqual(value, expected, "should be equal")
@@ -309,7 +302,7 @@ class TestExcelContent(TestCase):
         MSG = "should be equal"
         # print(value)
         # self.assertEqual(value.ndim, expected.ndim, "should be equal")
-        self.assertTrue(np.array_equiv(value['daten'], expected), MSG)
+        self.assertTrue(np.array_equiv(value["daten"], expected), MSG)
         # type: ignore
 
     def test__split_dataframe_by_search_value(self):
@@ -318,17 +311,15 @@ class TestExcelContent(TestCase):
         self.xlsx.read_sheet("Rechnung2")
         expected = POSITIONS_EXPECTED
         value = self.xlsx._split_dataframe_by_search_value(
-                "A", "Pos."
-            )  # pylint: disable=protected-access
+            "A", "Pos."
+        )  # pylint: disable=protected-access
         # ['daten']
         myPdf = pdf.Pdf()
         retval = myPdf._change_values_to_german(value)
         test = np.r_[
-            [
-                ["Pos.", "Datum", "Tätigkeit", "Anzahl", "Typ", "Preis",
-                 "Summe"]
-            ],
-            retval.astype(str).values]
+            [["Pos.", "Datum", "Tätigkeit", "Anzahl", "Typ", "Preis", "Summe"]],
+            retval.astype(str).values,
+        ]
 
         # self.assertEqual(value.ndim, expected.ndim, "should be equal")
         self.assertTrue(np.array_equiv(test, expected), "should be equal")
@@ -338,29 +329,21 @@ class TestExcelContent(TestCase):
         """soll einen ValueError liefern"""
         self.xlsx.read_sheet("Rechnung2")
         with self.assertRaises(ValueError):
-            self.xlsx._split_dataframe_by_search_value(
-                "Daneben", "Pos."
-            )
+            self.xlsx._split_dataframe_by_search_value("Daneben", "Pos.")
         try:
-            self.xlsx._split_dataframe_by_search_value(
-                "A", "Pos."
-            )
+            self.xlsx._split_dataframe_by_search_value("A", "Pos.")
         except ValueError:
-            self.fail('raised ValueError unexpectedly!')
+            self.fail("raised ValueError unexpectedly!")
 
     def test__split_dataframe_by_search_value_unknown_search(self):
         """soll einen ValueError liefern"""
         self.xlsx.read_sheet("Rechnung2")
         with self.assertRaises(ValueError):
-            self.xlsx._split_dataframe_by_search_value(
-                "A", "Falscher Suchstring"
-            )
+            self.xlsx._split_dataframe_by_search_value("A", "Falscher Suchstring")
         try:
-            self.xlsx._split_dataframe_by_search_value(
-                "A", "Pos."
-            )
+            self.xlsx._split_dataframe_by_search_value("A", "Pos.")
         except ValueError:
-            self.fail('raised ValueError unexpectedly!')
+            self.fail("raised ValueError unexpectedly!")
 
     def test_get_invoice_sums(self):
         """Lies die Summen aus dem Excel Sheet"""
@@ -378,12 +361,10 @@ class TestExcelContent(TestCase):
         with decimal.localcontext() as ctx:
             # locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')
             ctx.rounding = decimal.ROUND_HALF_UP
-            _value = decimal.Decimal(self.xlsx
-                                     .search_cell_right_of(sums,
-                                                           'Bruttobetrag')
-                                     + 0.000000001)\
-                .quantize(decimal.Decimal('1.00', ctx))
-            _brutto = locale.format_string('%0.2f', _value, grouping=True)
+            _value = decimal.Decimal(
+                self.xlsx.search_cell_right_of(sums, "Bruttobetrag") + 0.000000001
+            ).quantize(decimal.Decimal("1.00", ctx))
+            _brutto = locale.format_string("%0.2f", _value, grouping=True)
         # print(retval)
         self.assertEqual(_brutto, expected, "should be equal")
 
@@ -393,11 +374,9 @@ class TestExcelContent(TestCase):
         self.xlsx.read_sheet("Rechnung2")
         # print(retval)
         with self.assertRaises(ValueError):
-            float(self.xlsx
-                  .search_cell_right_of(sums, 'Bruttobeträgli'))
+            float(self.xlsx.search_cell_right_of(sums, "Bruttobeträgli"))
         try:
-            float(self.xlsx
-                  .search_cell_right_of(sums, 'Bruttobetrag'))
+            float(self.xlsx.search_cell_right_of(sums, "Bruttobetrag"))
         except ValueError:
             self.fail("raised ValueError unexpectedly!")
 
@@ -407,12 +386,10 @@ class TestExcelContent(TestCase):
         self.xlsx.read_sheet("Rechnung2")
         # print(retval)
         with self.assertRaises(ValueError):
-            float(self.xlsx
-                  .search_cell_right_of(sums, 'Bruttobetrag'))
+            float(self.xlsx.search_cell_right_of(sums, "Bruttobetrag"))
         sums = "F"
         try:
-            float(self.xlsx
-                  .search_cell_right_of(sums, 'Bruttobetrag'))
+            float(self.xlsx.search_cell_right_of(sums, "Bruttobetrag"))
         except ValueError:
             self.fail("raised ValueError unexpectedly!")
 
@@ -422,16 +399,16 @@ class TestExcelContent(TestCase):
         """
         myPdf = pdf.Pdf()
         lenArr = myPdf.get_maxlengths(
-            pd.DataFrame(data=POSITIONS_EXPECTED[1:],
-                         columns=POSITIONS_EXPECTED[0]))
-        MSG = 'should be equal'
+            pd.DataFrame(data=POSITIONS_EXPECTED[1:], columns=POSITIONS_EXPECTED[0])
+        )
+        MSG = "should be equal"
         self.assertEqual(lenArr, [4, 10, 138, 6, 7, 7, 8], MSG)
 
     def test_mapReducePositions(self):
         """
         Test of remapping and reducing positions in DataFrame
         """
-        expected_columns = ['B', 'D', 'E', 'F',  'I', 'G', 'H']
+        expected_columns = ["B", "D", "E", "F", "I", "G", "H"]
         expected = pd.DataFrame(
             data=(
                 [
@@ -444,14 +421,22 @@ class TestExcelContent(TestCase):
                     "22",
                 ],
             ),
-            columns=["Pos.", "Datum", "Tätigkeit", "Anzahl", "Typ",
-                     "Preis", "Summe"],
-            index=[2]
-            )
+            columns=["Pos.", "Datum", "Tätigkeit", "Anzahl", "Typ", "Preis", "Summe"],
+            index=[2],
+        )
         entered = pd.DataFrame(
             data=(
-                ["unusable", "Pos.", "unusable", "Datum", "Tätigkeit",
-                 "Anzahl", "Preis", "Summe", "Typ"],
+                [
+                    "unusable",
+                    "Pos.",
+                    "unusable",
+                    "Datum",
+                    "Tätigkeit",
+                    "Anzahl",
+                    "Preis",
+                    "Summe",
+                    "Typ",
+                ],
                 [
                     "NaN",
                     "1",
@@ -464,15 +449,15 @@ class TestExcelContent(TestCase):
                     "10 Min.",
                 ],
             ),
-            columns=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
-            index=[1, 2]
-            )
+            columns=["A", "B", "C", "D", "E", "F", "G", "H", "I"],
+            index=[1, 2],
+        )
         entered = entered.reindex([1, 2, 3])
-        print('entered:\n', entered)
+        print("entered:\n", entered)
         retVal = self.xlsx.mapReducePositions(entered, expected_columns)
-        print('retVal:\n', retVal)
-        print('expected:\n', expected)
-        self.assertTrue(expected.equals(retVal), 'should be True')
+        print("retVal:\n", retVal)
+        print("expected:\n", expected)
+        self.assertTrue(expected.equals(retVal), "should be True")
 
 
 # if __name__ == "__main__":

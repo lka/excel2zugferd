@@ -7,32 +7,32 @@ from src.lieferant import Lieferant
 
 
 STAMMDATEN = {
-                    "Betriebsbezeichnung": "Max Mustermann - Software",
-                    "Ansprechpartner": "Max Mustermann",
-                    "Abteilung": "Softwareentwicklung",
-                    "Strasse": "Musterstr.",
-                    "Hausnummer": "17a",
-                    "PLZ": "12345",
-                    "Ort": "Musterstadt",
-                    "Bundesland": "Baden-Württemberg",
-                    "Telefon": "01234-1234567",
-                    "Email": "max@mustermann.de",
-                    "Name": "Max Mustermann",
-                    "Steuernummer": "12345/12345",
-                    "Finanzamt": "Musterstadt",
-                    "Verzeichnis": "C:/Users/xxx/Documents",
-                    "Zahlungsziel": "14",
-                    "Steuersatz": "7.5",
-                    "Kontoinhaber": "Max Mustermann",
-                    "IBAN": "DEXX YYYY ZZZZ AAAA BBBB CC",
-                    "BIC": "XYZBCAY",
-                    "Name": "Max Mustermann",
-                    "Steuernummer": "12345/12345",
-                    "Finanzamt": "Musterstadt",
-                    "Verzeichnis": "C:/Users/xxx/Documents",
-                    "Zahlungsziel": "14",
-                    "ZugFeRD": "Ja"
-                }
+    "Betriebsbezeichnung": "Max Mustermann - Software",
+    "Ansprechpartner": "Max Mustermann",
+    "Abteilung": "Softwareentwicklung",
+    "Strasse": "Musterstr.",
+    "Hausnummer": "17a",
+    "PLZ": "12345",
+    "Ort": "Musterstadt",
+    "Bundesland": "Baden-Württemberg",
+    "Telefon": "01234-1234567",
+    "Email": "max@mustermann.de",
+    "Name": "Max Mustermann",
+    "Steuernummer": "12345/12345",
+    "Finanzamt": "Musterstadt",
+    "Verzeichnis": "C:/Users/xxx/Documents",
+    "Zahlungsziel": "14",
+    "Steuersatz": "7.5",
+    "Kontoinhaber": "Max Mustermann",
+    "IBAN": "DEXX YYYY ZZZZ AAAA BBBB CC",
+    "BIC": "XYZBCAY",
+    "Name": "Max Mustermann",
+    "Steuernummer": "12345/12345",
+    "Finanzamt": "Musterstadt",
+    "Verzeichnis": "C:/Users/xxx/Documents",
+    "Zahlungsziel": "14",
+    "ZugFeRD": "Ja",
+}
 
 
 class TestLieferant(unittest.TestCase):
@@ -43,19 +43,19 @@ class TestLieferant(unittest.TestCase):
     def test_get_anschrift_lieferant(self):
         """Tests get_anschrift of Lieferant"""
         adr = Lieferant()
-        MSG = 'should be filled'
+        MSG = "should be filled"
         BEZ = "Software AG"
-        NAME = 'Max Mustermann'
-        AN1 = 'Maximilian Mustermann'
-        ZUS = 'Berichtswesen'
-        ORT = 'Musterstadt'
-        PLZ = '12345'
-        STR = 'Musterstrasse'
-        HNR = '17a'
-        TEL = '01234 5678 456'
-        FAX = '01234 5678 457'
-        MAIL = 'mustermann@telekom.de'
-        COUNTY = 'Baden Württemberg'
+        NAME = "Max Mustermann"
+        AN1 = "Maximilian Mustermann"
+        ZUS = "Berichtswesen"
+        ORT = "Musterstadt"
+        PLZ = "12345"
+        STR = "Musterstrasse"
+        HNR = "17a"
+        TEL = "01234 5678 456"
+        FAX = "01234 5678 457"
+        MAIL = "mustermann@telekom.de"
+        COUNTY = "Baden Württemberg"
         adr.betriebsbezeichnung = BEZ
         adr.name = NAME
         adr.anschrift_line1 = AN1
@@ -67,53 +67,49 @@ class TestLieferant(unittest.TestCase):
         adr.telefon = TEL
         adr.fax = FAX
         adr.bundesland = COUNTY
-        self.assertEqual(adr.anschrift,
-                         f"{BEZ}\n{NAME}\n{STR} {HNR}\n{PLZ} {ORT}", MSG)
+        self.assertEqual(adr.anschrift, f"{BEZ}\n{NAME}\n{STR} {HNR}\n{PLZ} {ORT}", MSG)
         adr.adresszusatz = ZUS
-        self.assertEqual(adr.anschrift,
-                         f"{BEZ}\n{ZUS}\n{NAME}\n{STR} {HNR}\n{PLZ} {ORT}",
-                         MSG)
+        self.assertEqual(
+            adr.anschrift, f"{BEZ}\n{ZUS}\n{NAME}\n{STR} {HNR}\n{PLZ} {ORT}", MSG
+        )
 
     def test_get_kontakt(self):
         """Tests get_kontakt"""
         adr = Lieferant()
-        TEL = '01234 5678 456'
-        FAX = '01234 5678 457'
-        MAIL = 'mustermann@telekom.de'
+        TEL = "01234 5678 456"
+        FAX = "01234 5678 457"
+        MAIL = "mustermann@telekom.de"
         adr.telefon = TEL
         adr.email = MAIL
-        self.assertEqual(adr.kontakt,
-                         f"Tel.: {TEL}\nE-Mail: {MAIL}")
+        self.assertEqual(adr.kontakt, f"Tel.: {TEL}\nE-Mail: {MAIL}")
         adr.fax = FAX
-        self.assertEqual(adr.kontakt,
-                         f"Tel.: {TEL}\nFax: {FAX}\nE-Mail: {MAIL}")
+        self.assertEqual(adr.kontakt, f"Tel.: {TEL}\nFax: {FAX}\nE-Mail: {MAIL}")
 
     def test_get_umsatzsteuer(self):
         """Tests get_umsatzsteuer"""
         adr = Lieferant()
-        AMT = 'Finanzamt Musterstadt'
-        USTNR = '12345/12345'
+        AMT = "Finanzamt Musterstadt"
+        USTNR = "12345/12345"
         adr.steuernr = USTNR
         adr.finanzamt = AMT
-        self.assertEqual(adr.umsatzsteuer,
-                         f"Steuernummer: {USTNR}\nFinanzamt: {AMT}")
+        self.assertEqual(adr.umsatzsteuer, f"Steuernummer: {USTNR}\nFinanzamt: {AMT}")
 
     def test_get_umsatzsteuer_ID(self):
         """Tests get_umsatzsteuer with Umsatzsteuer-ID"""
         adr = Lieferant()
-        USTNR = 'DE123456789'
+        USTNR = "DE123456789"
         adr.steuerid = USTNR
-        self.assertEqual(adr.umsatzsteuer,
-                         f"Umsatzsteuer-ID: {USTNR}")
+        self.assertEqual(adr.umsatzsteuer, f"Umsatzsteuer-ID: {USTNR}")
 
     def test__fill_umsatzsteuer(self):
         """Tests _fill_umsatzsteuer with Steuernummer"""
         MSG = "should be equal"
         adr = Lieferant()
-        AMT = 'Musterstadt'
-        USTNR = '12345/12345'
-        adr._fill_umsatzsteuer({"Steuernummer": USTNR, "Finanzamt": AMT},
-                               ["Steuernummer", "Finanzamt"])
+        AMT = "Musterstadt"
+        USTNR = "12345/12345"
+        adr._fill_umsatzsteuer(
+            {"Steuernummer": USTNR, "Finanzamt": AMT}, ["Steuernummer", "Finanzamt"]
+        )
         self.assertEqual(adr.steuernr, USTNR, MSG)
         self.assertEqual(adr.finanzamt, AMT, MSG)
         self.assertIsNone(adr.steuerid)
@@ -122,9 +118,8 @@ class TestLieferant(unittest.TestCase):
         """Tests _fill_umsatzsteuer with Umsatzsteuer-ID"""
         MSG = "should be equal"
         adr = Lieferant()
-        USTNR = 'DE123456789'
-        adr._fill_umsatzsteuer({"UmsatzsteuerID": USTNR},
-                               ["UmsatzsteuerID"])
+        USTNR = "DE123456789"
+        adr._fill_umsatzsteuer({"UmsatzsteuerID": USTNR}, ["UmsatzsteuerID"])
         self.assertEqual(adr.steuerid, USTNR, MSG)
         self.assertIsNone(adr.finanzamt)
         self.assertIsNone(adr.steuernr)
@@ -133,10 +128,11 @@ class TestLieferant(unittest.TestCase):
         """Tests _fill_umsatzsteuer with Umsatzsteuer-ID"""
         MSG = "should be equal"
         adr = Lieferant()
-        AMT = 'Musterstadt'
-        USTNR = 'DE123456789'
-        adr._fill_umsatzsteuer({"UmsatzsteuerID": USTNR, "Finanzamt": AMT},
-                               ["UmsatzsteuerID", "Finanzamt"])
+        AMT = "Musterstadt"
+        USTNR = "DE123456789"
+        adr._fill_umsatzsteuer(
+            {"UmsatzsteuerID": USTNR, "Finanzamt": AMT}, ["UmsatzsteuerID", "Finanzamt"]
+        )
         self.assertEqual(adr.steuerid, USTNR, MSG)
         self.assertIsNone(adr.finanzamt)
         self.assertIsNone(adr.steuernr)
@@ -145,9 +141,7 @@ class TestLieferant(unittest.TestCase):
         """Test _fill_steuersatz with correct value"""
         MSG = "should be equal"
         adr = Lieferant()
-        daten = {
-            'Steuersatz': '19'
-        }
+        daten = {"Steuersatz": "19"}
         EXPECTED = "19.00"
         adr._fill_steuersatz(daten)
         self.assertEqual(adr.steuersatz, EXPECTED, MSG)
@@ -156,14 +150,15 @@ class TestLieferant(unittest.TestCase):
         """
         Tests that procedure fill_lieferant works
         """
-        MSG = 'Should be equal'
+        MSG = "Should be equal"
         daten = STAMMDATEN
         lieferant = Lieferant()
         lieferant.fill_lieferant(daten)
         self.assertEqual(lieferant.name, "Max Mustermann", MSG)
         self.assertEqual(lieferant.adresszusatz, "Softwareentwicklung", MSG)
-        self.assertEqual(lieferant.betriebsbezeichnung,
-                         "Max Mustermann - Software", MSG)
+        self.assertEqual(
+            lieferant.betriebsbezeichnung, "Max Mustermann - Software", MSG
+        )
         self.assertEqual(lieferant.bundesland, "Baden-Württemberg", MSG)
         self.assertEqual(lieferant.email, "max@mustermann.de", MSG)
         self.assertIsNone(lieferant.fax, MSG)
@@ -182,8 +177,8 @@ class TestLieferant(unittest.TestCase):
         Tests that wrong Anschrift in Stammdaten throws ValueError
         """
         daten = STAMMDATEN | {
-                    "Steuersatz": "19",
-                }
+            "Steuersatz": "19",
+        }
         lieferant = Lieferant()
         daten["Betriebsbezeichnung"] = None
         with self.assertRaises(ValueError):
@@ -224,8 +219,8 @@ class TestLieferant(unittest.TestCase):
         Tests that wrong Betriebsbezeichnung in Stammdaten throws ValueError
         """
         daten = STAMMDATEN | {
-                    "Steuersatz": None,
-                }
+            "Steuersatz": None,
+        }
         lieferant = Lieferant()
         daten["Betriebsbezeichnung"] = None
         with self.assertRaises(ValueError):
@@ -244,8 +239,8 @@ class TestLieferant(unittest.TestCase):
         Tests that wrong Betriebsbezeichnung in Stammdaten throws ValueError
         """
         daten = STAMMDATEN | {
-                    "Steuersatz": None,
-                }
+            "Steuersatz": None,
+        }
         lieferant = Lieferant()
         expected = "Software AG"
         MSG = "should be equal"
@@ -269,8 +264,8 @@ class TestLieferant(unittest.TestCase):
         Tests that wrong Umsatzsteuer in Stammdaten throws ValueError
         """
         daten = STAMMDATEN | {
-                    "Steuersatz": None,
-                }
+            "Steuersatz": None,
+        }
         lieferant = Lieferant()
         daten["Finanzamt"] = None
         with self.assertRaises(ValueError):
@@ -296,9 +291,9 @@ class TestLieferant(unittest.TestCase):
         throws no ValueError
         """
         daten = STAMMDATEN | {
-                    "Steuersatz": "",
-                    "Zahlungsziel": "",
-                }
+            "Steuersatz": "",
+            "Zahlungsziel": "",
+        }
         lieferant = Lieferant()
         try:
             lieferant.fill_lieferant(daten)

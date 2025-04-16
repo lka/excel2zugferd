@@ -17,7 +17,7 @@ def _setNoneIfEmpty(str_in: str) -> str | None:
     if str_in is None:
         return None
     trimmed = str_in.strip()
-    trimmed = ' '.join(trimmed.split())
+    trimmed = " ".join(trimmed.split())
     return trimmed if trimmed != "" else None
 
 

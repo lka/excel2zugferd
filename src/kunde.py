@@ -39,23 +39,23 @@ class Kunde(Adresse):
             raise ValueError(ANSCHRIFT_ERROR)
 
     def _fill_postfach(self, postfach):
-        sub = src._normalize(postfach.rsplit(' ', 1))
+        sub = src._normalize(postfach.rsplit(" ", 1))
         if len(sub) == 2:
             self.postfach = sub[1]
         else:
             raise ANSCHRIFT_ERROR
 
     def _fill_str_hnr(self, strasse):
-        if 'Postfach' in strasse:
+        if "Postfach" in strasse:
             self._fill_postfach(strasse)
         else:
-            sub = src._normalize(strasse.rsplit(' ', 1))
+            sub = src._normalize(strasse.rsplit(" ", 1))
             self.strasse = sub[0]
             if len(sub) == 2:
                 self.hausnummer = sub[1]
 
     def _fill_plz_ort(self, ort):
-        sub = src._normalize(ort.split(' ', 1))
+        sub = src._normalize(ort.split(" ", 1))
         self.plz = sub[0]
         if len(sub) == 2:
             self.ort = sub[1]

@@ -8,30 +8,35 @@ import random
 import string
 
 STAMMDATEN = {
-                    "Kontoinhaber": "Max Mustermann",
-                    "IBAN": "DEXX YYYY ZZZZ AAAA BBBB CC",
-                    "BIC": "XYZBCAY",
-             }
+    "Kontoinhaber": "Max Mustermann",
+    "IBAN": "DEXX YYYY ZZZZ AAAA BBBB CC",
+    "BIC": "XYZBCAY",
+}
 
 
 class TestKonto(unittest.TestCase):
     """
     Test Class for Class Konto
     """
+
     def get_properties(self, obj: object) -> list:
         """
         find all properties of class
         """
         properties = dir(obj)
-        filtered = [prop for prop in properties if not prop.startswith('_')
-                    and prop not in ['fill_konto', 'oneliner', 'multiliner']]
+        filtered = [
+            prop
+            for prop in properties
+            if not prop.startswith("_")
+            and prop not in ["fill_konto", "oneliner", "multiliner"]
+        ]
         print("properties without __init__:\n", filtered)
         return filtered
 
     def randomword(self, length: int) -> str:
-        """ generate random word with length"""
+        """generate random word with length"""
         letters = string.ascii_lowercase
-        return ''.join(random.choice(letters) for i in range(length))
+        return "".join(random.choice(letters) for i in range(length))
 
     def test_forNoneOnInit(self):
         """
@@ -39,11 +44,12 @@ class TestKonto(unittest.TestCase):
         after creation of Object
         """
         obj = Konto()
-        MSG = 'should be None on init'
+        MSG = "should be None on init"
         props = self.get_properties(obj)
         for prop in props:
-            self.assertIsNone(getattr(obj, prop, 'Attribute not found'),
-                              f"{prop} {MSG}")
+            self.assertIsNone(
+                getattr(obj, prop, "Attribute not found"), f"{prop} {MSG}"
+            )
 
     def test_forReprHasAllProperties(self):
         """
@@ -65,19 +71,20 @@ class TestKonto(unittest.TestCase):
         and gives back correct element (getter and setter)
         """
         obj = Konto()
-        MSG = 'should be filled'
+        MSG = "should be filled"
         props = self.get_properties(obj)
         for prop in props:
             value = self.randomword(30)
             setattr(obj, prop, value)
-            self.assertEqual(getattr(obj, prop, 'Attribute not found'),
-                             value, f"{prop} {MSG}")
+            self.assertEqual(
+                getattr(obj, prop, "Attribute not found"), value, f"{prop} {MSG}"
+            )
 
     def test_fill_konto(self):
         """
         Tests that procedure fill_konto works
         """
-        MSG = 'Should be equal'
+        MSG = "Should be equal"
         daten = STAMMDATEN
         konto = Konto()
         konto.fill_konto(daten, daten.keys())

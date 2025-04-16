@@ -1,6 +1,7 @@
 """
 Modul Konto
 """
+
 from src.constants import KONTO_ERROR
 import src
 
@@ -9,6 +10,7 @@ class Konto(object):
     """
     Class for Girokonto
     """
+
     def __init__(self) -> None:
         self._name = None
         self._iban = None
@@ -44,11 +46,11 @@ class Konto(object):
 
     def oneliner(self) -> str:
         """get Konto Information as One Line"""
-        return self.name + ', IBAN: ' + self.iban + ', BIC: ' + self.bic
+        return self.name + ", IBAN: " + self.iban + ", BIC: " + self.bic
 
     def multiliner(self) -> str:
         """get Konto Information as Multi Lines"""
-        return self.name + '\nIBAN: ' + self.iban + '\nBIC: ' + self.bic
+        return self.name + "\nIBAN: " + self.iban + "\nBIC: " + self.bic
 
     # def _fill_iban_bic(self, key: str, value: str) -> None:
     #     if len(value) == 0:

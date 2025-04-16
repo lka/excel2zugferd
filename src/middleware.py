@@ -1,6 +1,7 @@
 """
 Modul Middleware
 """
+
 from tkinter import messagebox, filedialog
 from pathlib import Path
 import logging
@@ -17,10 +18,11 @@ from src.windowseventlog import WindowsEventLogHandler
 import src
 
 
-class Middleware():
+class Middleware:
     """
     holds class containers, data containers and functions to handle them
     """
+
     def __init__(self):
         self.ini_file: IniFile = None
         self.invoiceCollection: InvoiceCollection = InvoiceCollection()
@@ -32,13 +34,15 @@ class Middleware():
         self.initLogger()
 
     def initLogger(self) -> None:
-        myAppName = 'Excel2ZUGFeRD'
+        myAppName = "Excel2ZUGFeRD"
         self.logger = logging.getLogger(myAppName)
         self.logger.setLevel(logging.DEBUG)
 
         event_log_handler = WindowsEventLogHandler(appname=myAppName)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s \
-- %(message)s')
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s \
+- %(message)s"
+        )
         event_log_handler.setFormatter(formatter)
         self.logger.addHandler(event_log_handler)
 
@@ -90,7 +94,7 @@ class Middleware():
             str | None: None if File has no pdf extension
         """
         parts = os.path.splitext(fn)
-        if parts[1].lower() == '.pdf':
+        if parts[1].lower() == ".pdf":
             return fn
         return None
 
@@ -148,7 +152,7 @@ class Middleware():
 
     def check_args(self, args: list) -> bool:
         """check arguments from main call\n
-           return True if called without arguments
+        return True if called without arguments
         """
         length = len(args)
         if length == 1:
@@ -160,8 +164,7 @@ class Middleware():
             sheetnr = args[1]
             filename = self.check_filenames(args)
             if filename:
-                self.quiet_workflow(filename, abs(int(sheetnr)),
-                                    self.pdf_filename)
+                self.quiet_workflow(filename, abs(int(sheetnr)), self.pdf_filename)
                 return True
         self._usage()
         return True
@@ -194,9 +197,9 @@ class Middleware():
         if infile:
             fn = infile + ".pdf"
             # print(contentini_file["Verzeichnis"], fn)
-            tmpfn = os.path.join(Path(self.invoiceCollection
-                                      .management.directory)
-                                 .absolute(), fn)
+            tmpfn = os.path.join(
+                Path(self.invoiceCollection.management.directory).absolute(), fn
+            )
             outfile = self.pdf.uniquify(tmpfn)
         #        msg = f"Die Datei {outfile} wurde vorgesehen"
         #        messagebox.showinfo("Debug-Information", msg)
@@ -206,11 +209,11 @@ class Middleware():
         """return True on failure"""
         contentini_file = self.ini_file.read_ini_file()
         # print("_getStammdatenToInvoiceCollection:\n", contentini_file)
-        return self._try_to_fill_stammdaten(self.invoiceCollection,
-                                            contentini_file)
+        return self._try_to_fill_stammdaten(self.invoiceCollection, contentini_file)
 
-    def _try_to_fill_stammdaten(self, invoiceCollection: InvoiceCollection,
-                                stammdaten: dict) -> bool:
+    def _try_to_fill_stammdaten(
+        self, invoiceCollection: InvoiceCollection, stammdaten: dict
+    ) -> bool:
         """returns True if error in stammdaten occurs"""
         try:
             invoiceCollection.set_stammdaten(stammdaten)
@@ -223,12 +226,14 @@ class Middleware():
         """return True on failure"""
         if self.excel_file is not None:
             self.excel_file.read_sheet(sheet_name)
-            return self._try_to_fill_excel_daten(self.invoiceCollection,
-                                                 self.excel_file)
+            return self._try_to_fill_excel_daten(
+                self.invoiceCollection, self.excel_file
+            )
         return False
 
-    def _try_to_fill_excel_daten(self, invoiceCollection: InvoiceCollection,
-                                 daten: ExcelContent) -> bool:
+    def _try_to_fill_excel_daten(
+        self, invoiceCollection: InvoiceCollection, daten: ExcelContent
+    ) -> bool:
         """returns True if error in stammdaten occurs"""
         try:
             invoiceCollection.set_daten(daten)
@@ -243,8 +248,7 @@ class Middleware():
         try:
             self.pdf = Pdf(logo_fn if Path(logo_fn).exists() else None)
         except ValueError as ex:
-            self._error_msg("Fehler in den Stammdaten (PDF):",
-                            ex.args[0])
+            self._error_msg("Fehler in den Stammdaten (PDF):", ex.args[0])
             return True
         return False
 
@@ -262,8 +266,7 @@ class Middleware():
         try:
             self.zugferd = ZugFeRD(self.invoiceCollection)
         except Exception as ex:
-            self._error_msg("ZUGFeRD kann nicht erstellt werden:",
-                            ', '.join(ex.args))
+            self._error_msg("ZUGFeRD kann nicht erstellt werden:", ", ".join(ex.args))
             return True
         # print('create_ZugFeRD:235', repr(self.invoiceCollection))
         return False
@@ -286,8 +289,11 @@ class Middleware():
         try:
             self.zugferd.add_xml2pdf(file_name, outfile)
         except OSError as ex:
-            self._error_msg("IO-Fehler:", f"Konnte {outfile} aus \
-{file_name} nicht erstellen, da ein Problem aufgetreten ist.\n{ex}")
+            self._error_msg(
+                "IO-Fehler:",
+                f"Konnte {outfile} aus \
+{file_name} nicht erstellen, da ein Problem aufgetreten ist.\n{ex}",
+            )
             return True
         # msg = f"Die Datei {fileName} wurde erstellt"
         # messagebox.showinfo("Debug-Information", msg)
@@ -305,17 +311,18 @@ class Middleware():
             self.pdf.output(file_name)
             return None
 
-    def _add_xml_with_perhaps_modify_outfile(self, file_name: str,
-                                             outfile: str) -> bool:
+    def _add_xml_with_perhaps_modify_outfile(
+        self, file_name: str, outfile: str
+    ) -> bool:
         modifiedFn = self._populate_temp_file(file_name)
         if modifiedFn is not None:
-            outfile = self.pdf.uniquify(modifiedFn, '_ZugFeRD')
+            outfile = self.pdf.uniquify(modifiedFn, "_ZugFeRD")
         if self._add_xml(file_name, outfile):
             return True
         if modifiedFn is not None:
             self._success_message(outfile)
             return True  # just to permit success_message
-                         #  with wrong filename # noqa 116
+            #  with wrong filename # noqa 116
         return False
 
     def _create_and_add_xml(self, fn: str, outfile: str) -> bool:
@@ -326,16 +333,17 @@ class Middleware():
             return True
         try:
             # tmp = tempfile.gettempdir()
-            with tempfile.TemporaryDirectory(ignore_cleanup_errors=True)\
-                 as tmp:
+            with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
                 file_name = os.path.join(
                     Path(tmp), fn
                 )  # doesn't matter, cannot exist twice
-                return self._add_xml_with_perhaps_modify_outfile(file_name,
-                                                                 outfile)
+                return self._add_xml_with_perhaps_modify_outfile(file_name, outfile)
         except OSError as ex:
-            self._error_msg("IO-Fehler:", f"Konnte {file_name} nicht \
-erstellen, da ein Problem aufgetreten ist.\n{ex}")
+            self._error_msg(
+                "IO-Fehler:",
+                f"Konnte {file_name} nicht \
+erstellen, da ein Problem aufgetreten ist.\n{ex}",
+            )
             return True
         return False
 
@@ -358,8 +366,9 @@ erstellen, da ein Problem aufgetreten ist.\n{ex}")
         self.invoiceCollection.management.directory = os.path.dirname(filename)
         # self.setStammdatenToInvoiceCollection()
 
-    def quiet_workflow(self, filename: str, sheetnr: int,
-                       pdf_filename: str = None) -> None:
+    def quiet_workflow(
+        self, filename: str, sheetnr: int, pdf_filename: str = None
+    ) -> None:
         if self.ini_file.exists_ini_file() is None:
             self.ini_file.create_ini_file(self.ini_file.set_default_content())
         self.setStammdatenToInvoiceCollection()

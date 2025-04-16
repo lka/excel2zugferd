@@ -12,6 +12,7 @@ class TestHandlePdf(unittest.TestCase):
     """
     Test Class for handling pdf
     """
+
     def setUp(self) -> None:
         self.pdf = handle_pdf.Pdf()
         return super().setUp()
@@ -43,7 +44,7 @@ class TestHandlePdf(unittest.TestCase):
             Path(fn).touch()
         except OSError:
             pass
-        retval = self.pdf.uniquify(fn, '_E')
+        retval = self.pdf.uniquify(fn, "_E")
         self.assertEqual(retval, expected, "should be equal")
         try:
             os.remove(fn)
@@ -61,12 +62,13 @@ class TestHandlePdf(unittest.TestCase):
             Path(fn).touch()
         except OSError:
             pass
-        retval = self.pdf.uniquify(fn, '_E')
+        retval = self.pdf.uniquify(fn, "_E")
         self.assertEqual(retval, expected, "should be equal")
         try:
             os.remove(fn)
         except OSError:
             pass
+
 
 # if __name__ == "__main__":
 #     unittest.main()

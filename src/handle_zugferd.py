@@ -1,6 +1,7 @@
 """
 Module handle_zugferd
 """
+
 # import re
 import numpy as np
 import pandas as pd
@@ -16,6 +17,7 @@ from drafthorse.models.tradelines import LineItem
 from drafthorse.models.payment import PaymentTerms
 from drafthorse.models.party import TaxRegistration
 from drafthorse.pdf import attach_xml
+
 # from drafthorse.models import NS_QDT
 
 from src.kunde import Kunde
@@ -45,8 +47,9 @@ class ZugFeRD:
     def add_rgnr(self, rgnr: str, datum: datetime):
         """Set Rechnungsnummer to id in header"""
         self.doc.header.id = str(rgnr)
-        self.doc.header.issue_date_time = self.rg_date.date()\
-            if datum is None else datum.date()
+        self.doc.header.issue_date_time = (
+            self.rg_date.date() if datum is None else datum.date()
+        )
 
     def add_note(self, text):
         """Add note to notes"""
@@ -58,8 +61,7 @@ class ZugFeRD:
     def add_bundesland(self, bundesland):
         """Add Bundesland"""
         if bundesland:
-            self.doc.trade.agreement.seller\
-                .address.country_subdivision = bundesland
+            self.doc.trade.agreement.seller.address.country_subdivision = bundesland
 
     def add_zahlungsempfaenger(self, text):
         """set Zahlungsempfaenger to correct value"""
@@ -67,18 +69,19 @@ class ZugFeRD:
             "58"  # SEPA Überweisung else "ZZZ"
         )
         self.doc.trade.settlement.payment_means.information.add(
-            'Zahlung per SEPA Überweisung.'
-            )
+            "Zahlung per SEPA Überweisung."
+        )
         arr = text.split("\n")
         # self.doc.trade.settlement.payee.name = arr[0] # BR-17
-        self.doc.trade.settlement.payment_means\
-            .payee_account.account_name = arr[0]
+        self.doc.trade.settlement.payment_means.payee_account.account_name = arr[0]
         if len(arr) > 1:
-            self.doc.trade.settlement.payment_means.payee_account\
-                .iban = arr[1].split(" ", 1)[1]
+            self.doc.trade.settlement.payment_means.payee_account.iban = arr[1].split(
+                " ", 1
+            )[1]
         if len(arr) == 3:
-            self.doc.trade.settlement.payment_means.payee_institution\
-                .bic = arr[2].split(" ", 1)[1]
+            self.doc.trade.settlement.payment_means.payee_institution.bic = arr[
+                2
+            ].split(" ", 1)[1]
 
     def _add_buyer_from_text(self, text: str) -> None:
         arr = text.split("\n")
@@ -89,41 +92,35 @@ class ZugFeRD:
         if len(arr) > 3:
             self.doc.trade.agreement.buyer.address.line_one = arr[-2]
         if len(arr) > 1:
-            self.doc.trade.agreement.buyer.address\
-                .postcode = arr[-1].split(" ", 1)[0]
-            self.doc.trade.agreement.buyer.address\
-                .city_name = arr[-1].split(" ", 1)[1]
+            self.doc.trade.agreement.buyer.address.postcode = arr[-1].split(" ", 1)[0]
+            self.doc.trade.agreement.buyer.address.city_name = arr[-1].split(" ", 1)[1]
 
     def _add_str_hnr(self, buyer: Kunde) -> None:
         if buyer.postfach is not None:  # BT-50
-            self.doc.trade.agreement.buyer.address.line_one =\
-                'Postfach: ' + buyer.postfach
+            self.doc.trade.agreement.buyer.address.line_one = (
+                "Postfach: " + buyer.postfach
+            )
         elif buyer.strasse is not None:  # BT-50
-            self.doc.trade.agreement.buyer.address.line_one =\
-                buyer.strasse + (' ' + buyer.hausnummer
-                                 if buyer.hausnummer else '')
+            self.doc.trade.agreement.buyer.address.line_one = buyer.strasse + (
+                " " + buyer.hausnummer if buyer.hausnummer else ""
+            )
 
     def _add_plz_ort(self, buyer: Kunde) -> None:
         if buyer.plz is not None:  # BT-53
-            self.doc.trade.agreement.buyer.address\
-                .postcode = buyer.plz
+            self.doc.trade.agreement.buyer.address.postcode = buyer.plz
         if buyer.ort is not None:  # BT-52
-            self.doc.trade.agreement.buyer.address\
-                .city_name = buyer.ort
+            self.doc.trade.agreement.buyer.address.city_name = buyer.ort
 
     def _add_buyer_from_object(self, buyer: Kunde) -> None:
         if buyer.betriebsbezeichnung is not None:  # BT-44
             self.doc.trade.agreement.buyer.name = buyer.betriebsbezeichnung
         if buyer.adresszusatz is not None:  # BT-51
-            self.doc.trade.agreement.buyer.address.line_two =\
-                buyer.adresszusatz
+            self.doc.trade.agreement.buyer.address.line_two = buyer.adresszusatz
             if buyer.name is not None:  # BT-163
-                self.doc.trade.agreement.buyer.address.line_three =\
-                    buyer.name
+                self.doc.trade.agreement.buyer.address.line_three = buyer.name
         else:
             if buyer.name is not None:  # BT-51
-                self.doc.trade.agreement.buyer.address.line_two =\
-                    buyer.name
+                self.doc.trade.agreement.buyer.address.line_two = buyer.name
         self._add_str_hnr(buyer)
         self._add_plz_ort(buyer)
 
@@ -142,36 +139,26 @@ class ZugFeRD:
 
         self.doc.trade.agreement.seller.name = lieferant.betriebsbezeichnung
         if lieferant.adresszusatz:
-            self.doc.trade.agreement.\
-                seller.address.line_two = lieferant.adresszusatz
+            self.doc.trade.agreement.seller.address.line_two = lieferant.adresszusatz
         if lieferant.postfach:
-            self.doc.trade.agreement.seller.address\
-                .line_two = lieferant.postfach
+            self.doc.trade.agreement.seller.address.line_two = lieferant.postfach
         else:
-            self.doc.trade.agreement.\
-                seller.address.line_one = (
-                    lieferant.strasse + (' ' + lieferant.hausnummer if
-                                         lieferant.hausnummer else '')
-                )
-        self.doc.trade.agreement.seller.address\
-            .postcode = lieferant.plz
-        self.doc.trade.agreement.seller.address\
-            .city_name = lieferant.ort
+            self.doc.trade.agreement.seller.address.line_one = lieferant.strasse + (
+                " " + lieferant.hausnummer if lieferant.hausnummer else ""
+            )
+        self.doc.trade.agreement.seller.address.postcode = lieferant.plz
+        self.doc.trade.agreement.seller.address.city_name = lieferant.ort
         self.doc.trade.agreement.seller.address.country_id = "DE"
 
     def _add_my_kontakt(self, lieferant: Lieferant):
         if lieferant.name:
-            self.doc.trade.agreement.seller.\
-                contact.person_name = lieferant.name
+            self.doc.trade.agreement.seller.contact.person_name = lieferant.name
         if lieferant.telefon:
-            self.doc.trade.agreement.seller.\
-                contact.telephone.number = lieferant.telefon
+            self.doc.trade.agreement.seller.contact.telephone.number = lieferant.telefon
         if lieferant.fax:
-            self.doc.trade.agreement.seller.\
-                contact.fax.number = lieferant.fax
+            self.doc.trade.agreement.seller.contact.fax.number = lieferant.fax
         if lieferant.email:
-            self.doc.trade.agreement.seller.\
-                contact.email.address = lieferant.email
+            self.doc.trade.agreement.seller.contact.email.address = lieferant.email
 
     def add_my_company(self, lieferant: Lieferant):
         """Add Address of my company to zugferd"""
@@ -179,15 +166,19 @@ class ZugFeRD:
         self._add_my_kontakt(lieferant)
         self.add_bundesland(lieferant.bundesland)
         taxreg = TaxRegistration()
-        taxreg.id = ("VA", lieferant.steuerid)\
-            if lieferant.steuerid else ("FC", lieferant.steuernr)
+        taxreg.id = (
+            ("VA", lieferant.steuerid)
+            if lieferant.steuerid
+            else ("FC", lieferant.steuernr)
+        )
         self.doc.trade.agreement.seller.tax_registrations.add(taxreg)
         # self.doc.trade.agreement.seller.tax = ustid
 
     def add_verwendungszweck(self, rg_nr: dict, datum: str) -> None:
         """Add Verwendungszweck to zugferd BT-83"""
-        self.doc.trade.settlement.payment_reference =\
+        self.doc.trade.settlement.payment_reference = (
             f"{list(rg_nr.keys())[0]} {list(rg_nr.values())[0]} vom {datum}"
+        )
 
     def _fillPosAndNameOfLi(self, li: LineItem, item: list) -> None:
         li.document.line_id = item[0]  # Pos.
@@ -200,20 +191,18 @@ class ZugFeRD:
 
     def _setTaxInLi(self, li: LineItem, item: str, the_tax: str) -> None:
         li.settlement.trade_tax.type_code = "VAT"
-        li.settlement.trade_tax\
-            .category_code = "E" if the_tax == "0.00" else "S"
-        li.settlement.trade_tax\
-            .rate_applicable_percent = Decimal(the_tax)
+        li.settlement.trade_tax.category_code = "E" if the_tax == "0.00" else "S"
+        li.settlement.trade_tax.rate_applicable_percent = Decimal(the_tax)
         gesamt = self._replaceCommaWithDot(item)
-        li.settlement.monetary_summation\
-            .total_amount = Decimal(f"{gesamt:.2f}")
+        li.settlement.monetary_summation.total_amount = Decimal(f"{gesamt:.2f}")
 
     def _set_date(self, item: str) -> datetime:
-        if item == 'nan' or item == "":
-            return self.last_date if self.last_date is not None\
-                else self.rg_date  # datetime.today()
+        if item == "nan" or item == "":
+            return (
+                self.last_date if self.last_date is not None else self.rg_date
+            )  # datetime.today()
         else:
-            return datetime.strptime(item, '%Y-%m-%d %H:%M:%S')
+            return datetime.strptime(item, "%Y-%m-%d %H:%M:%S")
 
     def _setOccurrenceInLi(self, li: LineItem, item: str) -> None:
         if item is not None:
@@ -235,7 +224,7 @@ class ZugFeRD:
             if li is not None:
                 li.product.description = f"Die Einheit '{inp}' ist nicht\
  verfügbar und wurde durch 'C62' (Stück) ersetzt."  # BT-154
-            return 'C62'  # Stück
+            return "C62"  # Stück
 
     def add_items(self, dat, the_tax: str):
         """add items to invoice"""
@@ -274,8 +263,9 @@ class ZugFeRD:
         self.doc.trade.settlement.period.start = startDatum  # BT-73
         self.doc.trade.settlement.period.end = endDatum  # BT-74
 
-    def add_gesamtsummen(self, dat, the_tax: str,
-                         steuerbefreiungsgrund: str = None) -> None:
+    def add_gesamtsummen(
+        self, dat, the_tax: str, steuerbefreiungsgrund: str = None
+    ) -> None:
         """add gesamtsumme to invoice"""
         netto = self._get_float_value(dat[0])
         steuer = self._get_float_value(dat[1])
@@ -285,7 +275,7 @@ class ZugFeRD:
         trade_tax.calculated_amount = steuer
         trade_tax.basis_amount = netto
         trade_tax.type_code = "VAT"
-        trade_tax.category_code = "E" if the_tax == "0.00" else 'S'
+        trade_tax.category_code = "E" if the_tax == "0.00" else "S"
         # trade_tax.exemption_reason_code = 'VATEX-EU-AE'
         trade_tax.rate_applicable_percent = Decimal(the_tax)
         if steuerbefreiungsgrund:
@@ -297,16 +287,12 @@ class ZugFeRD:
         #   .charge_total = Decimal("0.00")
         # self.doc.trade.settlement.monetary_summation\
         #   .allowance_total = Decimal("0.00")
-        self.doc.trade.settlement.monetary_summation.tax_basis_total = (
-            netto
-        )
+        self.doc.trade.settlement.monetary_summation.tax_basis_total = netto
         self.doc.trade.settlement.monetary_summation.tax_total = (
             steuer,
             "EUR",
         )
-        self.doc.trade.settlement.monetary_summation.grand_total = (
-            brutto
-        )
+        self.doc.trade.settlement.monetary_summation.grand_total = brutto
         self.doc.trade.settlement.monetary_summation.due_amount = brutto
         self.doc.trade.settlement.monetary_summation.charge_total = 0.00
         self.doc.trade.settlement.monetary_summation.allowance_total = 0.00
@@ -332,8 +318,7 @@ class ZugFeRD:
         #   https://www.pdf-online.com/osa/validate.aspx
         if in_file:
             with open(in_file, "rb") as original_file:
-                new_pdf_bytes = attach_xml(original_file.read(),
-                                           xml, "EXTENDED")
+                new_pdf_bytes = attach_xml(original_file.read(), xml, "EXTENDED")
         if self.debug:
             with open("factur-x.xml", "wb") as f:
                 f.write(xml)
@@ -370,13 +355,14 @@ class ZugFeRD:
         )
         self.add_note(txt)
 
-    def _get_the_tax(self, steuersatz: str = "19.00",
-                     is_kleinunternehmen: bool = False) -> str:
+    def _get_the_tax(
+        self, steuersatz: str = "19.00", is_kleinunternehmen: bool = False
+    ) -> str:
         return "0.00" if is_kleinunternehmen else steuersatz
 
-    def _fill_invoice_positions_in_xml(self, positions:
-                                       np.ndarray = None,
-                                       steuersatz: str = None) -> None:
+    def _fill_invoice_positions_in_xml(
+        self, positions: np.ndarray = None, steuersatz: str = None
+    ) -> None:
         """fills invoice positions into ZugFeRD"""
         if positions is not None:
             self.add_items(positions, steuersatz)
@@ -385,7 +371,7 @@ class ZugFeRD:
         return self._get_float_value(sums[-1])
 
     def _set_first_datum(self, df: pd.DataFrame, headers: list) -> None:
-        """ I expect 'Datum' at second position in df """
+        """I expect 'Datum' at second position in df"""
         tmp = df.loc[df[headers[1]].index[0], headers[1]]
         if isinstance(tmp, datetime):
             return
@@ -400,8 +386,7 @@ class ZugFeRD:
             return
         kleinunternehmen = invoice.management.is_kleinunternehmen
         steuersatz = invoice.supplier.steuersatz
-        self.add_zahlungsempfaenger(
-            invoice.supplier_account.multiliner())
+        self.add_zahlungsempfaenger(invoice.supplier_account.multiliner())
 
         self.fill_lieferant_to_note(invoice.supplier)
         self.add_my_company(invoice.supplier)
@@ -412,15 +397,15 @@ class ZugFeRD:
         positions = invoice.positions.copy()
         headers = list(positions.columns)
         self._set_first_datum(positions, headers)
-        self._fill_invoice_positions_in_xml(np.r_[[positions.columns],
-                                            positions.astype(str)
-                                            .values],
-                                            self.
-                                            _get_the_tax(steuersatz,
-                                                         kleinunternehmen))
-        self.add_gesamtsummen(invoice.sums,
-                              self._get_the_tax(steuersatz, kleinunternehmen),
-                              P19USTG if kleinunternehmen else None)
+        self._fill_invoice_positions_in_xml(
+            np.r_[[positions.columns], positions.astype(str).values],
+            self._get_the_tax(steuersatz, kleinunternehmen),
+        )
+        self.add_gesamtsummen(
+            invoice.sums,
+            self._get_the_tax(steuersatz, kleinunternehmen),
+            P19USTG if kleinunternehmen else None,
+        )
         # Datum
         self.add_rechnungsperiode(positions[headers[1]])
         self.add_zahlungsziel(
@@ -428,5 +413,4 @@ class ZugFeRD:
 {self._get_brutto(invoice.sums)} bis zum",
             invoice.supplier.get_ueberweisungsdatum(self.rg_date),
         )
-        self.add_verwendungszweck(invoice.invoicenr,
-                                  self.rg_date.strftime(GERMAN_DATE))
+        self.add_verwendungszweck(invoice.invoicenr, self.rg_date.strftime(GERMAN_DATE))

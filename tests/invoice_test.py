@@ -16,14 +16,14 @@ class TestInvoice(unittest.TestCase):
         find all properties of class
         """
         properties = dir(obj)
-        filtered = [prop for prop in properties if not prop.startswith('_')]
+        filtered = [prop for prop in properties if not prop.startswith("_")]
         print("properties without __init__:\n", filtered)
         return filtered
 
     def randomword(self, length: int) -> str:
-        """ generate random word with length"""
+        """generate random word with length"""
         letters = string.ascii_lowercase
-        return ''.join(random.choice(letters) for i in range(length))
+        return "".join(random.choice(letters) for i in range(length))
 
     def test_forNoneOnInit(self):
         """
@@ -31,11 +31,12 @@ class TestInvoice(unittest.TestCase):
         after creation of Object
         """
         obj = Invoice()
-        MSG = 'should be None on init'
+        MSG = "should be None on init"
         props = self.get_properties(obj)
         for prop in props:
-            self.assertIsNone(getattr(obj, prop, 'Attribute not found'),
-                              f"{prop} {MSG}")
+            self.assertIsNone(
+                getattr(obj, prop, "Attribute not found"), f"{prop} {MSG}"
+            )
 
     def test_forReprHasAllProperties(self):
         """
@@ -57,10 +58,11 @@ class TestInvoice(unittest.TestCase):
         and gives back correct element (getter and setter)
         """
         obj = Invoice()
-        MSG = 'should be filled'
+        MSG = "should be filled"
         props = self.get_properties(obj)
         for prop in props:
             value = self.randomword(30)
             setattr(obj, prop, value)
-            self.assertEqual(getattr(obj, prop, 'Attribute not found'),
-                             value, f"{prop} {MSG}")
+            self.assertEqual(
+                getattr(obj, prop, "Attribute not found"), value, f"{prop} {MSG}"
+            )

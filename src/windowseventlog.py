@@ -1,13 +1,14 @@
 """
 Module WindowsEventLog
 """
+
 import logging
 import win32evtlog
 import win32evtlogutil
 
 
 class WindowsEventLogHandler(logging.Handler):
-    def __init__(self, appname: str, logtype: str = 'Application') -> None:
+    def __init__(self, appname: str, logtype: str = "Application") -> None:
         logging.Handler.__init__(self)
         self.appname = appname
         self.logtype = logtype
@@ -24,7 +25,8 @@ class WindowsEventLogHandler(logging.Handler):
             elif record.levelno >= logging.WARNING:
                 eventType = win32evtlog.EVENTLOG_WARNING_TYPE
 
-            win32evtlogutil.ReportEvent(self.appname, eventID, eventCategory,
-                                        eventType, [msg])
+            win32evtlogutil.ReportEvent(
+                self.appname, eventID, eventCategory, eventType, [msg]
+            )
         except Exception:
             self.handleError(record)

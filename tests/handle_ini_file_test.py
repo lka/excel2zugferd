@@ -20,8 +20,7 @@ class TestIniFile(unittest.TestCase):
             os.remove(self.file)
         except FileNotFoundError:
             pass
-        self.ini_file_class = handle_ini_file.IniFile(
-            path_to_inifile=self.file)
+        self.ini_file_class = handle_ini_file.IniFile(path_to_inifile=self.file)
         return super().setUp()
 
     def tearDown(self) -> None:
@@ -36,8 +35,7 @@ class TestIniFile(unittest.TestCase):
         Teste, dass kein ini File existiert
         """
         file = self.ini_file_class.exists_ini_file()
-        self.assertIsNone(file,
-                          "Should be None, because ini file doesn't exist")
+        self.assertIsNone(file, "Should be None, because ini file doesn't exist")
 
     def test_exists_true(self):
         """
@@ -55,8 +53,9 @@ class TestIniFile(unittest.TestCase):
         )
         content = self.ini_file_class.read_ini_file()
         self.assertDictEqual(
-            content, expected,
-            f"Content of Ini-File should be equal to {expected}"
+            content,
+            expected,
+            f"Content of Ini-File should be equal to {expected}",
             # type: ignore
         )
 
@@ -68,18 +67,10 @@ class TestIniFile(unittest.TestCase):
         self.ini_file_class.content = {
             "Org1": "Test1",
             "Org2": "Test2",
-            "Org3": "Test3"
-        }
-        modification = {
-            "Org2": "Test4",
-            "Mod1": "Test5"
-        }
-        expected = {
-            "Org1": "Test1",
-            "Org2": "Test4",
             "Org3": "Test3",
-            "Mod1": "Test5"
         }
+        modification = {"Org2": "Test4", "Mod1": "Test5"}
+        expected = {"Org1": "Test1", "Org2": "Test4", "Org3": "Test3", "Mod1": "Test5"}
         self.ini_file_class.merge_content_of_ini_file(modification)
         self.assertDictEqual(self.ini_file_class.content, expected, MSG)
 
@@ -89,6 +80,7 @@ class TestIniFile(unittest.TestCase):
         """
         with self.assertRaises(ValueError):
             handle_ini_file.IniFile(dir=Path("I:/Laber"))
+
 
 # if __name__ == '__main__':
 #     unittest.main()

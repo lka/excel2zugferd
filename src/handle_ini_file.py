@@ -1,6 +1,7 @@
 """
 Module handle_ini_file
 """
+
 import os
 import json
 from pathlib import Path
@@ -14,10 +15,15 @@ class IniFile:
         updates self.content on create_ini_file(new_content)\n
         and merge_content_of_ini_file(new_content)
     """
+
     def __init__(self, path_to_inifile: str = None, dir: Path = None):
         self.fn: str = "config.ini"
-        self.dir: Path = dir if dir is not None else Path.joinpath(
-            Path(os.getenv("APPDATA")).resolve(), Path("excel2zugferd")
+        self.dir: Path = (
+            dir
+            if dir is not None
+            else Path.joinpath(
+                Path(os.getenv("APPDATA")).resolve(), Path("excel2zugferd")
+            )
         )
         self.path: str = path_to_inifile
         self.content: dict = {}
@@ -61,9 +67,8 @@ class IniFile:
         create IniFile
         """
         self.merge_content_of_ini_file(content)
-        with open(self.path, 'w', encoding='utf-8') as f_out:
-            json.dump(self.content, f_out, sort_keys=True, ensure_ascii=False,
-                      indent=4)
+        with open(self.path, "w", encoding="utf-8") as f_out:
+            json.dump(self.content, f_out, sort_keys=True, ensure_ascii=False, indent=4)
 
     def set_default_content(self) -> dict:
         return {
@@ -79,7 +84,7 @@ class IniFile:
             "Steuernummer": "12345/12345",
             "Strasse": "Musterstr.",
             "Telefon": "01234-5678",
-            "ZugFeRD": "Ja"
+            "ZugFeRD": "Ja",
         }
 
     def read_ini_file(self) -> dict:
@@ -88,9 +93,9 @@ class IniFile:
         """
         if not self.content:
             try:
-                with open(self.path, 'r', encoding='utf-8') as f_in:
+                with open(self.path, "r", encoding="utf-8") as f_in:
                     self.content = json.load(f_in)
-                    self._modify_entries_to_version2()  # noqa E501 should be eliminated in Version 1.0.0 
+                    self._modify_entries_to_version2()  # noqa E501 should be eliminated in Version 1.0.0
             except OSError:
                 return {}
         return self.content
@@ -103,30 +108,32 @@ class IniFile:
 
     def get_working_directory(self) -> Path:
         """get the working directory"""
-        return Path(self.content["Verzeichnis"]) if (
-            self.content
-            and "Verzeichnis" in self.content
-            and len(self.content["Verzeichnis"]) > 0
-            ) else self._get_documents_directory()
+        return (
+            Path(self.content["Verzeichnis"])
+            if (
+                self.content
+                and "Verzeichnis" in self.content
+                and len(self.content["Verzeichnis"]) > 0
+            )
+            else self._get_documents_directory()
+        )
 
     def save_working_directory(self, filename: str = None) -> None:
         directory = os.path.dirname(filename)
-        self.create_ini_file(
-                    {**self.content, "Verzeichnis": directory}
-                )
+        self.create_ini_file({**self.content, "Verzeichnis": directory})
 
-# should be eliminated in Version 1.0.0
+    # should be eliminated in Version 1.0.0
 
     def _normalize(self, arr_in: list) -> list:
         """remove empty elements of array"""
         return list(filter(None, arr_in))
 
     def _set_tel_fax_email(self, sub: list) -> None:
-        if 'Tel' in sub[0]:
+        if "Tel" in sub[0]:
             self.content["Telefon"] = sub[1]
-        elif 'Fax' in sub[0]:
+        elif "Fax" in sub[0]:
             self.content["Fax"] = sub[1]
-        elif 'Email' in sub[0] or 'E-Mail' in sub[0]:
+        elif "Email" in sub[0] or "E-Mail" in sub[0]:
             self.content["Email"] = sub[1]
 
     def _replace_kontakt(self, keys: list):
@@ -139,11 +146,11 @@ class IniFile:
         del self.content["Kontakt"]
 
     def _set_Steuer(self, sub: list) -> None:
-        if 'Steuernummer' in sub[0]:
+        if "Steuernummer" in sub[0]:
             self.content["Steuernummer"] = sub[1]
-        if 'Finanzamt' in sub[0]:
+        if "Finanzamt" in sub[0]:
             self.content["Finanzamt"] = sub[1]
-        if 'UmsatzsteuerID' in sub[0]:
+        if "UmsatzsteuerID" in sub[0]:
             self.content["UmsatzsteuerID"] = sub[1]
 
     def _replace_umsatzsteuer(self, keys: list) -> None:
@@ -151,7 +158,7 @@ class IniFile:
             return
         arr = self._normalize(self.content["Umsatzsteuer"].splitlines())
         for elem in arr:
-            sub = self._normalize(elem.split(' ', 1))
+            sub = self._normalize(elem.split(" ", 1))
             self._set_Steuer(sub)
         del self.content["Umsatzsteuer"]
 
@@ -161,24 +168,24 @@ class IniFile:
         arr = self._normalize(self.content["Konto"].splitlines())
         self.content["Kontoinhaber"] = arr[0]
         for elem in arr[1:]:
-            sub = self._normalize(elem.split(' ', 1))
-            if 'IBAN' in sub[0]:
+            sub = self._normalize(elem.split(" ", 1))
+            if "IBAN" in sub[0]:
                 self.content["IBAN"] = sub[1]
-            elif 'BIC' in sub[0]:
+            elif "BIC" in sub[0]:
                 self.content["BIC"] = sub[1]
         del self.content["Konto"]
 
     def _fill_str_hnr(self, strasse):
-        if 'Postfach' in strasse:
+        if "Postfach" in strasse:
             self.content["Postfach"] = strasse
         else:
-            sub = self._normalize(strasse.rsplit(' ', 1))
+            sub = self._normalize(strasse.rsplit(" ", 1))
             self.content["Strasse"] = sub[0]
             if len(sub) == 2:
                 self.content["Hausnummer"] = sub[1]
 
     def _fill_plz_ort(self, ort):
-        sub = self._normalize(ort.split(' ', 1))
+        sub = self._normalize(ort.split(" ", 1))
         self.content["PLZ"] = sub[0]
         if len(sub) == 2:
             self.content["Ort"] = sub[1]

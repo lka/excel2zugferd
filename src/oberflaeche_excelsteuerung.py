@@ -15,8 +15,9 @@ class OberflaecheExcelSteuerung(src.oberflaeche_base.Oberflaeche):
     Oberflaeche for Ini File Inputs; Steuerung (Excel) Parts
     """
 
-    def __init__(self, thefields: dict, middleware: Middleware = None,
-                 window=None) -> None:
+    def __init__(
+        self, thefields: dict, middleware: Middleware = None, window=None
+    ) -> None:
         super().__init__(window=window, wsize="700x600")  # tk.Toplevel())
         self.fields: dict = thefields
         self.middleware: Middleware = middleware
@@ -25,18 +26,16 @@ class OberflaecheExcelSteuerung(src.oberflaeche_base.Oberflaeche):
             [
                 {
                     "Datei": {
-                        "Stammdateneingabe":
-                            {
-                                "Firmendaten": self.pre_open_stammdaten,
-                                "Steuerung": self.pre_open_steuerung,
-                                "Excel Positionen":
-                                    self.pre_open_excelpositions,
-                            },
+                        "Stammdateneingabe": {
+                            "Firmendaten": self.pre_open_stammdaten,
+                            "Steuerung": self.pre_open_steuerung,
+                            "Excel Positionen": self.pre_open_excelpositions,
+                        },
                         "Separator1": 0,
                         "Excel2ZUGFeRD": self.pre_open_excel2zugferd,
                         "Separator2": 0,
                         "Beenden": self.quit_cmd,
-                        }
+                    }
                 },
                 {"Hilfe": {"Info über...": self.info_cmd}},
             ]

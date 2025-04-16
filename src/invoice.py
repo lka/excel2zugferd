@@ -11,6 +11,7 @@ from src.steuerung import Steuerung
 
 class Invoice(object):
     """Class Invoice handles collected data for invoice"""
+
     def __init__(self) -> None:
         self._customer: Kunde = None
         self._supplier: Lieferant = None

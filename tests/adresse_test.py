@@ -19,15 +19,18 @@ class TestAdresse(unittest.TestCase):
         find all properties of class
         """
         properties = dir(obj)
-        filtered = [prop for prop in properties if not prop.startswith('_')
-                    and prop not in ['anschrift']]
+        filtered = [
+            prop
+            for prop in properties
+            if not prop.startswith("_") and prop not in ["anschrift"]
+        ]
         print("properties without __init__:\n", filtered)
         return filtered
 
     def randomword(self, length: int) -> str:
-        """ generate random word with length"""
+        """generate random word with length"""
         letters = string.ascii_lowercase
-        return ''.join(random.choice(letters) for i in range(length))
+        return "".join(random.choice(letters) for i in range(length))
 
     def test_forNoneOnInit(self):
         """
@@ -35,11 +38,12 @@ class TestAdresse(unittest.TestCase):
         after creation of Object
         """
         obj = Adresse()
-        MSG = 'should be None on init'
+        MSG = "should be None on init"
         props = self.get_properties(obj)
         for prop in props:
-            self.assertIsNone(getattr(obj, prop, 'Attribute not found'),
-                              f"{prop} {MSG}")
+            self.assertIsNone(
+                getattr(obj, prop, "Attribute not found"), f"{prop} {MSG}"
+            )
 
     def test_forReprHasAllProperties(self):
         """
@@ -61,13 +65,14 @@ class TestAdresse(unittest.TestCase):
         and gives back correct element (getter and setter)
         """
         obj = Adresse()
-        MSG = 'should be filled'
+        MSG = "should be filled"
         props = self.get_properties(obj)
         for prop in props:
             value = self.randomword(30)
             setattr(obj, prop, value)
-            self.assertEqual(getattr(obj, prop, 'Attribute not found'),
-                             value, f"{prop} {MSG}")
+            self.assertEqual(
+                getattr(obj, prop, "Attribute not found"), value, f"{prop} {MSG}"
+            )
 
     def test__check_anschrift1(self):
         """
@@ -183,19 +188,19 @@ class TestAdresse(unittest.TestCase):
     def test_get_anschrift_kunde(self):
         """Tests get_anschrift of Adresse"""
         adr = Adresse()
-        MSG = 'should be filled'
+        MSG = "should be filled"
         BEZ = "Software AG"
-        NAME = 'Max Mustermann'
-        AN1 = 'Maximilian Mustermann'
-        ZUS = 'Berichtswesen'
-        ORT = 'Musterstadt'
-        PLZ = '12345'
-        STR = 'Musterstrasse'
-        HNR = '17a'
-        TEL = '01234 5678 456'
-        FAX = '01234 5678 457'
-        MAIL = 'mustermann@telekom.de'
-        COUNTY = 'Baden Württemberg'
+        NAME = "Max Mustermann"
+        AN1 = "Maximilian Mustermann"
+        ZUS = "Berichtswesen"
+        ORT = "Musterstadt"
+        PLZ = "12345"
+        STR = "Musterstrasse"
+        HNR = "17a"
+        TEL = "01234 5678 456"
+        FAX = "01234 5678 457"
+        MAIL = "mustermann@telekom.de"
+        COUNTY = "Baden Württemberg"
         adr.betriebsbezeichnung = BEZ
         adr.name = NAME
         adr.anschrift_line1 = AN1
@@ -207,9 +212,8 @@ class TestAdresse(unittest.TestCase):
         adr.telefon = TEL
         adr.fax = FAX
         adr.bundesland = COUNTY
-        self.assertEqual(adr.anschrift,
-                         f"{BEZ}\n{NAME}\n{STR} {HNR}\n{PLZ} {ORT}", MSG)
+        self.assertEqual(adr.anschrift, f"{BEZ}\n{NAME}\n{STR} {HNR}\n{PLZ} {ORT}", MSG)
         adr.adresszusatz = ZUS
-        self.assertEqual(adr.anschrift,
-                         f"{BEZ}\n{ZUS}\n{NAME}\n{STR} {HNR}\n{PLZ} {ORT}",
-                         MSG)
+        self.assertEqual(
+            adr.anschrift, f"{BEZ}\n{ZUS}\n{NAME}\n{STR} {HNR}\n{PLZ} {ORT}", MSG
+        )

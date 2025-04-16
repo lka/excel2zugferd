@@ -40,25 +40,22 @@ class Oberflaeche:
         self._add_window_with_scrollbar()
 
     def _add_window_with_scrollbar(self) -> None:
-        """adds scrollbar to window
-        """
+        """adds scrollbar to window"""
         # Create a frame to hold the listbox and scrollbar
         frame = ttk.Frame(self.root)
         frame.grid(row=0, column=0, sticky="nsew")
         # create inner canvas and scrollbar side by side
         self.icanvas = tk.Canvas(frame)
-        scrollbar = tk.Scrollbar(frame, orient="vertical",
-                                 command=self.icanvas.yview)
+        scrollbar = tk.Scrollbar(frame, orient="vertical", command=self.icanvas.yview)
         self.icanvas.configure(yscrollcommand=scrollbar.set)
         # create frame for scrollable content
         self.content_frame = ttk.Frame(self.icanvas)
-        self.content_frame.bind("<Configure>", lambda e:
-                                self.icanvas.configure(
-                                    scrollregion=self.icanvas
-                                    .bbox("all")))
+        self.content_frame.bind(
+            "<Configure>",
+            lambda e: self.icanvas.configure(scrollregion=self.icanvas.bbox("all")),
+        )
         # Pack Widgets onto the Window
-        self.icanvas.create_window((0, 0), window=self.content_frame,
-                                   anchor="nw")
+        self.icanvas.create_window((0, 0), window=self.content_frame, anchor="nw")
         self.icanvas.grid(row=0, column=0, sticky="nsew")
         scrollbar.grid(row=0, column=1, sticky="ns")
         # create window resizing configuration
@@ -84,18 +81,16 @@ class Oberflaeche:
             at_row (int): row No. for GUI
             save_cmd (any): call specified command with save button
         """
-        quit_button = ttk.Button(self.content_frame, text="Beenden",
-                                 command=self.quit_cmd)
+        quit_button = ttk.Button(
+            self.content_frame, text="Beenden", command=self.quit_cmd
+        )
         quit_button.grid(row=at_row, column=0, pady=PADY)
         quit_button.bind("<Return>", (lambda event: self.quit_cmd()))
-        save_button = ttk.Button(
-            self.content_frame, text="Speichern", command=save_cmd
-        )
+        save_button = ttk.Button(self.content_frame, text="Speichern", command=save_cmd)
         save_button.grid(row=at_row, column=1, padx=PADX, pady=PADY)
         save_button.bind("<Return>", (lambda event: save_cmd()))
 
-    def _add_menu_items(self, menu: tk.Menu, key: str,
-                        command: callable) -> None:
+    def _add_menu_items(self, menu: tk.Menu, key: str, command: callable) -> None:
         """adds separator or items to menu
 
         Args:
@@ -124,12 +119,10 @@ class Oberflaeche:
                 for innerkey in item[outerkey].keys():
                     # print(f"innerkey: {innerkey}")
                     if isinstance(item[outerkey][innerkey], dict):
-                        submenu = self.make_sub_menu(menu,
-                                                     item[outerkey][innerkey])
+                        submenu = self.make_sub_menu(menu, item[outerkey][innerkey])
                         menu.add_cascade(label=innerkey, menu=submenu)
                     else:
-                        self._add_menu_items(menu, innerkey,
-                                             item[outerkey][innerkey])
+                        self._add_menu_items(menu, innerkey, item[outerkey][innerkey])
                 menu_bar.add_cascade(label=outerkey, menu=menu, underline=0)
 
     def make_sub_menu(self, menu: tk.Menu, menu_items: dict) -> tk.Menu:
@@ -148,8 +141,7 @@ class Oberflaeche:
         # print(f"submenuitems: {menu_items}")
         for key in menu_items.keys():
             # print(f"submenuitem: {key}")
-            self._add_menu_items(submenu, key,
-                                 menu_items[key])
+            self._add_menu_items(submenu, key, menu_items[key])
         return submenu
 
     def make_menu_bar(self, menu_items: list = None) -> None:
@@ -186,8 +178,7 @@ class Oberflaeche:
         """
         Quit window
         """
-        confirm = messagebox.askokcancel("Beenden?",
-                                         "Möchten Sie wirklich Beenden ?")
+        confirm = messagebox.askokcancel("Beenden?", "Möchten Sie wirklich Beenden ?")
         if confirm:
             self.root.destroy()
 
@@ -211,24 +202,22 @@ class Oberflaeche:
         custom_box.title(header)
         ttk.Label(custom_box, text=msg, padding=(20, 10)).pack()
         # padx=20, pady=10).pack()
-        link = ttk.Label(custom_box, text=dest,
-                         foreground="blue",
-                         cursor="hand2",
-                         padding=(20, 10))  # padx=20, pady=10)
+        link = ttk.Label(
+            custom_box, text=dest, foreground="blue", cursor="hand2", padding=(20, 10)
+        )  # padx=20, pady=10)
         link.pack()
         link.bind("<Button-1>", lambda e: self.open_link(dest))
-        ttk.Button(custom_box, text="OK", command=custom_box.destroy,
-                   padding=(30, 4)).pack(side="right", padx=10, pady=10)
+        ttk.Button(
+            custom_box, text="OK", command=custom_box.destroy, padding=(30, 4)
+        ).pack(side="right", padx=10, pady=10)
         # padding=(20, 10))
         # padx=10, pady=10)
 
     def info_cmd(self):
-        """show Info with Version Number and link to documentation
-        """
+        """show Info with Version Number and link to documentation"""
         try:
             with open(
-                os.path.join("_internal", "version.json"), "r",
-                    encoding="utf-16"
+                os.path.join("_internal", "version.json"), "r", encoding="utf-16"
             ) as f_in:
                 version = json.load(f_in)
                 my_msg = f"Copyright © H.Lischka, 2024\n\
@@ -238,9 +227,10 @@ Dokumentation: "
             my_msg = f"OSError: {ex}"
             raise ValueError(my_msg)
 
-#        messagebox.showinfo("Info", my_msg)
-        self.show_custom_messagebox("Info", my_msg,
-                                    "https://github.com/lka/excel2zugferd")
+        #        messagebox.showinfo("Info", my_msg)
+        self.show_custom_messagebox(
+            "Info", my_msg, "https://github.com/lka/excel2zugferd"
+        )
         self.root.lift()
 
     def destroy_children(self, parent: tk.Tk) -> None:
@@ -254,8 +244,9 @@ Dokumentation: "
                 self.destroy_children(child)
             child.destroy()
 
-    def _add_string(self, row: tk.Frame, field: dict, content: any,
-                    index: int) -> tk.Text:
+    def _add_string(
+        self, row: tk.Frame, field: dict, content: any, index: int
+    ) -> tk.Text:
         """add tk.Text to Frame
 
         Args:
@@ -267,10 +258,7 @@ Dokumentation: "
         Returns:
             tk.Text: entity for the GUI
         """
-        lab = ttk.Label(
-            row, width=LABELWIDTH, text=field["Label"] + ": ",
-            anchor="w"
-        )
+        lab = ttk.Label(row, width=LABELWIDTH, text=field["Label"] + ": ", anchor="w")
         ent = tk.Text(row, width=TEXTWIDTH, height=field["Lines"])
         if content:
             ent.insert(
@@ -281,8 +269,9 @@ Dokumentation: "
         ent.grid(row=index, column=1, padx=PADX, pady=PADY)
         return ent
 
-    def _add_label(self, row: tk.Frame, field: dict, content: dict,
-                   index: int) -> ttk.Label:
+    def _add_label(
+        self, row: tk.Frame, field: dict, content: dict, index: int
+    ) -> ttk.Label:
         """add ttk.Label to Frame
 
         Args:
@@ -294,22 +283,15 @@ Dokumentation: "
         Returns:
             ttk.Label: entity for the GUI
         """
-        msg = content[field["Text"]] if\
-            content and field["Text"] in content else ""
+        msg = content[field["Text"]] if content and field["Text"] in content else ""
         if msg != "":
             lab = ttk.Label(
-                row, width=LABELWIDTH, text=field["Label"] + ": ",
-                anchor="w"
+                row, width=LABELWIDTH, text=field["Label"] + ": ", anchor="w"
             )
         else:
-            lab = ttk.Label(
-                row, width=LABELWIDTH, text="",
-                anchor="w"
-            )
+            lab = ttk.Label(row, width=LABELWIDTH, text="", anchor="w")
             msg = field["Label"]
-        ent = ttk.Label(
-                row, text=msg, width=TEXTWIDTH, anchor="w"
-        )
+        ent = ttk.Label(row, text=msg, width=TEXTWIDTH, anchor="w")
         lab.grid(row=index, column=0, padx=PADX, pady=PADY)
         ent.grid(row=index, column=1, padx=PADX, pady=PADY, sticky="W")
         return ent
@@ -325,16 +307,13 @@ Dokumentation: "
             "1"
             if content  # and len(content) > 0
             and field["Text"] in content
-            and (
-                (content[field["Text"]] == "Ja")
-                or (content[field["Text"]] == "1")
-            )
+            and ((content[field["Text"]] == "Ja") or (content[field["Text"]] == "1"))
             else "0"
         )
 
-    def _add_boolean(self, row: tk.Frame, field: dict, content: dict,
-                     index: int)\
-            -> ttk.Checkbutton:
+    def _add_boolean(
+        self, row: tk.Frame, field: dict, content: dict, index: int
+    ) -> ttk.Checkbutton:
         """add ttk.Checkbutton to Frame
 
         Args:
@@ -348,8 +327,7 @@ Dokumentation: "
         """
         self.menuvars[field["Variable"]] = tk.StringVar()
         ent = ttk.Checkbutton(
-            row, text=field["Label"], variable=self.menuvars[
-                                                field["Variable"]]
+            row, text=field["Label"], variable=self.menuvars[field["Variable"]]
         )
         self._set_value_for_boolean(field, content)
         lab = ttk.Label(row, width=LABELWIDTH, text=" ", anchor="w")
@@ -372,9 +350,11 @@ Dokumentation: "
             if ini_file:
                 ini_file.create_ini_file(content)
         except OSError as ex:
-            messagebox.showerror("IO-Fehler:",
-                                 f"Erstellen der Ini-Datei \
-fehlgeschlagen.\n{ex}")
+            messagebox.showerror(
+                "IO-Fehler:",
+                f"Erstellen der Ini-Datei \
+fehlgeschlagen.\n{ex}",
+            )
             return True
         return False
 
@@ -388,9 +368,8 @@ fehlgeschlagen.\n{ex}")
             str: value for Label
         """
         if key not in self.middleware.ini_file.content.keys():
-            return ''
-        return self.middleware.ini_file.content[key]\
-            if self.middleware else ''
+            return ""
+        return self.middleware.ini_file.content[key] if self.middleware else ""
 
     def _get_text_of_field(self, field: any, key: str = None) -> str:
         """get content of field in GUI
@@ -405,14 +384,14 @@ fehlgeschlagen.\n{ex}")
         if isinstance(field, ttk.Label):
             return self._get_Label_content(key)
         return (
-                    field.get("1.0", "end-1c")
-                    if hasattr(field, "get")
-                    else "Ja" if field.instate(["selected"]) else "Nein"
-                )
+            field.get("1.0", "end-1c")
+            if hasattr(field, "get")
+            else "Ja" if field.instate(["selected"]) else "Nein"
+        )
 
-    def get_entries_from_type(self, row: ttk.Frame, field: dict, content: dict,
-                              index: int) -> tk.Text | ttk.Checkbutton | \
-            ttk.Label | None:
+    def get_entries_from_type(
+        self, row: ttk.Frame, field: dict, content: dict, index: int
+    ) -> tk.Text | ttk.Checkbutton | ttk.Label | None:
         """create GUI Element of type
 
         Args:
@@ -449,13 +428,11 @@ fehlgeschlagen.\n{ex}")
         if self.middleware.ini_file:
             content = self.middleware.ini_file.read_ini_file()
         for field in self.fields:
-            if (field["Dest"] == type):
+            if field["Dest"] == type:
                 # row = tk.Frame(self.root)
-                entries[field["Text"]] = self\
-                    .get_entries_from_type(self.content_frame,
-                                           field,
-                                           content,
-                                           len(entries) + offset)
+                entries[field["Text"]] = self.get_entries_from_type(
+                    self.content_frame, field, content, len(entries) + offset
+                )
         return entries
 
     def pre_open_excel2zugferd(self):
@@ -517,23 +494,20 @@ fehlgeschlagen.\n{ex}")
             for key, field in self.ents.items():
                 content[key] = self._get_text_of_field(field, key)
             if content:
-                return self.middleware.ini_file\
-                    .merge_content_of_ini_file(content)
+                return self.middleware.ini_file.merge_content_of_ini_file(content)
         return content
 
     def fetch(self) -> None:
-        """get all values for IniFile
-        """
+        """get all values for IniFile"""
         content = self.fetch_values_from_entries()
         ini_has_failure = False
         if content:
-            ini_has_failure = self._create_iniFile(
-                self.middleware.ini_file, None)
-            ini_has_failure = ini_has_failure or \
-                self._check_content_of_stammdaten(content)
+            ini_has_failure = self._create_iniFile(self.middleware.ini_file, None)
+            ini_has_failure = ini_has_failure or self._check_content_of_stammdaten(
+                content
+            )
             if ini_has_failure:
-                messagebox.showinfo("Info",
-                                    "Stammdaten mit Fehlern gespeichert.")
+                messagebox.showinfo("Info", "Stammdaten mit Fehlern gespeichert.")
                 return
             messagebox.showinfo("Info", "Stammdaten gespeichert.")
 

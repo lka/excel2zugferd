@@ -1,15 +1,23 @@
 """
 Module Invoice
 """
-from src.constants import ANSCHRIFT_POS_ERROR, RECHNUNG_POS_ERROR, \
-    RECHNUNGSDATUM_POS_ERROR, NETTOSUMME_POS_ERROR, \
-    MWSTSUMME_POS_ERROR, BRUTTOSUMME_POS_ERROR, EINZELPOSITIONEN_POS_ERR
+
+from src.constants import (
+    ANSCHRIFT_POS_ERROR,
+    RECHNUNG_POS_ERROR,
+    RECHNUNGSDATUM_POS_ERROR,
+    NETTOSUMME_POS_ERROR,
+    MWSTSUMME_POS_ERROR,
+    BRUTTOSUMME_POS_ERROR,
+    EINZELPOSITIONEN_POS_ERR,
+)
 
 
 class Steuerung(object):
     """
     Steuerung der PDF Erzeugung durch die Stammdaten
     """
+
     def __init__(self) -> None:
         self._create_xml = None
         self._create_girocode = None
@@ -249,26 +257,19 @@ class Steuerung(object):
     def _check_TrueFalse(self, thekeys: list, daten: dict, name: str) -> bool:
         return (
             (daten[name] == "Ja")
-            if name in thekeys and
-            daten[name] is not None else False
+            if name in thekeys and daten[name] is not None
+            else False
         )
 
     def _fill_bools(self, thekeys: list, daten: dict) -> None:
-        self.create_girocode = self._check_TrueFalse(thekeys,
-                                                     daten,
-                                                     "GiroCode")
-        self.create_xml = self._check_TrueFalse(thekeys,
-                                                daten,
-                                                "ZugFeRD")
-        self.is_kleinunternehmen = self._check_TrueFalse(thekeys,
-                                                         daten,
-                                                         "Kleinunternehmen")
-        self.BYOPdf = self._check_TrueFalse(thekeys,
-                                            daten,
-                                            "BYOPdf")
+        self.create_girocode = self._check_TrueFalse(thekeys, daten, "GiroCode")
+        self.create_xml = self._check_TrueFalse(thekeys, daten, "ZugFeRD")
+        self.is_kleinunternehmen = self._check_TrueFalse(
+            thekeys, daten, "Kleinunternehmen"
+        )
+        self.BYOPdf = self._check_TrueFalse(thekeys, daten, "BYOPdf")
 
-    def _check_is_integer(self, thekeys: list, daten: dict, name: str)\
-            -> str | None:
+    def _check_is_integer(self, thekeys: list, daten: dict, name: str) -> str | None:
         """
         Check whether content of name is int, if yes return str else None
         """
@@ -280,8 +281,7 @@ class Steuerung(object):
             return None
         return daten[name]
 
-    def _check_is_upper(self, thekeys: list, daten: dict, name: str)\
-            -> str | None:
+    def _check_is_upper(self, thekeys: list, daten: dict, name: str) -> str | None:
         """
         Check whether content of name is UpperCase character,
         if yes return str[0] else None
@@ -295,110 +295,96 @@ class Steuerung(object):
         return daten[name][0]
 
     def _check_anschrift_position(self) -> None:
-        """ raise ValueError on Failure """
-        if ((self.anschrift_zeile is not None
-                and self.anschrift_spalte is None)
-            or
-            (self.anschrift_zeile is None
-                and self.anschrift_spalte is not None)):
+        """raise ValueError on Failure"""
+        if (self.anschrift_zeile is not None and self.anschrift_spalte is None) or (
+            self.anschrift_zeile is None and self.anschrift_spalte is not None
+        ):
             raise ValueError(ANSCHRIFT_POS_ERROR)
 
     def _fill_and_check_anschrift(self, theKeys: list, daten: dict) -> None:
-        self.anschrift_zeile = self._check_is_integer(theKeys, daten,
-                                                      "AnschriftZeile")
-        self.anschrift_spalte = self._check_is_upper(theKeys, daten,
-                                                     "AnschriftSpalte")
+        self.anschrift_zeile = self._check_is_integer(theKeys, daten, "AnschriftZeile")
+        self.anschrift_spalte = self._check_is_upper(theKeys, daten, "AnschriftSpalte")
         self._check_anschrift_position()
 
     def _check_rechnungsdatum_position(self) -> None:
-        """ raise ValueError on Failure """
-        if ((self.datum_zeile is not None
-                and self.datum_spalte is None)
-            or
-            (self.datum_zeile is None
-                and self.datum_spalte is not None)):
+        """raise ValueError on Failure"""
+        if (self.datum_zeile is not None and self.datum_spalte is None) or (
+            self.datum_zeile is None and self.datum_spalte is not None
+        ):
             raise ValueError(RECHNUNGSDATUM_POS_ERROR)
 
-    def _fill_and_check_rechnungsdatum(self, theKeys: list, daten: dict)\
-            -> None:
-        self.datum_zeile = self._check_is_integer(theKeys, daten,
-                                                  "RGDatumZeile")
-        self.datum_spalte = self._check_is_upper(theKeys, daten,
-                                                 "RGDatumSpalte")
+    def _fill_and_check_rechnungsdatum(self, theKeys: list, daten: dict) -> None:
+        self.datum_zeile = self._check_is_integer(theKeys, daten, "RGDatumZeile")
+        self.datum_spalte = self._check_is_upper(theKeys, daten, "RGDatumSpalte")
         self._check_rechnungsdatum_position()
 
     def _check_rechnung_position(self) -> None:
-        """ raise ValueError on Failure """
-        if ((self.rechnung_zeile is not None
-                and self.rechnung_spalte is None)
-            or
-            (self.rechnung_zeile is None
-                and self.rechnung_spalte is not None)):
+        """raise ValueError on Failure"""
+        if (self.rechnung_zeile is not None and self.rechnung_spalte is None) or (
+            self.rechnung_zeile is None and self.rechnung_spalte is not None
+        ):
             raise ValueError(RECHNUNG_POS_ERROR)
 
-    def _fill_and_check_rechnungsnummer(self, theKeys: list, daten: dict)\
-            -> None:
-        self.rechnung_zeile = self._check_is_integer(theKeys, daten,
-                                                     "RechnungZeile")
-        self.rechnung_spalte = self._check_is_upper(theKeys, daten,
-                                                    "RechnungSpalte")
+    def _fill_and_check_rechnungsnummer(self, theKeys: list, daten: dict) -> None:
+        self.rechnung_zeile = self._check_is_integer(theKeys, daten, "RechnungZeile")
+        self.rechnung_spalte = self._check_is_upper(theKeys, daten, "RechnungSpalte")
         self._check_rechnung_position()
 
     def _check_nettosumme_position(self) -> None:
-        """ raise ValueError on Failure """
-        if ((self.nettosumme_zeile is not None
-                and self.nettosumme_spalte is None)
-            or
-            (self.nettosumme_zeile is None
-                and self.nettosumme_spalte is not None)):
+        """raise ValueError on Failure"""
+        if (self.nettosumme_zeile is not None and self.nettosumme_spalte is None) or (
+            self.nettosumme_zeile is None and self.nettosumme_spalte is not None
+        ):
             raise ValueError(NETTOSUMME_POS_ERROR)
 
-    def _fill_and_check_nettosumme(self, theKeys: list, daten: dict)\
-            -> None:
-        self.nettosumme_zeile = self._check_is_integer(theKeys, daten,
-                                                       "NettosummeZeile")
-        self.nettosumme_spalte = self._check_is_upper(theKeys, daten,
-                                                      "NettosummeSpalte")
+    def _fill_and_check_nettosumme(self, theKeys: list, daten: dict) -> None:
+        self.nettosumme_zeile = self._check_is_integer(
+            theKeys, daten, "NettosummeZeile"
+        )
+        self.nettosumme_spalte = self._check_is_upper(
+            theKeys, daten, "NettosummeSpalte"
+        )
         self._check_nettosumme_position()
 
     def _check_mwstsumme_position(self) -> None:
-        """ raise ValueError on Failure """
-        if ((self.mwstsumme_zeile is not None
-                and self.mwstsumme_spalte is None)
-            or
-            (self.mwstsumme_zeile is None
-                and self.mwstsumme_spalte is not None)):
+        """raise ValueError on Failure"""
+        if (self.mwstsumme_zeile is not None and self.mwstsumme_spalte is None) or (
+            self.mwstsumme_zeile is None and self.mwstsumme_spalte is not None
+        ):
             raise ValueError(MWSTSUMME_POS_ERROR)
 
-    def _fill_and_check_mwstsumme(self, theKeys: list, daten: dict)\
-            -> None:
-        self.mwstsumme_zeile = self._check_is_integer(theKeys, daten,
-                                                      "MWStsummeZeile")
-        self.mwstsumme_spalte = self._check_is_upper(theKeys, daten,
-                                                     "MWStsummeSpalte")
+    def _fill_and_check_mwstsumme(self, theKeys: list, daten: dict) -> None:
+        self.mwstsumme_zeile = self._check_is_integer(theKeys, daten, "MWStsummeZeile")
+        self.mwstsumme_spalte = self._check_is_upper(theKeys, daten, "MWStsummeSpalte")
         self._check_mwstsumme_position()
 
     def _check_bruttosumme_position(self) -> None:
-        """ raise ValueError on Failure """
-        if ((self.bruttosumme_zeile is not None
-                and self.bruttosumme_spalte is None)
-            or
-            (self.bruttosumme_zeile is None
-                and self.bruttosumme_spalte is not None)):
+        """raise ValueError on Failure"""
+        if (self.bruttosumme_zeile is not None and self.bruttosumme_spalte is None) or (
+            self.bruttosumme_zeile is None and self.bruttosumme_spalte is not None
+        ):
             raise ValueError(BRUTTOSUMME_POS_ERROR)
 
-    def _fill_and_check_bruttosumme(self, theKeys: list, daten: dict)\
-            -> None:
-        self.bruttosumme_zeile = self._check_is_integer(theKeys, daten,
-                                                        "BruttosummeZeile")
-        self.bruttosumme_spalte = self._check_is_upper(theKeys, daten,
-                                                       "BruttosummeSpalte")
+    def _fill_and_check_bruttosumme(self, theKeys: list, daten: dict) -> None:
+        self.bruttosumme_zeile = self._check_is_integer(
+            theKeys, daten, "BruttosummeZeile"
+        )
+        self.bruttosumme_spalte = self._check_is_upper(
+            theKeys, daten, "BruttosummeSpalte"
+        )
         self._check_bruttosumme_position()
 
     def _get_einzelpositionen_values(self) -> list:
-        return [self.positionen_zeile, self.pos_spalte, self.dat_spalte,
-                self.desc_spalte, self.anz_spalte, self.typ_spalte,
-                self.preis_spalte, self.sum_spalte]
+        return [
+            self.positionen_zeile,
+            self.pos_spalte,
+            self.dat_spalte,
+            self.desc_spalte,
+            self.anz_spalte,
+            self.typ_spalte,
+            self.preis_spalte,
+            self.sum_spalte,
+        ]
 
     def _check_fields(self) -> list:
         allAreNone = True
@@ -410,29 +396,22 @@ class Steuerung(object):
         return [allAreNone, allAreNotNone]
 
     def _check_einzelpositionen(self) -> None:
-        """ raise ValueError on Failure"""
+        """raise ValueError on Failure"""
         allAreNone, allAreNotNone = self._check_fields()
         if not (allAreNone or allAreNotNone):
             raise ValueError(EINZELPOSITIONEN_POS_ERR)
 
-    def _fill_and_check_einzelpositionen(self, thekeys: list, daten: dict)\
-            -> None:
-        self.positionen_zeile = self._check_is_integer(thekeys, daten,
-                                                       "PositionenZeile")
-        self.pos_spalte = self._check_is_upper(thekeys, daten,
-                                               "PosSpalte")
-        self.dat_spalte = self._check_is_upper(thekeys, daten,
-                                               "DatSpalte")
-        self.desc_spalte = self._check_is_upper(thekeys, daten,
-                                                "DescSpalte")
-        self.anz_spalte = self._check_is_upper(thekeys, daten,
-                                               "AnzSpalte")
-        self.typ_spalte = self._check_is_upper(thekeys, daten,
-                                               "TypSpalte")
-        self.preis_spalte = self._check_is_upper(thekeys, daten,
-                                                 "PreisSpalte")
-        self.sum_spalte = self._check_is_upper(thekeys, daten,
-                                               "SumSpalte")
+    def _fill_and_check_einzelpositionen(self, thekeys: list, daten: dict) -> None:
+        self.positionen_zeile = self._check_is_integer(
+            thekeys, daten, "PositionenZeile"
+        )
+        self.pos_spalte = self._check_is_upper(thekeys, daten, "PosSpalte")
+        self.dat_spalte = self._check_is_upper(thekeys, daten, "DatSpalte")
+        self.desc_spalte = self._check_is_upper(thekeys, daten, "DescSpalte")
+        self.anz_spalte = self._check_is_upper(thekeys, daten, "AnzSpalte")
+        self.typ_spalte = self._check_is_upper(thekeys, daten, "TypSpalte")
+        self.preis_spalte = self._check_is_upper(thekeys, daten, "PreisSpalte")
+        self.sum_spalte = self._check_is_upper(thekeys, daten, "SumSpalte")
         self._check_einzelpositionen()
 
     def _fill_positions_for_excel(self, theKeys: list, daten: dict) -> None:
@@ -448,12 +427,8 @@ class Steuerung(object):
         """fills Steuerung of Lieferant from stammdaten"""
         if daten:
             thekeys = daten.keys()
-            self.abspann = (
-                daten["Abspann"] if "Abspann" in thekeys else None
-            )
+            self.abspann = daten["Abspann"] if "Abspann" in thekeys else None
             self._fill_bools(thekeys, daten)
             self._fill_positions_for_excel(thekeys, daten)
-            self.directory = (
-                daten['Verzeichnis'] if "Verzeichnis" in thekeys else None
-            )
+            self.directory = daten["Verzeichnis"] if "Verzeichnis" in thekeys else None
             # print(repr(self))

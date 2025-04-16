@@ -15,13 +15,15 @@ class Lieferant(Adresse):
 
     @property
     def kontakt(self) -> str:
-        return '\n'.join(
-            filter(None,
-                   [
-                        'Tel.: ' + self.telefon if self.telefon else None,
-                        'Fax: ' + self.fax if self.fax else None,
-                        'E-Mail: ' + self.email if self.email else None,
-                   ])
+        return "\n".join(
+            filter(
+                None,
+                [
+                    "Tel.: " + self.telefon if self.telefon else None,
+                    "Fax: " + self.fax if self.fax else None,
+                    "E-Mail: " + self.email if self.email else None,
+                ],
+            )
         )
 
     # @kontakt.setter
@@ -35,16 +37,19 @@ class Lieferant(Adresse):
 
     @property
     def umsatzsteuer(self) -> str:
-        return '\n'.join(
-            filter(None,
-                   [
-                       ('Steuernummer: ' + self.steuernr)
-                       if self.steuernr else None,
-                       ('Finanzamt: ' + self.finanzamt)
-                       if self.steuernr and self.finanzamt else None,
-                       ('Umsatzsteuer-ID: ' + self.steuerid)
-                       if self.steuerid else None,
-                   ])
+        return "\n".join(
+            filter(
+                None,
+                [
+                    ("Steuernummer: " + self.steuernr) if self.steuernr else None,
+                    (
+                        ("Finanzamt: " + self.finanzamt)
+                        if self.steuernr and self.finanzamt
+                        else None
+                    ),
+                    ("Umsatzsteuer-ID: " + self.steuerid) if self.steuerid else None,
+                ],
+            )
         )
 
     # @umsatzsteuer.setter
@@ -56,19 +61,16 @@ class Lieferant(Adresse):
     #         raise ValueError(USTID_ERROR)
     #     self._fill_umsatzsteuer_or_id(arr, sub)
 
-    def _fill_Betrieb_Abteilung_Ansprechpartner(self, daten: dict, keys: list)\
-            -> None:
+    def _fill_Betrieb_Abteilung_Ansprechpartner(self, daten: dict, keys: list) -> None:
         """use it for Stammdaten only"""
         if "Betriebsbezeichnung" in keys:
-            self.betriebsbezeichnung = src._setNoneIfEmpty(
-                daten["Betriebsbezeichnung"])
+            self.betriebsbezeichnung = src._setNoneIfEmpty(daten["Betriebsbezeichnung"])
         if "Abteilung" in keys:
             self.adresszusatz = src._setNoneIfEmpty(daten["Abteilung"])
         if "Ansprechpartner" in keys:
             self.name = src._setNoneIfEmpty(daten["Ansprechpartner"])
 
-    def _fill_Postfach_Strasse_Hausnummer(self, daten: dict, keys: list)\
-            -> None:
+    def _fill_Postfach_Strasse_Hausnummer(self, daten: dict, keys: list) -> None:
         """use it for Stammdaten only"""
         if "Postfach" in keys:
             self.postfach = src._setNoneIfEmpty(daten["Postfach"])
@@ -117,8 +119,11 @@ class Lieferant(Adresse):
     def _fill_steuersatz(self, daten: list) -> None:
         """use it for Stammdaten only"""
         # print(daten)
-        if "Steuersatz" not in daten.keys() or daten["Steuersatz"] is None\
-                or len(daten["Steuersatz"]) == 0:
+        if (
+            "Steuersatz" not in daten.keys()
+            or daten["Steuersatz"] is None
+            or len(daten["Steuersatz"]) == 0
+        ):
             # print('Steuersatz:', hasattr(daten, "Steuersatz"))
             self.steuersatz = "19.00"
         else:
@@ -130,8 +135,7 @@ class Lieferant(Adresse):
 
     def _fill_betrieb(self, daten):
         """use it for Stammdaten only"""
-        self.betriebsbezeichnung = src._setNoneIfEmpty(
-            daten['Betriebsbezeichnung'])
+        self.betriebsbezeichnung = src._setNoneIfEmpty(daten["Betriebsbezeichnung"])
         if not self.betriebsbezeichnung:
             raise ValueError(BETRIEB_ERROR)
 
@@ -147,8 +151,7 @@ class Lieferant(Adresse):
         ziel = None
         if "Zahlungsziel" in keys:
             ziel = src._setNoneIfEmpty(daten["Zahlungsziel"])
-        if ziel is not None and len(ziel) > 0 and\
-                '\n' not in ziel:
+        if ziel is not None and len(ziel) > 0 and "\n" not in ziel:
             self.zahlungsziel = ziel
         else:
             self.zahlungsziel = "14"
@@ -173,12 +176,8 @@ class Lieferant(Adresse):
 
     def get_ueberweisungsdatum(self, datum: datetime = None) -> datetime:
         return (
-            datetime.now() if datum is None else datum
-            + timedelta(
-                days=int(
-                    self.zahlungsziel
-                    if self.zahlungsziel > ""
-                    else "0"
-                )
-            )
+            datetime.now()
+            if datum is None
+            else datum
+            + timedelta(days=int(self.zahlungsziel if self.zahlungsziel > "" else "0"))
         )

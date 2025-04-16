@@ -4,84 +4,150 @@ STAMMDATEN = [
         "Label": "Betriebsbezeichnung",
         "Lines": 1,
         "Type": "String",
-        "Dest": "Stammdaten"
+        "Dest": "Stammdaten",
     },
     # {"Text": "Anschrift", "Label": "Anschrift", "Lines": 5, "Type": "String",
     #     "Dest": "Stammdaten"},
-    {"Text": "Abteilung", "Label": "Abteilung (optional)", "Lines": 1,
-        "Type": "String",  "Dest": "Stammdaten"},
-    {"Text": "Ansprechpartner", "Label": "Ansprechpartner", "Lines": 1,
-        "Type": "String",  "Dest": "Stammdaten"},
-    {"Text": "Strasse", "Label": "Strasse", "Lines": 1, "Type": "String",
-        "Dest": "Stammdaten"},
-    {"Text": "Hausnummer", "Label": "Hausnummer", "Lines": 1, "Type": "String",
-        "Dest": "Stammdaten"},
-    {"Text": "Postfach",
-        "Label": "Postfach (alternativ zu\nStrasse und Hausnr.)",
-        "Lines": 1, "Type": "String", "Dest": "Stammdaten"},
-    {"Text": "PLZ", "Label": "PLZ", "Lines": 1, "Type": "String",
-        "Dest": "Stammdaten"},
-    {"Text": "Ort", "Label": "Ort", "Lines": 1, "Type": "String",
-        "Dest": "Stammdaten"},
-    {"Text": "Bundesland", "Label": "Bundesland", "Lines": 1,
+    {
+        "Text": "Abteilung",
+        "Label": "Abteilung (optional)",
+        "Lines": 1,
         "Type": "String",
-        "Dest": "Stammdaten"},
+        "Dest": "Stammdaten",
+    },
+    {
+        "Text": "Ansprechpartner",
+        "Label": "Ansprechpartner",
+        "Lines": 1,
+        "Type": "String",
+        "Dest": "Stammdaten",
+    },
+    {
+        "Text": "Strasse",
+        "Label": "Strasse",
+        "Lines": 1,
+        "Type": "String",
+        "Dest": "Stammdaten",
+    },
+    {
+        "Text": "Hausnummer",
+        "Label": "Hausnummer",
+        "Lines": 1,
+        "Type": "String",
+        "Dest": "Stammdaten",
+    },
+    {
+        "Text": "Postfach",
+        "Label": "Postfach (alternativ zu\nStrasse und Hausnr.)",
+        "Lines": 1,
+        "Type": "String",
+        "Dest": "Stammdaten",
+    },
+    {"Text": "PLZ", "Label": "PLZ", "Lines": 1, "Type": "String", "Dest": "Stammdaten"},
+    {"Text": "Ort", "Label": "Ort", "Lines": 1, "Type": "String", "Dest": "Stammdaten"},
+    {
+        "Text": "Bundesland",
+        "Label": "Bundesland",
+        "Lines": 1,
+        "Type": "String",
+        "Dest": "Stammdaten",
+    },
     # {"Text": "Name", "Label": "Name", "Lines": 1, "Type": "String",
     #     "Dest": "Stammdaten"},
     # {"Text": "Kontakt", "Label": "Kontakt", "Lines": 5, "Type": "String",
     #     "Dest": "Stammdaten"},
-    {"Text": "Telefon", "Label": "Telefon", "Lines": 1, "Type": "String",
-        "Dest": "Stammdaten"},
-    {"Text": "Fax", "Label": "Fax", "Lines": 1, "Type": "String",
-        "Dest": "Stammdaten"},
-    {"Text": "Email", "Label": "E-Mail", "Lines": 1, "Type": "String",
-        "Dest": "Stammdaten"},
+    {
+        "Text": "Telefon",
+        "Label": "Telefon",
+        "Lines": 1,
+        "Type": "String",
+        "Dest": "Stammdaten",
+    },
+    {"Text": "Fax", "Label": "Fax", "Lines": 1, "Type": "String", "Dest": "Stammdaten"},
+    {
+        "Text": "Email",
+        "Label": "E-Mail",
+        "Lines": 1,
+        "Type": "String",
+        "Dest": "Stammdaten",
+    },
     # {"Text": "Umsatzsteuer", "Label": "Umsatzsteuer", "Lines": 2,
     #     "Type": "String",
     #     "Dest": "Stammdaten"},
-    {"Text": "Steuernummer", "Label": "Steuernummer", "Lines": 1,
+    {
+        "Text": "Steuernummer",
+        "Label": "Steuernummer",
+        "Lines": 1,
         "Type": "String",
-        "Dest": "Stammdaten"},
-    {"Text": "Finanzamt", "Label": "Finanzamt", "Lines": 1,
+        "Dest": "Stammdaten",
+    },
+    {
+        "Text": "Finanzamt",
+        "Label": "Finanzamt",
+        "Lines": 1,
         "Type": "String",
-        "Dest": "Stammdaten"},
-    {"Text": "UmsatzsteuerID",
+        "Dest": "Stammdaten",
+    },
+    {
+        "Text": "UmsatzsteuerID",
         "Label": "Umsatzsteuer-ID (alternativ\nzu Steuernr. und Finanzamt)",
-        "Lines": 1, "Type": "String", "Dest": "Stammdaten"},
+        "Lines": 1,
+        "Type": "String",
+        "Dest": "Stammdaten",
+    },
     # {"Text": "Konto", "Label": "Konto", "Lines": 3, "Type": "String",
     #     "Dest": "Stammdaten"},
-    {"Text": "Kontoinhaber", "Label": "Kontoinhaber", "Lines": 1,
-        "Type": "String",  "Dest": "Stammdaten"},
-    {"Text": "IBAN", "Label": "IBAN", "Lines": 1, "Type": "String",
-        "Dest": "Stammdaten"},
-    {"Text": "BIC", "Label": "BIC", "Lines": 1, "Type": "String",
-        "Dest": "Stammdaten"},
+    {
+        "Text": "Kontoinhaber",
+        "Label": "Kontoinhaber",
+        "Lines": 1,
+        "Type": "String",
+        "Dest": "Stammdaten",
+    },
+    {
+        "Text": "IBAN",
+        "Label": "IBAN",
+        "Lines": 1,
+        "Type": "String",
+        "Dest": "Stammdaten",
+    },
+    {"Text": "BIC", "Label": "BIC", "Lines": 1, "Type": "String", "Dest": "Stammdaten"},
     {
         "Text": "Kleinunternehmen",
         "Label": "Kleinunternehmen",
         "Lines": 1,
         "Type": "Boolean",
         "Variable": "Kleinunternehmen",
-        "Dest": "Stammdaten"
+        "Dest": "Stammdaten",
     },
-    {"Text": "Zahlungsziel",
+    {
+        "Text": "Zahlungsziel",
         "Label": "Zahlungsziel (in Tagen)\n(default 14 Tage)",
         "Lines": 1,
         "Type": "String",
-        "Dest": "Steuerung"},
-    {"Text": "Abspann", "Label": "Abspann", "Lines": 5, "Type": "String",
-        "Dest": "Steuerung"},
-    {"Text": "Steuersatz", "Label": "Steuersatz (in %)\n(default 19%)",
+        "Dest": "Steuerung",
+    },
+    {
+        "Text": "Abspann",
+        "Label": "Abspann",
+        "Lines": 5,
+        "Type": "String",
+        "Dest": "Steuerung",
+    },
+    {
+        "Text": "Steuersatz",
+        "Label": "Steuersatz (in %)\n(default 19%)",
         "Lines": 1,
         "Type": "String",
-        "Dest": "Steuerung"},
+        "Dest": "Steuerung",
+    },
     {
         "Text": "ZugFeRD",
         "Label": "ZugFeRD Datensatz erzeugen und anhängen",
         "Lines": 1,
         "Type": "Boolean",
         "Variable": "ZugFeRD",
-        "Dest": "Steuerung"
+        "Dest": "Steuerung",
     },
     {
         "Text": "GiroCode",
@@ -89,7 +155,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "Boolean",
         "Variable": "GiroCode",
-        "Dest": "Steuerung"
+        "Dest": "Steuerung",
     },
     {
         "Text": "BYOPdf",
@@ -97,10 +163,12 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "Boolean",
         "Variable": "BYOPdf",
-        "Dest": "Steuerung"
+        "Dest": "Steuerung",
     },
     {
-        "Text": "Verzeichnis", "Label": "Verzeichnis", "Lines": 1,
+        "Text": "Verzeichnis",
+        "Label": "Verzeichnis",
+        "Lines": 1,
         "Type": "Label",
         "Dest": "Steuerung",
     },
@@ -110,7 +178,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "AnschriftSpalte",
-        "Dest": "Excel"
+        "Dest": "Excel",
     },
     {
         "Text": "AnschriftZeile",
@@ -118,7 +186,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "AnschriftZeile",
-        "Dest": "Excel"
+        "Dest": "Excel",
     },
     {
         "Text": "RechnungSpalte",
@@ -126,7 +194,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "RechnungSpalte",
-        "Dest": "Excel"
+        "Dest": "Excel",
     },
     {
         "Text": "RechnungZeile",
@@ -134,7 +202,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "RechnungZeile",
-        "Dest": "Excel"
+        "Dest": "Excel",
     },
     {
         "Text": "RGDatumSpalte",
@@ -142,7 +210,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "RGDatumSpalte",
-        "Dest": "Excel"
+        "Dest": "Excel",
     },
     {
         "Text": "RGDatumZeile",
@@ -150,7 +218,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "RGDatumZeile",
-        "Dest": "Excel"
+        "Dest": "Excel",
     },
     {
         "Text": "NettosummeSpalte",
@@ -158,7 +226,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "NettosummeSpalte",
-        "Dest": "Excel"
+        "Dest": "Excel",
     },
     {
         "Text": "NettosummeZeile",
@@ -166,7 +234,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "NettosummeZeile",
-        "Dest": "Excel"
+        "Dest": "Excel",
     },
     {
         "Text": "MWStsummeSpalte",
@@ -174,7 +242,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "MWStsummeSpalte",
-        "Dest": "Excel"
+        "Dest": "Excel",
     },
     {
         "Text": "MWStsummeZeile",
@@ -182,7 +250,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "MWStsummeZeile",
-        "Dest": "Excel"
+        "Dest": "Excel",
     },
     {
         "Text": "BruttosummeSpalte",
@@ -190,7 +258,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "BruttosummeSpalte",
-        "Dest": "Excel"
+        "Dest": "Excel",
     },
     {
         "Text": "BruttosummeZeile",
@@ -198,7 +266,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "BruttosummeZeile",
-        "Dest": "Excel"
+        "Dest": "Excel",
     },
     {
         "Text": "Label1",
@@ -207,7 +275,7 @@ STAMMDATEN = [
         "Lines": 2,
         "Type": "Label",
         "Variable": "Label1",
-        "Dest": "ExcelPos"
+        "Dest": "ExcelPos",
     },
     {
         "Text": "PositionenZeile",
@@ -215,7 +283,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "PositionenZeile",
-        "Dest": "ExcelPos"
+        "Dest": "ExcelPos",
     },
     {
         "Text": "PosSpalte",
@@ -223,7 +291,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "PosSpalte",
-        "Dest": "ExcelPos"
+        "Dest": "ExcelPos",
     },
     {
         "Text": "DatSpalte",
@@ -231,7 +299,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "DatSpalte",
-        "Dest": "ExcelPos"
+        "Dest": "ExcelPos",
     },
     {
         "Text": "DescSpalte",
@@ -239,7 +307,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "DescSpalte",
-        "Dest": "ExcelPos"
+        "Dest": "ExcelPos",
     },
     {
         "Text": "AnzSpalte",
@@ -247,7 +315,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "AnzSpalte",
-        "Dest": "ExcelPos"
+        "Dest": "ExcelPos",
     },
     {
         "Text": "TypSpalte",
@@ -255,7 +323,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "TypSpalte",
-        "Dest": "ExcelPos"
+        "Dest": "ExcelPos",
     },
     {
         "Text": "PreisSpalte",
@@ -263,7 +331,7 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "PreisSpalte",
-        "Dest": "ExcelPos"
+        "Dest": "ExcelPos",
     },
     {
         "Text": "SumSpalte",
@@ -271,6 +339,6 @@ STAMMDATEN = [
         "Lines": 1,
         "Type": "String",
         "Variable": "SumSpalte",
-        "Dest": "ExcelPos"
+        "Dest": "ExcelPos",
     },
 ]

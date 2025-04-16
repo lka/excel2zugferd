@@ -22,8 +22,9 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
     Oberflaeche for Ini File Inputs
     """
 
-    def __init__(self, thefields: dict, middleware: Middleware = None,
-                 window=None) -> None:
+    def __init__(
+        self, thefields: dict, middleware: Middleware = None, window=None
+    ) -> None:
         super().__init__(window=window, wsize="700x800")  # tk.Toplevel())
         self.fields: dict = thefields
         self.middleware: Middleware = middleware
@@ -32,34 +33,30 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
             [
                 {
                     "Datei": {
-                        "Stammdateneingabe":
-                            {
-                                "Sonstige": self.pre_open_steuerung,
-                                "Excel Steuerung":
-                                    self.pre_open_excelsteuerung,
-                                "Excel Positionen":
-                                    self.pre_open_excelsteuerung,
-                            },
+                        "Stammdateneingabe": {
+                            "Sonstige": self.pre_open_steuerung,
+                            "Excel Steuerung": self.pre_open_excelsteuerung,
+                            "Excel Positionen": self.pre_open_excelsteuerung,
+                        },
                         "Separator1": 0,
                         "Excel2ZUGFeRD": self.pre_open_excel2zugferd,
                         "Separator2": 0,
-                        "Beenden": self.quit_cmd
-                        }
+                        "Beenden": self.quit_cmd,
+                    }
                 },
                 {"Hilfe": {"Info über...": self.info_cmd}},
             ]
         )
         row = tk.Frame(self.content_frame)
-        row.grid(row=0, column=0, columnspan=2, padx=PADX, pady=PADY,
-                 sticky=tk.W)
+        row.grid(row=0, column=0, columnspan=2, padx=PADX, pady=PADY, sticky=tk.W)
         # row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
         self.logo_button = ttk.Button(
-            row, text="Logo auswählen...",  # anchor="w",
-            command=self.handle_file_button
+            row,
+            text="Logo auswählen...",  # anchor="w",
+            command=self.handle_file_button,
         )
         self.logo_button.pack(side=tk.LEFT, padx=PADX)
-        self.logo_button.bind("<Return>",
-                              (lambda event: self.handle_file_button))
+        self.logo_button.bind("<Return>", (lambda event: self.handle_file_button))
         self.logo_delete = ttk.Button(
             row, text="Logo löschen", command=self.handle_logo_delete_button
         )
@@ -75,7 +72,7 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
         self.make_logo(self.logo_fn)
 
         self.ents = self.makeform("Stammdaten", offset=1)
-        self._add_quit_save_buttons(len(self.ents)+1, self.fetch)
+        self._add_quit_save_buttons(len(self.ents) + 1, self.fetch)
 
     def handle_file_button(self):
         """
@@ -100,8 +97,7 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
         ask for deletion with really?
         """
         resp = messagebox.askyesno(
-            "Löschen des Logos",
-            "Sind Sie sicher, dass Sie das Logo löschen möchten?"
+            "Löschen des Logos", "Sind Sie sicher, dass Sie das Logo löschen möchten?"
         )
         # print(resp)
         if resp is True:

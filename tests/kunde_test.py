@@ -11,7 +11,7 @@ ADRESSFELD = [
     "Vertrieb",
     "Frau Müller",
     "In der Musterstr. 17a",
-    "12345 Musterstadt"
+    "12345 Musterstadt",
 ]
 
 
@@ -19,25 +19,25 @@ class TestAdresse(unittest.TestCase):
     """
     Test Class for Class Adresse
     """
+
     def test_get_anschrift_kunde(self):
         """Tests get_anschrift of Kunde"""
         adr = Kunde()
-        MSG = 'should be filled'
+        MSG = "should be filled"
         BEZ = "Mustermann GmbH & CoKG"
-        NAME = 'Frau Müller'
-        ZUS = 'Vertrieb'
-        ORT = 'Musterstadt'
-        PLZ = '12345'
-        STR = 'In der Musterstr.'
-        HNR = '17a'
+        NAME = "Frau Müller"
+        ZUS = "Vertrieb"
+        ORT = "Musterstadt"
+        PLZ = "12345"
+        STR = "In der Musterstr."
+        HNR = "17a"
 
         adr.anschrift = ADRESSFELD
-        self.assertEqual(adr.anschrift,
-                         f"{BEZ}\n{ZUS}\n{NAME}\n{STR} {HNR}\n{PLZ} {ORT}",
-                         MSG)
+        self.assertEqual(
+            adr.anschrift, f"{BEZ}\n{ZUS}\n{NAME}\n{STR} {HNR}\n{PLZ} {ORT}", MSG
+        )
         adr.adresszusatz = _setNoneIfEmpty("")
-        self.assertEqual(adr.anschrift,
-                         f"{BEZ}\n{NAME}\n{STR} {HNR}\n{PLZ} {ORT}", MSG)
+        self.assertEqual(adr.anschrift, f"{BEZ}\n{NAME}\n{STR} {HNR}\n{PLZ} {ORT}", MSG)
 
     def test_set_anschrift_kunde_throws_ValueError(self):
         """

@@ -7,6 +7,7 @@ from src.constants import ANSCHRIFT_ERROR, KONTAKT_ERROR, USTID_ERROR
 
 class Adresse(object):
     """Class Adresse"""
+
     def __init__(self) -> None:
         self._betriebsbezeichnung = None
         self._name = None
@@ -204,29 +205,34 @@ class Adresse(object):
     def steuersatz(self, value):
         self._steuersatz = value
 
-# --------------- used for Kunde and Lieferant ---------------------------
+    # --------------- used for Kunde and Lieferant ---------------------------
     @property
     def anschrift(self) -> str:
-        return '\n'.join(
-            filter(None,
-                   [
-                        self.betriebsbezeichnung,
-                        self.adresszusatz,
-                        self.name,
-                        ' '.join(['Postfach:', self.postfach])
-                        if self.postfach else None,
-                        self.strasse if self.strasse and not self.hausnummer
-                        else ' '.join([self.strasse, self.hausnummer])
-                        if not self.postfach else None,
-                        ' '.join([self.plz, self.ort]),
-                    ]
-                   )
+        return "\n".join(
+            filter(
+                None,
+                [
+                    self.betriebsbezeichnung,
+                    self.adresszusatz,
+                    self.name,
+                    " ".join(["Postfach:", self.postfach]) if self.postfach else None,
+                    (
+                        self.strasse
+                        if self.strasse and not self.hausnummer
+                        else (
+                            " ".join([self.strasse, self.hausnummer])
+                            if not self.postfach
+                            else None
+                        )
+                    ),
+                    " ".join([self.plz, self.ort]),
+                ],
             )
+        )
 
     def _check_plz_ort(self) -> None:
         """raise ValueError on failure"""
-        if (self.plz is not None
-                and self.ort is not None):
+        if self.plz is not None and self.ort is not None:
             return
         raise ValueError(ANSCHRIFT_ERROR)
 
@@ -240,8 +246,7 @@ class Adresse(object):
 
     def _check_umsatzsteuer(self) -> None:
         """raise ValueError on failure"""
-        if (self.steuernr is not None
-                and self.finanzamt is not None):
+        if self.steuernr is not None and self.finanzamt is not None:
             return
         if self.steuerid is not None:
             return
@@ -250,11 +255,9 @@ class Adresse(object):
     def _check_anschrift(self) -> None:
         """raise ValueError on failure"""
         self._check_plz_ort()
-        if (self.betriebsbezeichnung is not None
-                and self.postfach is not None):
+        if self.betriebsbezeichnung is not None and self.postfach is not None:
             return
-        elif (self.betriebsbezeichnung is not None
-                and self.strasse is not None):
+        elif self.betriebsbezeichnung is not None and self.strasse is not None:
             return
         else:
             raise ValueError(ANSCHRIFT_ERROR)

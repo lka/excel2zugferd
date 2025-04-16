@@ -10,6 +10,7 @@ from fpdf import FPDF
 from fpdf.fonts import FontFace
 from fpdf.enums import TableCellFillMode, OutputIntentSubType
 from fpdf.output import PDFICCProfileObject
+
 # import src.handle_zugferd as handle_zugferd
 import src.handle_girocode as gc
 import pandas as pd
@@ -93,8 +94,9 @@ class PDF(FPDF):
         self.line(3, 148.5, 6, 148.5)  # Lochmarke
         self.line(4, 210, 8, 210)
 
-    def _set_section(self, section: str, x: float, y: float, style: str,
-                     size: int) -> None:
+    def _set_section(
+        self, section: str, x: float, y: float, style: str, size: int
+    ) -> None:
         """sets section, xy position, font"""
         if section is not None:
             self.start_section(section)
@@ -107,7 +109,7 @@ class PDF(FPDF):
         """
         self._set_section("Absender", LEFTofABSENDER, 25.5, "", 11)
         arr = adress.splitlines()
-        self.multi_cell(0, 5, '\n'.join(arr[1:]))
+        self.multi_cell(0, 5, "\n".join(arr[1:]))
         self._set_section("Abs-kurz", 25, 60.5, "U", 6)
         abs_kurz = ", ".join([arr[0], arr[-2], arr[-1]])
         self.cell(105, 1, abs_kurz)
@@ -168,10 +170,7 @@ class PDF(FPDF):
         )
 
     def _getCellFillColor(self):
-        return (
-                self.table_fill_color if self.table_fill_color
-                else (244, 235, 255)
-            )
+        return self.table_fill_color if self.table_fill_color else (244, 235, 255)
 
     def _set_variable_Breite(self, arr: list) -> list:
         fixeBreite = sum(arr)
@@ -255,14 +254,13 @@ class PDF(FPDF):
 
     def _getTableFillColor(self) -> tuple:
         return (
-                self.table_fill_color
-                if hasattr(self, "table_fill_color")
-                else (244, 235, 255)
-            )
+            self.table_fill_color
+            if hasattr(self, "table_fill_color")
+            else (244, 235, 255)
+        )
 
     def _getSummenColWidths(self) -> tuple:
-        return (self.sum_table_widths if self.sum_table_widths
-                else (50, 22))
+        return self.sum_table_widths if self.sum_table_widths else (50, 22)
 
     def _getSummenTableWidth(self) -> int:
         return sum(self.sum_table_widths) if self.sum_table_widths else 72
@@ -340,12 +338,11 @@ class PDF(FPDF):
         self.start_section("GiroCode", 0)
         self.set_draw_color(255)
         # self.rect(*rect1)
-        self.image(img.get_image(), w=30, h=30,
-                   keep_aspect_ratio=True)
+        self.image(img.get_image(), w=30, h=30, keep_aspect_ratio=True)
         self.set_draw_color(0)
         self.set_x(28)
         self.set_font(None, "B", size=10)
-        self.cell(80, 1, 'Bezahlen via GiroCode')
+        self.cell(80, 1, "Bezahlen via GiroCode")
         self.set_font(None, "", size=10)
 
     def uniquify(self, path: str, appendix: str = None) -> str:
@@ -357,8 +354,8 @@ class PDF(FPDF):
 
         if appendix is not None:
             equal = False
-            for i in range(len(appendix)-1):
-                equal |= (appendix[-(i+1)] == fn[-(i+1)])
+            for i in range(len(appendix) - 1):
+                equal |= appendix[-(i + 1)] == fn[-(i + 1)]
             fn = f"{fn}{appendix}" if not equal else fn
             path = f"{fn}" + ext
 
@@ -373,22 +370,20 @@ class Pdf(PDF):
     Klasse Pdf
     """
 
-    def __init__(self, logo_fn=None)\
-            -> None:
+    def __init__(self, logo_fn=None) -> None:
         super().__init__()
         self.logo_fn = logo_fn
         self.qrcode_img = None
         self.invoice: InvoiceCollection = None
         self.set_fonts_and_other_stuff()
-        locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')
+        locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
 
     def set_fonts_and_other_stuff(self) -> None:
         """
         import and embed TTF Font to use € in text
         """
         self.add_font(
-            "dejavu-sans", style="",
-            fname="./_internal/Fonts/DejaVuSansCondensed.ttf"
+            "dejavu-sans", style="", fname="./_internal/Fonts/DejaVuSansCondensed.ttf"
         )
         self.add_font(
             "dejavu-sans",
@@ -410,12 +405,9 @@ class Pdf(PDF):
         self.set_lang("de_DE")
         # set left, top and right margin for document
         self.set_margins(25, 16.9, 20)
-        with open(os.path.join("_internal", "sRGB2014.icc"), "rb") as\
-                iccp_file:
+        with open(os.path.join("_internal", "sRGB2014.icc"), "rb") as iccp_file:
             icc_profile = PDFICCProfileObject(
-                contents=iccp_file.read(),
-                n=3,
-                alternate="DeviceRGB"
+                contents=iccp_file.read(), n=3, alternate="DeviceRGB"
             )
         self.set_output_intent(
             OutputIntentSubType.PDFA,
@@ -453,17 +445,18 @@ class Pdf(PDF):
         if bundesland and len(bundesland) > 0:
             self.print_bundesland(bundesland)
         self.print_kontakt(
-            self.invoice.supplier.kontakt + "\n\n" +
-            self.invoice.supplier.umsatzsteuer
+            self.invoice.supplier.kontakt + "\n\n" + self.invoice.supplier.umsatzsteuer
         )
 
     def _fill_girocode(self, brutto, rg_nr, datum):
-        girocode = gc.Handle_Girocode(self.invoice.supplier_account.bic,
-                                      self.invoice.supplier_account.iban,
-                                      self.invoice.supplier_account.name)
+        girocode = gc.Handle_Girocode(
+            self.invoice.supplier_account.bic,
+            self.invoice.supplier_account.iban,
+            self.invoice.supplier_account.name,
+        )
         self.qrcode_img = girocode.girocodegen(
-            brutto,
-            f"{list(rg_nr.keys())[0]} {list(rg_nr.values())[0]} vom {datum}")
+            brutto, f"{list(rg_nr.keys())[0]} {list(rg_nr.values())[0]} vom {datum}"
+        )
         self.print_qrcode(self.qrcode_img)
 
     def _fill_kleinunternehmen(self) -> None:
@@ -495,18 +488,19 @@ class Pdf(PDF):
         df = self.invoice.positions
         retval = df.copy()
         headers = list(df.columns)
-        retval[headers[1]] = pd.to_datetime(retval[headers[1]],  # Datum
-                                            errors="ignore")
+        retval[headers[1]] = pd.to_datetime(
+            retval[headers[1]], errors="ignore"  # Datum
+        )
         von = min(retval[headers[1]])
         bis = max(retval[headers[1]])
         return [von, bis]
 
     def _set_first_datum(self, df: pd.DataFrame, headers: list) -> None:
-        """ I expect Datum at second position in df """
+        """I expect Datum at second position in df"""
         if df.loc[df[headers[1]].index[0], headers[1]] == "":
-            df.loc[df[headers[1]].index[0], headers[1]] =\
-                list(self.invoice.invoicedate.values())[0]\
-                .strftime(GERMAN_DATE)
+            df.loc[df[headers[1]].index[0], headers[1]] = list(
+                self.invoice.invoicedate.values()
+            )[0].strftime(GERMAN_DATE)
 
     def _change_values_to_german(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -517,24 +511,19 @@ class Pdf(PDF):
         headers = list(df.columns)
         # retval.style.format({datum: lambda t: t.strftime("%d.%m.%Y")
         #                      if len(t) > 0 else ""})
-        retval[headers[1]] = pd.to_datetime(retval[headers[1]],  # Datum
-                                            errors="ignore")\
-            .dt.strftime(GERMAN_DATE)
+        retval[headers[1]] = pd.to_datetime(
+            retval[headers[1]], errors="ignore"  # Datum
+        ).dt.strftime(GERMAN_DATE)
         # substitute NaN by ""
         retval[headers[1]] = retval[headers[1]].fillna("")
         self._set_first_datum(retval, headers)
         # print("_change_values_to_german:\n", retval)
-        retval[headers[3]] = (  # Anzahl
-            retval[headers[3]]
-            .apply("{:n}".format)
+        retval[headers[3]] = retval[headers[3]].apply("{:n}".format)  # Anzahl
+        retval[headers[5]] = retval[headers[5]].apply(  # Preis
+            lambda x: self._currency(x)
         )
-        retval[headers[5]] = (  # Preis
-            retval[headers[5]]
-            .apply(lambda x: self._currency(x))
-        )
-        retval[headers[6]] = (  # Summe
-            retval[headers[6]]
-            .apply(lambda x: self._currency(x))
+        retval[headers[6]] = retval[headers[6]].apply(  # Summe
+            lambda x: self._currency(x)
         )
         return retval
 
@@ -550,22 +539,27 @@ class Pdf(PDF):
         # print(lenArr)
 
         # return {'daten': np.r_[line.values, retval.astype(str).values],
-        return {'daten': np.r_[[retval.columns], retval.astype(str).values],
-                'maxlengths': lenArr}
+        return {
+            "daten": np.r_[[retval.columns], retval.astype(str).values],
+            "maxlengths": lenArr,
+        }
 
     def _fill_positions(self) -> None:
         # print(self.split_dataframe_by_SearchValue(AN, "Pos."))
         theDict = self.get_invoice_positions(self.invoice.positions)
         if len(theDict) > 0:
-            self.print_positions(theDict['daten'], theDict['maxlengths'])
+            self.print_positions(theDict["daten"], theDict["maxlengths"])
 
     def _fill_abspann(self, brutto: str, ueberweisungsdatum: datetime) -> None:
         abspann = (
             self.invoice.management.abspann
-            if self.invoice.management.abspann and len(self.invoice.
-                                                       management.abspann) > 1
-            else "Mit freundlichen Grüßen\n" + self.invoice.supplier.name if
-            self.invoice.supplier.name else ''
+            if self.invoice.management.abspann
+            and len(self.invoice.management.abspann) > 1
+            else (
+                "Mit freundlichen Grüßen\n" + self.invoice.supplier.name
+                if self.invoice.supplier.name
+                else ""
+            )
         )
         self.print_abspann(
             f"Bitte überweisen Sie den Betrag von {brutto} bis zum \
@@ -591,7 +585,7 @@ u.a. Konto.\n\n{abspann}"
         return [
             ("Summe netto:", self._currency(netto)),
             (UST, self._currency(umsatzsteuer)),
-            ("Bruttobetrag:", self._currency(brutto))
+            ("Bruttobetrag:", self._currency(brutto)),
         ]
 
     def fill_pdf(self, invoice: InvoiceCollection) -> None:
@@ -606,16 +600,16 @@ u.a. Konto.\n\n{abspann}"
         # today = datetime.now()
         datum = list(invoice.invoicedate.values())[0]
         von, bis = self.get_von_bis_dates()
-        ueberweisungsdatum = self.invoice.supplier\
-            .get_ueberweisungsdatum(datum)
+        ueberweisungsdatum = self.invoice.supplier.get_ueberweisungsdatum(datum)
 
         self.print_bezug(
             f"{list(rg_nr.keys())[0]} {list(rg_nr.values())[0]} vom\
  {datum.strftime(GERMAN_DATE)}"
         )
 
-        self.print_leistungszeitraum(von.strftime(GERMAN_DATE),
-                                     bis.strftime(GERMAN_DATE))
+        self.print_leistungszeitraum(
+            von.strftime(GERMAN_DATE), bis.strftime(GERMAN_DATE)
+        )
         self._fill_positions()
 
         summen = self.get_invoice_sums()
@@ -628,5 +622,6 @@ u.a. Konto.\n\n{abspann}"
         self._fill_abspann(brutto, ueberweisungsdatum)
 
         if self.invoice.management.create_girocode:
-            self._fill_girocode(locale.atof(brutto.strip(" €")), rg_nr,
-                                datum.strftime(GERMAN_DATE))
+            self._fill_girocode(
+                locale.atof(brutto.strip(" €")), rg_nr, datum.strftime(GERMAN_DATE)
+            )

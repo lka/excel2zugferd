@@ -22,8 +22,9 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
     Klasse OberflaecheExcel2ZugFerd
     """
 
-    def __init__(self, myfields: dict, middleware: Middleware = None,
-                 window=None) -> None:
+    def __init__(
+        self, myfields: dict, middleware: Middleware = None, window=None
+    ) -> None:
         super().__init__(window, wsize="480x440")
         self.fields: dict = myfields
         self.middleware = middleware
@@ -68,8 +69,7 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
         """
         if self._check_tabellenblatt():
             return
-        if self.middleware\
-                .setExcelDatenToInvoiceCollection(self.selected_lb_item):
+        if self.middleware.setExcelDatenToInvoiceCollection(self.selected_lb_item):
             return
         if self.middleware.try_to_init_pdf(self.logo_fn):
             return
@@ -96,9 +96,11 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
         try:
             self.middleware.save_working_directory(self.filename)
         except OSError as ex:
-            messagebox.showerror("IO-Fehler",
-                                 f"Ini-File \
-kann nicht beschrieben werden.\n{ex}")
+            messagebox.showerror(
+                "IO-Fehler",
+                f"Ini-File \
+kann nicht beschrieben werden.\n{ex}",
+            )
 
     def open_file(self):
         """
@@ -128,8 +130,7 @@ kann nicht beschrieben werden.\n{ex}")
         # get selected indices
         selected_indices = self.lb.curselection()
         # get selected items
-        self.selected_lb_item = ",".join([self.lb.get(i)
-                                         for i in selected_indices])
+        self.selected_lb_item = ",".join([self.lb.get(i) for i in selected_indices])
         if self.double_clicked_flag:
             # messagebox.showinfo("Info", "Double-Clicked")
             self.create_pdf()
@@ -139,17 +140,16 @@ kann nicht beschrieben werden.\n{ex}")
         """create listbox with scrollbar"""
         # create frame for listbox and scrollbar
         frame = ttk.Frame(self.content_frame)
-        frame.grid(row=1, column=0, columnspan=2, pady=PADY,
-                   sticky=tk.W)
+        frame.grid(row=1, column=0, columnspan=2, pady=PADY, sticky=tk.W)
         # create listbox for excel sheetnames
-        lb = tk.Listbox(frame, height=20, width=60,
-                        justify="left", selectmode=tk.SINGLE)
+        lb = tk.Listbox(
+            frame, height=20, width=60, justify="left", selectmode=tk.SINGLE
+        )
         lb.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         lb.bind("<<ListboxSelect>>", self.mouse_click)
         lb.bind("<Double-Button>", self.double_click)
         # Add a scrollbar to the listbox
-        scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL,
-                                  command=lb.yview)
+        scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=lb.yview)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         # Configure the listbox to work with the scrollbar
         lb.config(yscrollcommand=scrollbar.set)
