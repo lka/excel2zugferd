@@ -200,7 +200,6 @@ jobs:
 
             # Update package using newest wingetcreate
             Invoke-WebRequest -Uri https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
-            # .\wingetcreate.exe update --submit -t $gitToken -u https://github.com/lka/excel2zugferd/releases/download/${{steps.get_next_version.outputs.version}}/setup_excel2zugferd_x6432_${{steps.get_next_version.outputs.version}}.0.msi -v ${{steps.get_next_version.outputs.version}}.0 Lka.Excel2ZUGFeRD
             .\wingetcreate.exe update $packageId --version $packageVersion --urls "$installerUrl" --submit --token $gitToken
       shell: powershell
   
