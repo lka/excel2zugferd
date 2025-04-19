@@ -88,7 +88,8 @@ Damit können die XY-Positionen verändert werden und die Suchfunktion wird abge
 
 - In der PDF wird jetzt unterhalb der Rechnungsnummer `Leistungszeitraum VON - BIS` angezeigt.
 Die Kennzeichnung für die Kleinunternehmerregelung ist von dieser Position jetzt hinter die Rechnungssummen verschoben worden.
-- Es gibt Probleme mit dem wix toolset, es kann also sein, dass die Funktion mit wget für die Installation nicht mehr vorhanden ist.
+- Der Abgleich mit `wingetcreate` funktioniert wieder. `winget install excel2zugferd` ist daher wieder auf dem aktuellen Stand.
+- Die Validierung des erzeugten ZUGFeRD Dokuments auf https://www.portinvoice.com ist erfolgreich (Ohne Fehler und Warnungen).
 
 ### 0.23.x
 
