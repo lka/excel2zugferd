@@ -86,6 +86,7 @@ Damit können die XY-Positionen verändert werden und die Suchfunktion wird abge
 
 ### 0.24.x
 
+- Umstellung auf die fpdf2 Release - Version 2.8.3
 - In der PDF wird jetzt unterhalb der Rechnungsnummer `Leistungszeitraum VON - BIS` angezeigt.
 Die Kennzeichnung für die Kleinunternehmerregelung ist von dieser Position jetzt hinter die Rechnungssummen verschoben worden.
 - Der Abgleich mit `wingetcreate` funktioniert wieder. `winget install excel2zugferd` ist daher wieder auf dem aktuellen Stand.

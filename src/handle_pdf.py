@@ -9,7 +9,7 @@ import os
 from fpdf import FPDF
 from fpdf.fonts import FontFace
 from fpdf.enums import TableCellFillMode, OutputIntentSubType
-from fpdf.output import PDFICCProfileObject
+from fpdf.output import PDFICCProfile
 
 # import src.handle_zugferd as handle_zugferd
 import src.handle_girocode as gc
@@ -406,10 +406,10 @@ class Pdf(PDF):
         # set left, top and right margin for document
         self.set_margins(25, 16.9, 20)
         with open(os.path.join("_internal", "sRGB2014.icc"), "rb") as iccp_file:
-            icc_profile = PDFICCProfileObject(
+            icc_profile = PDFICCProfile(
                 contents=iccp_file.read(), n=3, alternate="DeviceRGB"
             )
-        self.set_output_intent(
+        self.add_output_intent(
             OutputIntentSubType.PDFA,
             "sRGB",
             "IEC 61966-2-1:1999",
