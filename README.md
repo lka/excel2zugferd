@@ -75,6 +75,21 @@ Nach dem Start des Programms:
 ![Image der Excel Steuerung](/assets/Excelsteuerung.png)
 ![Image der Excel Positionen](/assets/Excelpositionen.png)
 
+### Mehrere Firmenprofile
+
+In der Stammdateneingabe können mehrere Rechnungsaussteller als Firmenprofile
+verwaltet werden. Das ausgewählte Profil wird für die Rechnungserstellung
+verwendet. Profile können neu angelegt, umbenannt oder gelöscht werden.
+
+Ein einzelnes Firmenprofil lässt sich als JSON-Datei exportieren und auf einer
+anderen Installation wieder importieren. Bei einem bereits vorhandenen
+Profilnamen erzeugt der Import automatisch einen eindeutigen Namen. Globale
+Einstellungen, beispielsweise das Arbeitsverzeichnis und die Excel-Steuerung,
+werden nicht exportiert.
+
+Die exportierte Datei enthält sensible Firmen-, Bank- und Steuerdaten und sollte
+dementsprechend geschützt aufbewahrt und übertragen werden.
+
 ### Excel-Datei
 Die Struktur der Excel Datei ist vorgegeben und kann nicht verändert werden, ohne die Funktion zu verlieren.
 Als Vorlage benutzen Sie bitte die Datei "TestRechnung.xlsx".

@@ -342,3 +342,7 @@ STAMMDATEN = [
         "Dest": "ExcelPos",
     },
 ]
+
+COMPANY_PROFILE_KEYS = frozenset(
+    field["Text"] for field in STAMMDATEN if field["Dest"] == "Stammdaten"
+)

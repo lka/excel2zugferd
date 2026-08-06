@@ -207,7 +207,7 @@ class Middleware:
 
     def setStammdatenToInvoiceCollection(self) -> bool:
         """return True on failure"""
-        contentini_file = self.ini_file.read_ini_file()
+        contentini_file = self.ini_file.get_active_company_content()
         # print("_getStammdatenToInvoiceCollection:\n", contentini_file)
         return self._try_to_fill_stammdaten(self.invoiceCollection, contentini_file)
 
