@@ -92,7 +92,7 @@ jobs:
       run: dotnet tool install --global wix
     - name: Build msi package with WiX on Windows
       run: |
-        wix build .\excel2zugferd.wxs -d ProductVersion="${{steps.vars.outputs.MyAppVersion}}.0" -o setup_excel2zugferd_x6432_${{steps.vars.outputs.MyAppVersion}}.0.msi
+        wix build -acceptEula wix7 .\excel2zugferd.wxs -d ProductVersion="${{steps.vars.outputs.MyAppVersion}}.0" -o setup_excel2zugferd_x6432_${{steps.vars.outputs.MyAppVersion}}.0.msi
     - name: Deploy artifacts
       uses: actions/upload-artifact@v4
       id: setup_msi_artifact
