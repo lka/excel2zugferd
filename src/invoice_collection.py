@@ -11,7 +11,7 @@ from src.excel_content import ExcelContent
 from src.constants import (
     ANSCHRIFT_DEFAULT_SPALTE,
     RGNR_DEFAULT_SPALTE,
-    RGDATUM_REFAULT_SPALTE,
+    RGDATUM_DEFAULT_SPALTE,
 )
 
 
@@ -61,7 +61,7 @@ class InvoiceCollection(Invoice):
             spalte = (
                 self.management.datum_spalte
                 if self.management.datum_spalte
-                else RGDATUM_REFAULT_SPALTE
+                else RGDATUM_DEFAULT_SPALTE
             )
             self.invoicedate = daten.get_invoice_date(
                 spalte=spalte, zeile=self.management.datum_zeile

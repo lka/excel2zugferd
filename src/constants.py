@@ -1,3 +1,5 @@
+"""Constants for excel2zugferd."""
+
 P19USTG = "Gemäß § 19 UStG wird keine Umsatzsteuer berechnet."
 GERMAN_DATE = "%d.%m.%Y"
 KONTAKT_ERROR = (
@@ -74,7 +76,7 @@ EINZELPOSITIONEN_POS_ERR = (
 )
 ANSCHRIFT_DEFAULT_SPALTE = "A"
 RGNR_DEFAULT_SPALTE = "A"
-RGDATUM_REFAULT_SPALTE = "A"
+RGDATUM_DEFAULT_SPALTE = "A"
 
 EINHEITEN = {
     "h": "HUR",
@@ -92,6 +94,7 @@ EINHEITEN = {
     "1": "C62",
     "Stk.": "C62",
     "kWh": "KWH",
+    "AW": "E48",
 }
 LABELWIDTH = 22
 TEXTWIDTH = 60

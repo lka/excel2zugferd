@@ -13,7 +13,7 @@ from src.constants import (
     DATUM_NOT_FOUND_ERR,
     ANSCHRIFT_DEFAULT_SPALTE,
     RGNR_DEFAULT_SPALTE,
-    RGDATUM_REFAULT_SPALTE,
+    RGDATUM_DEFAULT_SPALTE,
 )
 import decimal
 import string
@@ -227,7 +227,7 @@ class ExcelContent:
 
     def get_invoice_date(
         self,
-        spalte: str = RGDATUM_REFAULT_SPALTE,
+        spalte: str = RGDATUM_DEFAULT_SPALTE,
         rg_date: str = "Rechnungsdatum:",
         zeile: str = None,
     ) -> any:

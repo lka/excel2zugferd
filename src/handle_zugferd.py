@@ -267,9 +267,9 @@ class ZugFeRD:
         self, dat, the_tax: str, steuerbefreiungsgrund: str = None
     ) -> None:
         """add gesamtsumme to invoice"""
-        netto = self._get_float_value(dat[0])
-        steuer = self._get_float_value(dat[1])
-        brutto = self._get_float_value(dat[2])
+        netto = Decimal(f"{self._get_float_value(dat[0]):.2f}")
+        steuer = Decimal(f"{self._get_float_value(dat[1]):.2f}")
+        brutto = Decimal(f"{self._get_float_value(dat[2]):.2f}")
 
         trade_tax = ApplicableTradeTax()
         trade_tax.calculated_amount = steuer
@@ -294,8 +294,8 @@ class ZugFeRD:
         )
         self.doc.trade.settlement.monetary_summation.grand_total = brutto
         self.doc.trade.settlement.monetary_summation.due_amount = brutto
-        self.doc.trade.settlement.monetary_summation.charge_total = 0.00
-        self.doc.trade.settlement.monetary_summation.allowance_total = 0.00
+        self.doc.trade.settlement.monetary_summation.charge_total = Decimal("0.00")
+        self.doc.trade.settlement.monetary_summation.allowance_total = Decimal("0.00")
 
     def add_zahlungsziel(self, text, datum):
         """add zahlungsziel to zugferd"""

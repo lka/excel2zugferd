@@ -1,7 +1,6 @@
-"""
-Modul zugferd_test
-"""
+"""Modul zugferd_test."""
 
+from locale import currency
 import unittest
 
 # import os
@@ -11,11 +10,11 @@ import src.handle_pdf as handle_pdf
 
 # from src.handle_other_objects import Adresse
 # from src.lieferant import Lieferant
-# import decimal
+import decimal
 
 
 class TestZugFerd(unittest.TestCase):
-    """Testclass for zugferd tests"""
+    """Testclass for zugferd tests."""
 
     def setUp(self) -> None:
         self.zugferd = handle_zugferd.ZugFeRD()
@@ -25,7 +24,7 @@ class TestZugFerd(unittest.TestCase):
 
     @unittest.skip("not more necessary testing this")
     def test_modify_xml(self):
-        """Test that xmlns:qdt is added"""
+        """Test that xmlns:qdt is added."""
         xml = '<?xml version=\'1.0\' encoding=\'UTF-8\'?>\
 <rsm:CrossIndustryInvoice xmlns:ram=\
 "urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100"\
@@ -261,6 +260,29 @@ xmlns:udt="urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100">\
         self.assertEqual(self.zugferd._get_einheit("nix"), "C62", MSG)
         self.assertEqual(self.zugferd._get_einheit("kg"), "KGM", MSG)
 
+    def test__add_gesamtsumme(self):
+        """Test that add_gesamtsumme doesn't throw any exception."""
+        data = [
+                    ("netto:", decimal.Decimal("1540.00")),
+                    ("USt.:", decimal.Decimal("84.00")),
+                    ("brutto:", decimal.Decimal("1690.00")),
+                ]
+        try:
+            self.zugferd.add_gesamtsummen(data, "19.00")
+        except Exception:
+            self.fail("raised Exception unexpectedly!")
+        self.assertEqual(
+            str(self.zugferd.doc.trade.settlement.monetary_summation.grand_total),
+            str(decimal.Decimal("1690.00")) + " None", "Grand_total should be equal"
+        )
+        self.assertEqual(
+            str(self.zugferd.doc.trade.settlement.monetary_summation.tax_basis_total),
+            str(decimal.Decimal("1540.00")) + " None", "Tax_basis_total should be equal"
+        )
+        self.assertEqual(
+            str(self.zugferd.doc.trade.settlement.monetary_summation.tax_total),
+            str(decimal.Decimal("84.00")) + " EUR", "Tax_total should be equal"
+        )
 
 # if __name__ == "__main__":
 #     unittest.main()

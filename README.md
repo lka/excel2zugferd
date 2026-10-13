@@ -19,7 +19,8 @@ Die verwendbaren Einheiten in der Spalte 'Typ' sind:
 * 'm³': Kubikmeter,
 * '1': Stück,
 * 'Stk.': Stück,
-* 'kWh': Kilowattstunden;
+* 'kWh': Kilowattstunden
+* 'AW' : Arbeitswerte (service unit);
 * der Default liefert Stück und dokumentiert in der Beschreibung (BT-154): "Die Einheit 'NIX' ist nicht\
  verfügbar und wurde durch 'C62' (Stück) ersetzt."
 
@@ -98,6 +99,13 @@ Alternativ können Sie die XY-Positionen im Excel Blatt (Spalten: A...Z, Zeilen:
 Damit können die XY-Positionen verändert werden und die Suchfunktion wird abgeschaltet. Durch die Angabe der "Excel Positionen" können Sie auch die Überschriften der Einzelpositionen anpassen z.B: Pos. -> Nr., Typ -> EH usw..
 
 ## Versionen
+
+### 0.25.x
+
+- Mehrere Firmenprofile verfügbar, dankenswerterweise beigesteuert von Volker Leitzgen
+- Einheit "AW" (Arbeitswerte) mit mapping auf "E48" (service unit)
+- Im XML-Part werden die Beträge jetzt mit 2 Nachkommastellen aufgeführt
+- Die Validierung des erzeugten ZUGFeRD Dokuments auf https://www.portinvoice.com ist erfolgreich (Ohne Fehler und Warnungen).
 
 ### 0.24.x
 

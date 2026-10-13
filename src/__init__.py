@@ -8,7 +8,7 @@ import src.oberflaeche_excelsteuerung  # noqa F404
 
 
 def _normalize(arr_in: list) -> list:
-    """remove empty elements of array"""
+    """Remove empty elements of array."""
     return list(filter(None, arr_in))
 
 

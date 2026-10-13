@@ -1,6 +1,4 @@
-"""
-Module excel2zugferd
-"""
+"""Module excel2zugferd."""
 
 from sys import argv, exit
 import src.oberflaeche_ini
