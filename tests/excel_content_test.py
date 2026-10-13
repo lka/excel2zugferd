@@ -132,6 +132,15 @@ von Hrn. F",
             "75,00 €",
             "37,50 €",
         ],
+        [
+            "12",
+            "18.01.2024",
+            "Programmiertätigkeiten",
+            "5",
+            "AW",
+            "22,00 €",
+            "110,00 €",
+        ],
     ]
 )
 
@@ -348,7 +357,7 @@ class TestExcelContent(TestCase):
     def test_get_invoice_sums(self):
         """Lies die Summen aus dem Excel Sheet"""
         self.xlsx.read_sheet("Rechnung2")
-        expected = 994.50
+        expected = 1104.50
         retval = self.xlsx.get_invoice_sums()
         # print(retval)
         self.assertEqual(float(retval[0][1]), expected, "should be equal")
@@ -357,7 +366,7 @@ class TestExcelContent(TestCase):
         """Lies die Summen aus dem Excel Sheet"""
         sums = "F"
         self.xlsx.read_sheet("Rechnung2")
-        expected = "1.183,46"
+        expected = "1.314,36"
         with decimal.localcontext() as ctx:
             # locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')
             ctx.rounding = decimal.ROUND_HALF_UP
