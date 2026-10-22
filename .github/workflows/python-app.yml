@@ -18,11 +18,11 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
     - name: Set up Python 3.11
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v7
       with:
         python-version: "3.11"
     - name: Install dependencies
@@ -49,7 +49,7 @@ jobs:
         # dir
         pytest --doctest-modules --junitxml=junit/test-results.xml
     - name: Upload pytest test results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
           name: pytest-results
           path: junit/test-results.xml
@@ -72,14 +72,14 @@ jobs:
     #     path: ./_inno_setup4excel2zugferd.iss
     #     options: /dMyAppVersion="${{steps.vars.outputs.MyAppVersion}}"
     - name: Deploy artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       id: artifact
       with:
           name: excel2zugferd
           path: dist/excel2zugferd*
           if-no-files-found: error
     # - name: Deploy artifacts
-    #   uses: actions/upload-artifact@v4
+    #   uses: actions/upload-artifact@v7
     #   id: setup_artifact
     #   with:
     #       name: setup_excel2zugferd
@@ -87,14 +87,14 @@ jobs:
     #       if-no-files-found: error
     # Create MSI from dist directory
     - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.1
+      uses: microsoft/setup-msbuild@v3
     - name: Install WiX
       run: dotnet tool install --global wix
     - name: Build msi package with WiX on Windows
       run: |
         wix build -acceptEula wix7 .\excel2zugferd.wxs -d ProductVersion="${{steps.vars.outputs.MyAppVersion}}.0" -o setup_excel2zugferd_x6432_${{steps.vars.outputs.MyAppVersion}}.0.msi
     - name: Deploy artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       id: setup_msi_artifact
       with:
           name: setup_msi_excel2zugferd
@@ -105,7 +105,7 @@ jobs:
     name: Release
     runs-on: windows-latest
     # don't create Release on pull request
-    if: ${{github.ref == 'refs/heads/master'}} && job.status == 'success'
+    if: ${{ github.ref == 'refs/heads/master' }}
     needs: build
     concurrency: release
     permissions:
@@ -114,7 +114,7 @@ jobs:
     
     steps:
     - name: Clone Repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         fetch-depth: 0
         ref: ${{ github.event.pull_request.head.sha }}
@@ -142,7 +142,7 @@ jobs:
         gh release create ${{ steps.get_next_version.outputs.version }} --repo="$GITHUB_REPOSITORY" --title="Version ${{ steps.get_next_version.outputs.version }}" --generate-notes
     - name: Download Artifact
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
-      uses: dawidd6/action-download-artifact@v3
+      uses: dawidd6/action-download-artifact@v27
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         name: excel2zugferd
@@ -152,7 +152,7 @@ jobs:
         skip_unpack: true
     # - name: Download Setup Artifact
     #   if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
-    #   uses: dawidd6/action-download-artifact@v3
+    #   uses: dawidd6/action-download-artifact@v27
     #   with:
     #     github_token: ${{ secrets.GITHUB_TOKEN }}
     #     name: setup_excel2zugferd
@@ -162,7 +162,7 @@ jobs:
     #     skip_unpack: true
     - name: Download MSI Setup Artifact
       if: ${{ steps.get_next_version.outputs.hasNextVersion == 'true' }}
-      uses: dawidd6/action-download-artifact@v3
+      uses: dawidd6/action-download-artifact@v27
       with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           name: setup_msi_excel2zugferd
