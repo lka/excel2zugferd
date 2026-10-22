@@ -46,7 +46,7 @@ class ExcelContent:
         self.daten = pd.read_excel(io=self.xlsx, sheet_name=sheet_name, header=None)
         self.daten.columns = list(string.ascii_uppercase)[0 : len(self.daten.columns)]
         self.daten.index = range(1, len(self.daten.index) + 1)
-        # print(self.daten)
+        # print("excel_content.py: Line 49\n", self.daten)
         return self.daten
 
     def mapReducePositions(
@@ -261,6 +261,8 @@ class ExcelContent:
                 mgmnt.preis_spalte,
                 mgmnt.sum_spalte,
             ]
+            if mgmnt.steuer_spalte:
+                columns.append(mgmnt.steuer_spalte)
             return self.mapReducePositions(self.daten, columns, mgmnt.positionen_zeile)
         return self._split_dataframe_by_search_value(spalte, search)
 
@@ -307,10 +309,54 @@ class ExcelContent:
     ):
         """return array of invoice sums"""
         netto = self._get_netto_sum(spalte, sum, management)
-        umsatzsteuer = self._get_ust_sum(spalte, USt, management)
+        umsatzsteuer = 0
+        try:
+            umsatzsteuer = self._get_ust_sum(spalte, USt, management)
+        except (ValueError, TypeError):
+            USt = "Umsatzsteuer"
+            umsatzsteuer = self._get_ust_sum(spalte, USt, management)
+
         brutto = self._get_brutto_sum(spalte, bruttobetr, management)
         return [
             ("Summe netto:", self._round(netto, 2)),
             ("zzgl. Umsatzsteuer:", self._round(umsatzsteuer, 2)),
             ("Bruttobetrag:", self._round(brutto, 2)),
         ]
+
+    def get_tax_values(
+        self,
+        spalte: str = "E",
+        search: str = "Umsatzsteueraufschlüsselung:",
+        steuersatz_spalte: str = "F",
+        wert_spalte: str = "G",
+        tax_spalte: str = "H",
+    ) -> dict:
+        """
+        return dict of tax values: the cells in column spalte below search
+        (up to the first empty cell) are the keys, the cells of the same rows
+        in column wert_spalte are the values
+        """
+        if self.daten is None:
+            return {}
+        if wert_spalte not in self.daten.columns:
+            # raise ValueError(self._get_col_err(wert_spalte))
+            return {}
+        arr = self._search_cell_in_column(spalte, search)
+        if arr.empty:
+            return {}
+        start = self.daten.index.get_loc(arr.index[0]) + 1
+        return self._collect_tax_values(start, spalte, steuersatz_spalte, wert_spalte, tax_spalte)
+
+    def _collect_tax_values(
+        self, start: int, spalte: str, steuersatz_spalte: str, wert_spalte: str, tax_spalte: str
+    ) -> dict:
+        """Collect tax values from rows after the section header."""
+        retval = {}
+        for idx in self.daten.index[start:]:
+            key = self.daten.at[idx, spalte]
+            if pd.isna(key):
+                break
+            retval[key] = [self.daten.at[idx, steuersatz_spalte],
+                           self.daten.at[idx, wert_spalte],
+                           self.daten.at[idx, tax_spalte]]
+        return retval

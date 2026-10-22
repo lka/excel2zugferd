@@ -227,7 +227,7 @@ class PDF(FPDF):
                 "CENTER",
                 "RIGHT",
                 "RIGHT",
-            ),
+            ) if len(lengths) == 7 else ("CENTER", "LEFT", "LEFT", "CENTER", "CENTER", "RIGHT", "RIGHT", "RIGHT"),
             align="RIGHT",
             headings_style=self._getHeadingsStyle(),
             line_height=5.5,
@@ -240,6 +240,59 @@ class PDF(FPDF):
                     data_row[1] = last
                 last = data_row[1]
                 table.row(data_row)
+
+    def print_tax_values(self, tax_values: dict) -> None:
+        """
+        prints tax values
+        """
+        if len(tax_values) == 0:
+            return
+        self._printTaxValuesHeader()
+        with self.table(
+            borders_layout="NO_HORIZONTAL_LINES",
+            cell_fill_color=self._getCellFillColor(),
+            cell_fill_mode=TableCellFillMode.ROWS,
+            col_widths=(10, 50, 30, 30),
+            text_align=(
+                "RIGHT",
+                "RIGHT",
+                "RIGHT",
+                "RIGHT"
+            ),
+            first_row_as_headings=False,
+            align="RIGHT",
+            line_height=5.5,
+            width=120,
+            padding=(2, 0, 2, 0),
+            v_align="TOP",
+        ) as table:
+            for key, value in tax_values.items():
+                if value[1] > 0:
+                    table.row(self._taxValuesRow(key, value))
+
+    def _printTaxValuesHeader(self) -> None:
+        """start section and set font and lines for tax values table"""
+        self.start_section("Steuerwerte", 0)
+        self.set_x(131)
+        self.ln()
+        self.set_font(None, "", size=10)
+        if self.table_lines:
+            self.set_draw_color(self.table_lines)
+        else:
+            self.set_draw_color(255, 0, 255)
+        self.set_line_width(0.3)
+
+    def _taxValuesRow(self, key, value: list) -> tuple:
+        """return cells of one row of the tax values table"""
+        if value[0] == 0:
+            # should be: 1..n, tax exception, tax_base, 0,00 €
+            return (str(key), value[2], self._currency(value[1]), self._currency(0))
+        return (
+            str(key),
+            f"Steuersatz {self._percent(value[0])} von:",
+            self._currency(value[1]),
+            self._currency(value[2]),
+        )
 
     def _printSummenHeader(self) -> None:
         self.start_section("Rechnungssumme", 0)
@@ -479,6 +532,16 @@ class Pdf(PDF):
         """return str as locale currency"""
         return locale.currency(amount, grouping=True)
 
+    def _percent(self, value: float | decimal.Decimal) -> str:
+        """return str as locale percentage"""
+        value = 0.19 if pd.isna(value) else float(value)
+        return locale.format_string("%.2f%%", value * 100, grouping=True)
+
+    def _integer(self, value: float | decimal.Decimal) -> str:
+        """return str as locale integer"""
+        value = 1 if pd.isna(value) else int(value)
+        return locale.format_string("%d", value, grouping=False)
+
     def get_von_bis_dates(self) -> list:
         """get min and max dates from positions
 
@@ -525,6 +588,11 @@ class Pdf(PDF):
         retval[headers[6]] = retval[headers[6]].apply(  # Summe
             lambda x: self._currency(x)
         )
+        if len(headers) > 7 and headers[7] == "Steuer":
+            retval[headers[7]] = retval[headers[7]].apply(  # Steuer
+                lambda x: self._integer(x)
+            )
+        # print("headers: ", len(headers))
         return retval
 
     def get_invoice_positions(self, positions: pd.DataFrame = None) -> dict:
@@ -534,7 +602,7 @@ class Pdf(PDF):
         {'daten': np.r_[], 'maxlengths': []}
         """
         retval = self._change_values_to_german(positions)
-        # print(retval)
+        # print("handle_pdf 547 retval: \n", retval)
         lenArr = self.get_maxlengths(retval)
         # print(lenArr)
 
@@ -544,11 +612,14 @@ class Pdf(PDF):
             "maxlengths": lenArr,
         }
 
-    def _fill_positions(self) -> None:
+    def _fill_positions(self) -> int:
         # print(self.split_dataframe_by_SearchValue(AN, "Pos."))
         theDict = self.get_invoice_positions(self.invoice.positions)
+        # print("handle_pdf.py: Line 560\n", theDict)
         if len(theDict) > 0:
             self.print_positions(theDict["daten"], theDict["maxlengths"])
+            return len(theDict["maxlengths"])
+        return len(theDict)
 
     def _fill_abspann(self, brutto: str, ueberweisungsdatum: datetime) -> None:
         abspann = (
@@ -575,13 +646,13 @@ u.a. Konto.\n\n{abspann}"
         """convert string witch float to locale float string"""
         return locale.format_string("%.f", float(inp), grouping=True)
 
-    def get_invoice_sums(self):
+    def get_invoice_sums(self, length: int = 0) -> list:
         """return array of invoice sums"""
         netto = self._get_value(self.invoice.sums[0])
         umsatzsteuer = self._get_value(self.invoice.sums[1])
         brutto = self._get_value(self.invoice.sums[-1])
         satz = self._toLocaleFloatStr(self.invoice.supplier.steuersatz)
-        UST = f"zzgl. Umsatzsteuer {satz}%:"
+        UST = f"zzgl. Umsatzsteuer {satz}%:" if length == 7 else "Umsatzsteuer:"
         return [
             ("Summe netto:", self._currency(netto)),
             (UST, self._currency(umsatzsteuer)),
@@ -601,6 +672,9 @@ u.a. Konto.\n\n{abspann}"
         datum = list(invoice.invoicedate.values())[0]
         von, bis = self.get_von_bis_dates()
         ueberweisungsdatum = self.invoice.supplier.get_ueberweisungsdatum(datum)
+        tax_values = self.invoice.invoice_tax  # self.invoice.get_tax_values()
+
+        # print("handle_pdf.py: Line 677\n", tax_values)
 
         self.print_bezug(
             f"{list(rg_nr.keys())[0]} {list(rg_nr.values())[0]} vom\
@@ -610,9 +684,11 @@ u.a. Konto.\n\n{abspann}"
         self.print_leistungszeitraum(
             von.strftime(GERMAN_DATE), bis.strftime(GERMAN_DATE)
         )
-        self._fill_positions()
+        len_of_positions = self._fill_positions()
 
-        summen = self.get_invoice_sums()
+        self.print_tax_values(tax_values)  # only if tax_values is not {}
+
+        summen = self.get_invoice_sums(length=len_of_positions)
         brutto = self._get_value(summen[-1])
         self.print_summen(summen)
 

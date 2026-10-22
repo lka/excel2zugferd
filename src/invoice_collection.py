@@ -66,3 +66,4 @@ class InvoiceCollection(Invoice):
             self.invoicedate = daten.get_invoice_date(
                 spalte=spalte, zeile=self.management.datum_zeile
             )
+            self.invoice_tax = daten.get_tax_values()

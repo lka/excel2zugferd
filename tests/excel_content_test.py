@@ -159,7 +159,7 @@ class TestExcelContent(TestCase):
         """
         Teste, ob der Inhalt einer Excel-Datei gelesen werden kann
         """
-        expected = ["Tabelle1", "Rechnung2", "Rechnung für Kleinunternehmen"]
+        expected = ["Tabelle1", "Rechnung2", "Rechnung für Kleinunternehmen", "Rechnung div. Steuern"]
         retval = self.xlsx.read_sheet_list()
         # print (retval)
         self.assertEqual(retval, expected, "Excel File should contain expected sheets")
@@ -313,6 +313,39 @@ class TestExcelContent(TestCase):
         # self.assertEqual(value.ndim, expected.ndim, "should be equal")
         self.assertTrue(np.array_equiv(value["daten"], expected), MSG)
         # type: ignore
+
+    def test_get_tax_values_without_sheet(self):
+        """ohne gelesenes Tabellenblatt soll ein leeres dict geliefert werden"""
+        self.assertEqual(self.xlsx.get_tax_values(), {}, "should be equal")
+
+    def test_get_tax_values_unknown_search_value(self):
+        """bei unbekanntem Suchwert soll ein leeres dict geliefert werden"""
+        self.xlsx.read_sheet(3)
+        retval = self.xlsx.get_tax_values(search="gibt es nicht")
+        self.assertEqual(retval, {}, "should be equal")
+
+    def test_get_tax_values_unknown_column(self):
+        """bei unbekannter Spalte soll ein ValueError ausgelöst werden"""
+        self.xlsx.read_sheet(3)
+        with self.assertRaises(ValueError):
+            self.xlsx.get_tax_values(spalte="Z")
+
+    def test_get_tax_values_div_steuern(self):
+        """
+        Tabellenblatt 3 (Index) "Rechnung div. Steuern": die Zeilen unter
+        "Umsatzsteueraufschlüsselung:" in Spalte E: die Nummer der Steuerart
+        (Spalte E) ist der Schlüssel, der Wert ist die Liste
+        [Steuersatz (F), Nettobetrag (G), Steuerbetrag oder Begründung (H)]
+        """
+        self.xlsx.read_sheet(3)
+        expected = {
+            1: [0.19, 1001, 190.19],
+            2: [0.07, 151, 10.57],
+            3: [0, 130, "Durchlaufender Posten im Sinne von § 10 Abs. 1 Satz 6 UStG"],
+            4: [0, 0, "Steuerfreie Bildungsleistung gemäß § 4 Nr. 21 UStG"],
+        }
+        retval = self.xlsx.get_tax_values()
+        self.assertEqual(retval, expected, "should be equal")
 
     def test__split_dataframe_by_search_value(self):
         """Lies den Inhalt der Positionen"""

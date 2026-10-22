@@ -1,12 +1,13 @@
 {
     "configurations": [
         {
-            "name": "Python Debugger: Current File with my args",
+            "name": "Python Debugger: excel2zugferd with my args",
             "type": "debugpy",
             "request": "launch",
-            "program": "${file}",
+            "program": "${workspaceFolder}/excel2zugferd.py",
+            "cwd": "${workspaceFolder}",
             "args": [
-                "Hallo-1",
+                "-3",
                 "C:/users/herbe/documents/development/excel2zugferd/TestRechnung.xlsx",
             ],
             "console": "integratedTerminal"

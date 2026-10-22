@@ -100,6 +100,11 @@ Damit können die XY-Positionen verändert werden und die Suchfunktion wird abge
 
 ## Versionen
 
+### 0.26.x
+
+- Unterschiedliche Steuern inklusive Steuersatz 0.00% verfügbar; siehe Vorlage "Rechnung div. Steuern" in "TestRechnung.xlsx"
+- Die Validierung des erzeugten ZUGFeRD Dokuments auf https://www.portinvoice.com ist erfolgreich (Ohne Fehler und Warnungen).
+
 ### 0.25.x
 
 - Mehrere Firmenprofile verfügbar, dankenswerterweise beigesteuert von Volker Leitzgen

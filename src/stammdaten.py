@@ -341,6 +341,14 @@ STAMMDATEN = [
         "Variable": "SumSpalte",
         "Dest": "ExcelPos",
     },
+    {
+        "Text": "SteuerSpalte",
+        "Label": "Steuer:\nin Spalte (A...Z)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "SteuerSpalte",
+        "Dest": "ExcelPos",
+    },
 ]
 
 COMPANY_PROFILE_KEYS = frozenset(

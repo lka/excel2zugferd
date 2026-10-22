@@ -19,7 +19,7 @@ class OberflaecheExcelPositions(src.oberflaeche_base.Oberflaeche):
     def __init__(
         self, thefields: dict, middleware: Middleware = None, window=None
     ) -> None:
-        super().__init__(window=window, wsize="700x480")  # tk.Toplevel())
+        super().__init__(window=window, wsize="700x500")  # tk.Toplevel())
         self.fields: dict = thefields
         self.middleware = middleware
         self.root.title("Stammdateneingabe - Excel Positionen")

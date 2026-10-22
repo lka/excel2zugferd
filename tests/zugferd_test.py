@@ -268,7 +268,7 @@ xmlns:udt="urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100">\
                     ("brutto:", decimal.Decimal("1690.00")),
                 ]
         try:
-            self.zugferd.add_gesamtsummen(data, "19.00")
+            self.zugferd.add_gesamtsummen(data)
         except Exception:
             self.fail("raised Exception unexpectedly!")
         self.assertEqual(

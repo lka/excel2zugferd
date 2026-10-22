@@ -189,12 +189,14 @@ class ZugFeRD:
     def _replaceCommaWithDot(self, item: str) -> float:
         return float(item.split()[0].replace(",", "."))
 
-    def _setTaxInLi(self, li: LineItem, item: str, the_tax: str) -> None:
+    def _setTaxInLi(self, li: LineItem, item: str, the_tax: str, excemption_reason: str = None) -> None:
         li.settlement.trade_tax.type_code = "VAT"
         li.settlement.trade_tax.category_code = "E" if the_tax == "0.00" else "S"
         li.settlement.trade_tax.rate_applicable_percent = Decimal(the_tax)
         gesamt = self._replaceCommaWithDot(item)
         li.settlement.monetary_summation.total_amount = Decimal(f"{gesamt:.2f}")
+        if excemption_reason:
+            li.settlement.trade_tax.exemption_reason = excemption_reason
 
     def _set_date(self, item: str) -> datetime:
         if item == "nan" or item == "":
@@ -243,7 +245,15 @@ class ZugFeRD:
                     Decimal(f"{menge:.4f}"),
                     self._get_einheit(item[4], li),  # BT-130
                 )  # C62 == pieces - BT-150 ?
-                self._setTaxInLi(li, item[6], the_tax)
+                excemption_reason = None
+                if len(item) > 7 and item[7] != "nan":
+                    satz = float(self.invoice.invoice_tax[int(item[7])][0])
+                    tax = f"{float(satz) * 100:.2f}"
+                    if tax == "0.00":
+                        excemption_reason = self.invoice.invoice_tax[int(item[7])][2]
+                else:
+                    tax = the_tax
+                self._setTaxInLi(li, item[6], tax, excemption_reason)
                 self.doc.trade.items.add(li)
 
     def _get_float_value(self, tuple) -> float:
@@ -263,14 +273,8 @@ class ZugFeRD:
         self.doc.trade.settlement.period.start = startDatum  # BT-73
         self.doc.trade.settlement.period.end = endDatum  # BT-74
 
-    def add_gesamtsummen(
-        self, dat, the_tax: str, steuerbefreiungsgrund: str = None
-    ) -> None:
-        """add gesamtsumme to invoice"""
-        netto = Decimal(f"{self._get_float_value(dat[0]):.2f}")
-        steuer = Decimal(f"{self._get_float_value(dat[1]):.2f}")
-        brutto = Decimal(f"{self._get_float_value(dat[2]):.2f}")
-
+    def add_applicable_trade_tax(self, netto: Decimal, steuer: Decimal, the_tax: str, steuerbefreiungsgrund: str = None):
+        """add applicable trade tax to invoice"""
         trade_tax = ApplicableTradeTax()
         trade_tax.calculated_amount = steuer
         trade_tax.basis_amount = netto
@@ -281,6 +285,31 @@ class ZugFeRD:
         if steuerbefreiungsgrund:
             trade_tax.exemption_reason = steuerbefreiungsgrund
         self.doc.trade.settlement.trade_tax.add(trade_tax)
+
+    def add_gesamtsummen(
+        self, dat
+    ) -> None:
+        """add gesamtsumme to invoice"""
+        netto = Decimal(f"{self._get_float_value(dat[0]):.2f}")
+        steuer = Decimal(f"{self._get_float_value(dat[1]):.2f}")
+        brutto = Decimal(f"{self._get_float_value(dat[2]):.2f}")
+
+        # self.add_applicable_trade_tax(netto, steuer, the_tax, steuerbefreiungsgrund)
+
+        self.doc.trade.settlement.monetary_summation.line_total = netto
+        # self.doc.trade.settlement.monetary_summation\
+        #   .charge_total = Decimal("0.00")
+        # self.doc.trade.settlement.monetary_summation\
+        #   .allowance_total = Decimal("0.00")
+        self.doc.trade.settlement.monetary_summation.tax_basis_total = netto
+        self.doc.trade.settlement.monetary_summation.tax_total = (
+            steuer,
+            "EUR",
+        )
+        self.doc.trade.settlement.monetary_summation.grand_total = brutto
+        self.doc.trade.settlement.monetary_summation.due_amount = brutto
+        self.doc.trade.settlement.monetary_summation.charge_total = Decimal("0.00")
+        self.doc.trade.settlement.monetary_summation.allowance_total = Decimal("0.00")
 
         self.doc.trade.settlement.monetary_summation.line_total = netto
         # self.doc.trade.settlement.monetary_summation\
@@ -384,6 +413,7 @@ class ZugFeRD:
         """
         if invoice is None:
             return
+        self.invoice = invoice
         kleinunternehmen = invoice.management.is_kleinunternehmen
         steuersatz = invoice.supplier.steuersatz
         self.add_zahlungsempfaenger(invoice.supplier_account.multiliner())
@@ -401,11 +431,24 @@ class ZugFeRD:
             np.r_[[positions.columns], positions.astype(str).values],
             self._get_the_tax(steuersatz, kleinunternehmen),
         )
-        self.add_gesamtsummen(
-            invoice.sums,
-            self._get_the_tax(steuersatz, kleinunternehmen),
-            P19USTG if kleinunternehmen else None,
-        )
+        if len(invoice.invoice_tax) > 0:  # ToDo check if this is correct
+            for key, value in invoice.invoice_tax.items():
+                if value[1] > 0:
+                    self.add_applicable_trade_tax(
+                        Decimal(f"{value[1]:.2f}"),
+                        Decimal(f"{value[2]:.2f}") if value[0] != 0 else Decimal("0.00"),
+                        f"{(value[0]*100):.2f}",
+                        value[2] if value[0] == 0 else None,
+                    )
+        else:
+            self.add_applicable_trade_tax(
+                Decimal(f"{self._get_float_value(invoice.sums[0]):.2f}"),
+                Decimal(f"{self._get_float_value(invoice.sums[1]):.2f}"),
+                self._get_the_tax(steuersatz, kleinunternehmen),
+                P19USTG if kleinunternehmen else None,
+            )
+
+        self.add_gesamtsummen(invoice.sums)
         # Datum
         self.add_rechnungsperiode(positions[headers[1]])
         self.add_zahlungsziel(
