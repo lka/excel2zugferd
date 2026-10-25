@@ -336,15 +336,19 @@ class TestExcelContent(TestCase):
         "Umsatzsteueraufschlüsselung:" in Spalte E: die Nummer der Steuerart
         (Spalte E) ist der Schlüssel, der Wert ist die Liste
         [Steuersatz (F), Nettobetrag (G), Steuerbetrag oder Begründung (H)]
+        Die Daten stammen aus der festen Testdatei testdaten_steuern.xlsx.
         """
-        self.xlsx.read_sheet(3)
+        xlsx = ExcelContent(
+            os.path.join(os.path.dirname(__file__), "testdaten_steuern.xlsx"), "."
+        )
+        xlsx.read_sheet(3)
         expected = {
             1: [0.19, 1001, 190.19],
             2: [0.07, 151, 10.57],
             3: [0, 130, "Durchlaufender Posten im Sinne von § 10 Abs. 1 Satz 6 UStG"],
-            4: [0, 0, "Steuerfreie Bildungsleistung gemäß § 4 Nr. 21 UStG"],
+            4: [0, 150, "Steuerfreie Bildungsleistung gemäß § 4 Nr. 21 UStG"],
         }
-        retval = self.xlsx.get_tax_values()
+        retval = xlsx.get_tax_values()
         self.assertEqual(retval, expected, "should be equal")
 
     def test__split_dataframe_by_search_value(self):

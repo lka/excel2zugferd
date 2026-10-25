@@ -42,6 +42,7 @@ class ZugFeRD:
         self.first_date = None
         self.last_date = None
         self.rg_date: datetime = None
+        self.tax_free_positions: dict[int, list[str]] = {}
         self.fill_xml(invoice)
 
     def add_rgnr(self, rgnr: str, datum: datetime):
@@ -228,10 +229,49 @@ class ZugFeRD:
  verfügbar und wurde durch 'C62' (Stück) ersetzt."  # BT-154
             return "C62"  # Stück
 
-    def add_items(self, dat, the_tax: str):
-        """add items to invoice"""
+    def _collect_tax_free_position(self, steuertyp: int, pos: str) -> None:
+        """merke die Pos. der steuerfreien Zeilen, gruppiert nach Steuertyp"""
+        self.tax_free_positions.setdefault(steuertyp, []).append(pos)
+
+    def _get_tax_of_type(self, steuertyp: int) -> str:
+        """Steuersatz des Steuertyps in Prozent als Text, z.B. '19.00'"""
+        satz = float(self.invoice.invoice_tax[steuertyp][0])
+        return f"{satz * 100:.2f}"
+
+    def _collect_tax_free_positions(self, dat) -> None:
+        """sammle vorab die Pos. aller steuerfreien Zeilen je Steuertyp"""
+        self.tax_free_positions = {}  # {Steuertyp: [Pos., ...]}
+        for item in dat[1:]:
+            if len(item) > 7 and item[7] != "nan":
+                steuertyp = int(item[7])
+                if self._get_tax_of_type(steuertyp) == "0.00":
+                    self._collect_tax_free_position(steuertyp, item[0])
+
+    def _get_tax_and_reason(
+        self, item: list, the_tax: str, reasons: dict, default_reason: str = None
+    ) -> tuple:
+        """Steuersatz und Steuerbefreiungsgrund (nur bei 0.00) der Position"""
+        if len(item) > 7 and item[7] != "nan":
+            steuertyp = int(item[7])
+            tax = self._get_tax_of_type(steuertyp)
+            fallback = self.invoice.invoice_tax[steuertyp][2]
+            reason = reasons.get(steuertyp, fallback)
+        else:
+            tax = the_tax
+            reason = default_reason
+        return tax, (reason if tax == "0.00" else None)
+
+    def add_items(self, dat, the_tax: str, default_reason: str = None):
+        """add items to invoice
+
+        default_reason: Steuerbefreiungsgrund für Positionen ohne Steuertyp
+        (z.B. Kleinunternehmerregelung); muss mit dem der Steuerzeile
+        identisch sein
+        """
         # ("Pos.", "Datum", "Tätigkeit", "Menge", "Typ",
         #  "Einzel €", "Gesamt €")
+        self._collect_tax_free_positions(dat)
+        reasons = self._get_tax_free_reasons() if self.tax_free_positions else {}
         for i, item in enumerate(dat):
             if i > 0:
                 li = LineItem()
@@ -245,14 +285,9 @@ class ZugFeRD:
                     Decimal(f"{menge:.4f}"),
                     self._get_einheit(item[4], li),  # BT-130
                 )  # C62 == pieces - BT-150 ?
-                excemption_reason = None
-                if len(item) > 7 and item[7] != "nan":
-                    satz = float(self.invoice.invoice_tax[int(item[7])][0])
-                    tax = f"{float(satz) * 100:.2f}"
-                    if tax == "0.00":
-                        excemption_reason = self.invoice.invoice_tax[int(item[7])][2]
-                else:
-                    tax = the_tax
+                tax, excemption_reason = self._get_tax_and_reason(
+                    item, the_tax, reasons, default_reason
+                )
                 self._setTaxInLi(li, item[6], tax, excemption_reason)
                 self.doc.trade.items.add(li)
 
@@ -390,11 +425,14 @@ class ZugFeRD:
         return "0.00" if is_kleinunternehmen else steuersatz
 
     def _fill_invoice_positions_in_xml(
-        self, positions: np.ndarray = None, steuersatz: str = None
+        self,
+        positions: np.ndarray = None,
+        steuersatz: str = None,
+        default_reason: str = None,
     ) -> None:
         """fills invoice positions into ZugFeRD"""
         if positions is not None:
-            self.add_items(positions, steuersatz)
+            self.add_items(positions, steuersatz, default_reason)
 
     def _get_brutto(self, sums: list = None) -> str:
         return self._get_float_value(sums[-1])
@@ -406,6 +444,81 @@ class ZugFeRD:
             return
         if math.isnan(tmp):
             df.loc[df[headers[1]].index[0], headers[1]] = self.rg_date
+
+    def _is_next_position(self, prev: str, pos: str) -> bool:
+        """True, wenn pos die Zahl direkt nach prev ist"""
+        return prev.isdigit() and pos.isdigit() and int(pos) == int(prev) + 1
+
+    def _format_positions(self, positions: list) -> str:
+        """Pos. als Text; mindestens 3 fortlaufende Zahlen als Bereich,
+        z.B. ['1', '2', '3', '5'] -> '1-3, 5'"""
+        runs = []  # Gruppen fortlaufender Pos.
+        for pos in map(str, positions):
+            if runs and self._is_next_position(runs[-1][-1], pos):
+                runs[-1].append(pos)
+            else:
+                runs.append([pos])
+        return ", ".join(
+            f"{run[0]}-{run[-1]}" if len(run) >= 3 else ", ".join(run)
+            for run in runs
+        )
+
+    def _tax_free_reason(self, steuertyp: int, value: list) -> str:
+        """Pos. des Steuertyps, Steuerbefreiungsgrund und Nettosumme als Text"""
+        pos = self._format_positions(self.tax_free_positions.get(steuertyp, []))
+        prefix = f"Pos. {pos}: " if pos else ""
+        return f"{prefix}{value[2]} (Netto {value[1]:.2f} EUR)"
+
+    def _tax_free_types(self) -> dict:
+        """Steuertypen mit Steuersatz 0 und Nettosumme > 0"""
+        return {
+            key: value
+            for key, value in self.invoice.invoice_tax.items()
+            if value[1] > 0 and value[0] == 0
+        }
+
+    def _get_tax_free_reasons(self) -> dict:
+        """Steuerbefreiungsgrund je Steuertyp {Steuertyp: Text}
+
+        Bei einem Steuertyp ist es sein eigener Grund, bei mehreren Typen
+        derselbe zusammengesetzte Text für alle (Pos., Grund, Nettosumme).
+        Der Text muss bei den Positionen und in der Steuerzeile identisch sein.
+        """
+        tax_free = self._tax_free_types()
+        if len(tax_free) == 1:
+            return {key: value[2] for key, value in tax_free.items()}
+        reason = "; ".join(
+            self._tax_free_reason(key, value) for key, value in tax_free.items()
+        )
+        return dict.fromkeys(tax_free, reason)
+
+    def _add_tax_free_trade_tax(self) -> None:
+        """Steuersatz 0: ein Eintrag mit der Summe der Nettobeträge"""
+        tax_free = self._tax_free_types()
+        if not tax_free:
+            return
+        netto = sum(value[1] for value in tax_free.values())
+        reason = next(iter(self._get_tax_free_reasons().values()))
+        self.add_applicable_trade_tax(
+            Decimal(f"{netto:.2f}"), Decimal("0.00"), "0.00", reason
+        )
+
+    def _add_tax_free_positions_if_needed(self) -> None:
+        """Fill invoice tax items into applicable trade tax.
+
+        invoice.invoice_tax is a dict with key=Steuertyp
+        and value=[Steuersatz, Nettosumme,
+        Steuersumme oder Steuerbefreiungsgrund bei Steuersatz == 0]
+        Nur Steuertypen mit Nettosumme > 0 werden eingetragen.
+        """
+        for value in self.invoice.invoice_tax.values():
+            if value[1] > 0 and value[0] != 0:
+                self.add_applicable_trade_tax(
+                    Decimal(f"{value[1]:.2f}"),
+                    Decimal(f"{value[2]:.2f}"),
+                    f"{(value[0]*100):.2f}",
+                )
+        self._add_tax_free_trade_tax()
 
     def fill_xml(self, invoice: InvoiceCollection = None) -> None:
         """
@@ -430,16 +543,10 @@ class ZugFeRD:
         self._fill_invoice_positions_in_xml(
             np.r_[[positions.columns], positions.astype(str).values],
             self._get_the_tax(steuersatz, kleinunternehmen),
+            P19USTG if kleinunternehmen else None,
         )
-        if len(invoice.invoice_tax) > 0:  # ToDo check if this is correct
-            for key, value in invoice.invoice_tax.items():
-                if value[1] > 0:
-                    self.add_applicable_trade_tax(
-                        Decimal(f"{value[1]:.2f}"),
-                        Decimal(f"{value[2]:.2f}") if value[0] != 0 else Decimal("0.00"),
-                        f"{(value[0]*100):.2f}",
-                        value[2] if value[0] == 0 else None,
-                    )
+        if len(invoice.invoice_tax) > 0:
+            self._add_tax_free_positions_if_needed()
         else:
             self.add_applicable_trade_tax(
                 Decimal(f"{self._get_float_value(invoice.sums[0]):.2f}"),

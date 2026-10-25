@@ -77,7 +77,7 @@ POSITIONS_DIV_STEUERN_EXPECTED = np.array(
         ["8", "11.01.2024", "TÜV", "1", "Stk.", "130,00 €", "130,00 €", "3"],
         [
             "9",
-            "18.01.2024",
+            "17.01.2024",
             "Prüfung der Anmeldungen im AWS nach Email vom 17.01.2024 von Hrn. F",
             "1",
             "h",
@@ -85,9 +85,10 @@ POSITIONS_DIV_STEUERN_EXPECTED = np.array(
             "75,00 €",
             "1",
         ],
-        ["10", "", "Anfahrt dazu per Taxi", "1", "Stk.", "96,00 €", "96,00 €", "2"],
+        ["10", "18.01.2024", "Schulung VHS Kurs", "2", "h", "75,00 €", "150,00 €", "4"],
+        ["11", "", "Anfahrt dazu per Taxi", "1", "Stk.", "96,00 €", "96,00 €", "2"],
         [
-            "11",
+            "12",
             "18.01.2024",
             "Programmiertätigkeiten",
             "5",
@@ -113,8 +114,11 @@ class TestHandlePdf(unittest.TestCase):
         """
         Positionen aus Tabellenblatt 3 (mit Steuer-Spalte) müssen im
         Rückgabewert dieselben Daten wie in der Tabelle enthalten
+        Die Daten stammen aus der festen Testdatei testdaten_steuern.xlsx.
         """
-        xlsx = ExcelContent("TestRechnung.xlsx", ".")
+        xlsx = ExcelContent(
+            os.path.join(os.path.dirname(__file__), "testdaten_steuern.xlsx"), "."
+        )
         xlsx.read_sheet(3)
         positions = xlsx.get_invoice_positions()
         value = self.pdf.get_invoice_positions(positions)
