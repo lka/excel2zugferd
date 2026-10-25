@@ -255,3 +255,9 @@ Copyright [2024] [Herbert Lischka]
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+ ## Unterstützen
+
+Wenn das Projekt gefällt, freue ich mich über eine Spende:
+
+[![Spenden via PayPal](https://img.shields.io/badge/Spenden-PayPal-blue?logo=paypal)](https://paypal.me/Lka030)
