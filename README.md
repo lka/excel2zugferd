@@ -46,7 +46,7 @@ oder
 1. Der Defender Smart Screen sagt dann, dass diese Datei nicht ausgeführt werden sollte, was ich aber will und auf "trotzdem ausführen" klicke. Das Programm wird in das Verzeichnis "C:\Program Files (x86)\Excel2ZugFeRD" installiert.
 1. Eine Verknüpfung auf die Datei "excel2zugferd.exe" auf dem Desktop wird vom Setup-Programm erstellt.
 
-- Alternativ: In einem Administrator - CMD Fenster `wget excel2zugferd` ausführen.
+- Alternativ: In einem Administrator - CMD Fenster `winget excel2zugferd` ausführen.
 - Die Freigabe durch freiwillige Helfer bei WingetCreate findet normalerweise ca. 6 - 12 h nach der neuen Release statt.
 
 - Wenn eine neue Version des Setup-Programms herauskommt, meckert der Virenscanner bei der Ausführung, dass das eine Datei sei, die einen Virus enthalten könnte, das ist die am Anfang fehlende Hash-Signatur für das Python Setup. Ich sage dann "Download beibehalten" und lasse das Ganze vom Virenprogramm im Internet Scannen. Nach ca. 14 Tagen hat sich das bisher immer gegeben.
@@ -54,7 +54,7 @@ oder
 ## Updates
 
 - Die Vorgehensweise ist Identisch zur Installation.
-- Alternativ: In einem Administrator - CMD Fenster `wget update excel2zugferd` ausführen.
+- Alternativ: In einem Administrator - CMD Fenster `winget update excel2zugferd` ausführen.
 
 ## Programmablauf
 
@@ -102,7 +102,7 @@ Damit können die XY-Positionen verändert werden und die Suchfunktion wird abge
 
 In der Excel-Datei TestRechnung.xlsx ist im Tabellenblatt "Rechnung div. Steuern" ein Beispiel für die Verwendung verschiedener Steuersätze in einer Rechnung.
 
-Die zweistufige Ausführung über Steuer 1..n und danach eine Umsatzsteueraufschlüsselung in die Steuersätze ist dem Umstand geschuldet, dass es verschiedene Ausnahmebegründungen für einen Steuersatz von 0.00% geben kann. Da die Umsatzsteuersumme bei Steuersatz 0.00% immer 0.00 € ergibt, habe ich da die jeweilige Ausnahmebegründung hinterlegt. Ich prüfe dabei nicht ab, ob der Eintrag sinnvoll ist. Das macht dann das Finanzamt 😊.
+Die zweistufige Ausführung über Steuer 1..n und danach eine Umsatzsteueraufschlüsselung in der die Steuersätze stehen, ist dem Umstand geschuldet, dass es verschiedene Ausnahmebegründungen für einen Steuersatz von 0.00% geben kann. Da die Umsatzsteuersumme bei Steuersatz 0.00% immer 0.00 € ergibt, habe ich da die jeweilige Ausnahmebegründung hinterlegt. Ich prüfe dabei nicht ab, ob der Eintrag sinnvoll ist. Das macht dann das Finanzamt 😊.
 
 Leider ist in der Spezifikation vorgesehen, dass nur eine ApplicableTradeTax mit CategoryType E im Header eingetragen werden darf. Bei der Prüfung der XML Daten geht ein aktuelles Prüfprogramm so vor, dass die Nettosummen aller Einzelpositionen mit ApplicableTradeTax, Category E und identischem ExceptionReason mit dem BasisAmount der ApplicableTradeTax, Category E und identischem ExceptionReason im Header verglichen wird. Bei Abweichung > 0.1% gibt es eine Warnung. Um das zu verhindern und trotzdem eine Unterscheidbarkeit der ExceptionReasons herbeizuführen, habe ich die ExceptionReasons so aufgebaut, dass:
 ```Pos. x-y, n: ExceptionReason1 (Netto Summe1 EUR); Pos. z: ExceptionReason2 (Netto Summe2 EUR)```
