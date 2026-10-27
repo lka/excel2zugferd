@@ -276,28 +276,40 @@ class ExcelContent:
         return rounded
 
     def _get_netto_sum(self, spalte: str, search: str, management: Steuerung) -> any:
+        netto = None
         if management is not None and management.nettosumme_zeile is not None:
-            return self._get_content_at(
+            netto = self._get_content_at(
                 management.nettosumme_spalte, management.nettosumme_zeile
             )
         else:
-            return self.search_cell_right_of(spalte, search)
+            netto = self.search_cell_right_of(spalte, search)
+        if pd.isna(netto):
+            raise ValueError("Die Nettosumme darf nicht leer sein.")
+        return netto
 
     def _get_ust_sum(self, spalte: str, search: str, management: Steuerung) -> any:
+        ust = None
         if management is not None and management.mwstsumme_zeile is not None:
-            return self._get_content_at(
+            ust = self._get_content_at(
                 management.mwstsumme_spalte, management.mwstsumme_zeile
             )
         else:
-            return self.search_cell_right_of(spalte, search)
+            ust = self.search_cell_right_of(spalte, search)
+        if pd.isna(ust):
+            raise ValueError("Die MwSt Summe darf nicht leer sein.")
+        return ust
 
     def _get_brutto_sum(self, spalte: str, search: str, management: Steuerung) -> any:
+        brutto = None
         if management is not None and management.bruttosumme_zeile is not None:
-            return self._get_content_at(
+            brutto = self._get_content_at(
                 management.bruttosumme_spalte, management.bruttosumme_zeile
             )
         else:
-            return self.search_cell_right_of(spalte, search)
+            brutto = self.search_cell_right_of(spalte, search)
+        if pd.isna(brutto):
+            raise ValueError("Die Bruttosumme darf nicht leer sein.")
+        return brutto
 
     def get_invoice_sums(
         self,
@@ -323,40 +335,66 @@ class ExcelContent:
             ("Bruttobetrag:", self._round(brutto, 2)),
         ]
 
+    def _get_tax_values_start(self, spalte: str, zeile: str, search: str) -> int | None:
+        """
+        return position of the first row with tax values: zeile if given,
+        else the row below search in column spalte (None if not found)
+        """
+        if zeile:
+            try:
+                return self.daten.index.get_loc(int(zeile))
+            except KeyError:
+                raise ValueError(f"Ich konnte die Zeile '{zeile}' nicht finden.")
+        arr = self._search_cell_in_column(spalte, search)
+        if arr.empty:
+            return None
+        return self.daten.index.get_loc(arr.index[0]) + 1
+
+    def _get_tax_values_columns(self, spalte: str) -> list:
+        """
+        return the 4 columns starting at spalte: key, steuersatz, wert, tax
+        (shorter if the sheet has not enough columns)
+        """
+        columns = list(self.daten.columns)
+        if spalte not in columns:
+            raise ValueError(self._get_col_err(spalte))
+        idx = columns.index(spalte)
+        return columns[idx : idx + 4]
+
     def get_tax_values(
         self,
         spalte: str = "E",
+        zeile: str = None,
+        mgmnt: Steuerung = None,
         search: str = "Umsatzsteueraufschlüsselung:",
-        steuersatz_spalte: str = "F",
-        wert_spalte: str = "G",
-        tax_spalte: str = "H",
     ) -> dict:
         """
-        return dict of tax values: the cells in column spalte below search
-        (up to the first empty cell) are the keys, the cells of the same rows
-        in column wert_spalte are the values
+        return dict of tax values: starting at spalte the cells of a row are
+        key, steuersatz, wert and tax; the rows are read from the first row
+        up to the first empty key.
+        The first row is zeile (or mgmnt.umsatzsteueraufschluesselung_zeile, spalte is then
+        mgmnt.umsatzsteueraufschluesselung_spalte); without zeile it is the row below search
+        in column spalte.
         """
         if self.daten is None:
             return {}
-        if wert_spalte not in self.daten.columns:
-            # raise ValueError(self._get_col_err(wert_spalte))
+        if mgmnt and mgmnt.umsatzsteueraufschluesselung_zeile:
+            spalte, zeile = mgmnt.umsatzsteueraufschluesselung_spalte, \
+                            mgmnt.umsatzsteueraufschluesselung_zeile
+        start = self._get_tax_values_start(spalte, zeile, search)
+        if start is None:
             return {}
-        arr = self._search_cell_in_column(spalte, search)
-        if arr.empty:
+        columns = self._get_tax_values_columns(spalte)
+        if len(columns) < 4:
             return {}
-        start = self.daten.index.get_loc(arr.index[0]) + 1
-        return self._collect_tax_values(start, spalte, steuersatz_spalte, wert_spalte, tax_spalte)
+        return self._collect_tax_values(start, columns)
 
-    def _collect_tax_values(
-        self, start: int, spalte: str, steuersatz_spalte: str, wert_spalte: str, tax_spalte: str
-    ) -> dict:
-        """Collect tax values from rows after the section header."""
+    def _collect_tax_values(self, start: int, columns: list) -> dict:
+        """Collect tax values from the rows beginning at position start."""
         retval = {}
         for idx in self.daten.index[start:]:
-            key = self.daten.at[idx, spalte]
+            key = self.daten.at[idx, columns[0]]
             if pd.isna(key):
                 break
-            retval[key] = [self.daten.at[idx, steuersatz_spalte],
-                           self.daten.at[idx, wert_spalte],
-                           self.daten.at[idx, tax_spalte]]
+            retval[key] = [self.daten.at[idx, col] for col in columns[1:]]
         return retval

@@ -30,6 +30,8 @@ class Steuerung(object):
         self._anschrift_zeile = None
         self._rechnung_spalte = None
         self._rechnung_zeile = None
+        self._umsatzsteueraufschluesselung_zeile = None
+        self._umsatzsteueraufschluesselung_spalte = None
         self._nettosumme_spalte = None
         self._nettosumme_zeile = None
         self._mwstsumme_spalte = None
@@ -44,6 +46,7 @@ class Steuerung(object):
         self._typ_spalte = None
         self._preis_spalte = None
         self._sum_spalte = None
+        self._steuer_spalte = None
 
     def __repr__(self) -> str:
         return f"Steuerung(create_xml: '{self.create_xml}', \
@@ -56,6 +59,8 @@ class Steuerung(object):
  anschrift_zeile: '{self.anschrift_zeile}'\
  rechnung_spalte: '{self.rechnung_spalte}',\
  rechnung_zeile: '{self.rechnung_zeile}'\
+ umsatzsteueraufschluesselung_zeile: '{self.umsatzsteueraufschluesselung_zeile}',\
+ umsatzsteueraufschluesselung_spalte: '{self.umsatzsteueraufschluesselung_spalte}'\
  nettosumme_spalte: '{self.nettosumme_spalte}',\
  nettosumme_zeile: '{self.nettosumme_zeile}'\
  mwstsumme_spalte: '{self.mwstsumme_spalte}',\
@@ -68,6 +73,7 @@ class Steuerung(object):
  typ_spalte: '{self.typ_spalte}'\
  preis_spalte: '{self.preis_spalte}'\
  sum_spalte: '{self.sum_spalte}'\
+ steuer_spalte: '{self.steuer_spalte}'\
 )"
 
     @property
@@ -159,12 +165,20 @@ class Steuerung(object):
         self._rechnung_zeile = value
 
     @property
-    def nettosumme_spalte(self):
-        return self._nettosumme_spalte
+    def umsatzsteueraufschluesselung_zeile(self):
+        return self._umsatzsteueraufschluesselung_zeile
 
-    @nettosumme_spalte.setter
-    def nettosumme_spalte(self, value):
-        self._nettosumme_spalte = value
+    @umsatzsteueraufschluesselung_zeile.setter
+    def umsatzsteueraufschluesselung_zeile(self, value):
+        self._umsatzsteueraufschluesselung_zeile = value
+
+    @property
+    def umsatzsteueraufschluesselung_spalte(self):
+        return self._umsatzsteueraufschluesselung_spalte
+
+    @umsatzsteueraufschluesselung_spalte.setter
+    def umsatzsteueraufschluesselung_spalte(self, value):
+        self._umsatzsteueraufschluesselung_spalte = value
 
     @property
     def nettosumme_zeile(self):
@@ -173,6 +187,14 @@ class Steuerung(object):
     @nettosumme_zeile.setter
     def nettosumme_zeile(self, value):
         self._nettosumme_zeile = value
+
+    @property
+    def nettosumme_spalte(self):
+        return self._nettosumme_spalte
+
+    @nettosumme_spalte.setter
+    def nettosumme_spalte(self, value):
+        self._nettosumme_spalte = value
 
     @property
     def mwstsumme_spalte(self):
@@ -254,6 +276,14 @@ class Steuerung(object):
     def sum_spalte(self, value):
         self._sum_spalte = value
 
+    @property
+    def steuer_spalte(self):
+        return self._steuer_spalte
+
+    @steuer_spalte.setter
+    def steuer_spalte(self, value):
+        self._steuer_spalte = value
+
     def _check_TrueFalse(self, thekeys: list, daten: dict, name: str) -> bool:
         return (
             (daten[name] == "Ja")
@@ -313,6 +343,17 @@ class Steuerung(object):
         ):
             raise ValueError(RECHNUNGSDATUM_POS_ERROR)
 
+    def _check_umsatzsteueraufschluesselung_position(self) -> None:
+        """raise ValueError on Failure"""
+        if (self.umsatzsteueraufschluesselung_zeile is not None and self.umsatzsteueraufschluesselung_spalte is None) or (
+            self.umsatzsteueraufschluesselung_zeile is None and self.umsatzsteueraufschluesselung_spalte is not None
+        ):
+            raise ValueError("Bei den Positionen für Umsatzsteueraufschlüsselung muss \
+                             sowohl Umsatzsteueraufschlüsselung Spalte, als auch \
+                             Umsatzsteueraufschlüsselung Zeile ausgefüllt sein.\n\
+                             Ansonsten müssen beide leer sein, dann wird nach \
+                             'Umsatzsteueraufschlüsselung' gesucht.")
+
     def _fill_and_check_rechnungsdatum(self, theKeys: list, daten: dict) -> None:
         self.datum_zeile = self._check_is_integer(theKeys, daten, "RGDatumZeile")
         self.datum_spalte = self._check_is_upper(theKeys, daten, "RGDatumSpalte")
@@ -329,6 +370,11 @@ class Steuerung(object):
         self.rechnung_zeile = self._check_is_integer(theKeys, daten, "RechnungZeile")
         self.rechnung_spalte = self._check_is_upper(theKeys, daten, "RechnungSpalte")
         self._check_rechnung_position()
+
+    def _fill_and_check_umsatzsteueraufschluesselung(self, theKeys: list, daten: dict) -> None:
+        self.umsatzsteueraufschluesselung_zeile = self._check_is_integer(theKeys, daten, "UmsatzsteueraufschluesselungZeile")
+        self.umsatzsteueraufschluesselung_spalte = self._check_is_upper(theKeys, daten, "UmsatzsteueraufschluesselungSpalte")
+        self._check_umsatzsteueraufschluesselung_position()
 
     def _check_nettosumme_position(self) -> None:
         """raise ValueError on Failure"""
@@ -418,6 +464,7 @@ class Steuerung(object):
         self._fill_and_check_anschrift(theKeys, daten)
         self._fill_and_check_rechnungsnummer(theKeys, daten)
         self._fill_and_check_rechnungsdatum(theKeys, daten)
+        self._fill_and_check_umsatzsteueraufschluesselung(theKeys, daten)
         self._fill_and_check_nettosumme(theKeys, daten)
         self._fill_and_check_mwstsumme(theKeys, daten)
         self._fill_and_check_bruttosumme(theKeys, daten)

@@ -221,6 +221,22 @@ STAMMDATEN = [
         "Dest": "Excel",
     },
     {
+        "Text": "UmsatzsteueraufschluesselungSpalte",
+        "Label": "Umsatzsteueraufschluesselung\nSpalte (A...Z)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "UmsatzsteueraufschluesselungSpalte",
+        "Dest": "Excel",
+    },
+    {
+        "Text": "UmsatzsteueraufschluesselungZeile",
+        "Label": "Umsatzsteueraufschluesselung\nZeile (1...)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "UmsatzsteueraufschluesselungZeile",
+        "Dest": "Excel",
+    },
+    {
         "Text": "NettosummeSpalte",
         "Label": "Nettosumme\nSpalte (A...Z)",
         "Lines": 1,

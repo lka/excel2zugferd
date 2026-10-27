@@ -180,6 +180,25 @@ xmlns:udt="urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100">\
             self.zugferd.tax_free_positions, {3: ["3"]}, "wird bei jedem Aufruf neu"
         )
 
+    def test__get_tax_of_type_unknown_type(self):
+        """Steuertyp ohne Eintrag in der Aufschlüsselung: ValueError mit Pos."""
+        self.zugferd.invoice = SimpleNamespace(invoice_tax={1: [0.19, 1001, 190.19]})
+        self.assertEqual(self.zugferd._get_tax_of_type(1, "1"), "19.00")
+        with self.assertRaises(ValueError) as ctx:
+            self.zugferd._get_tax_of_type(5, "7")
+        self.assertIn("Position 7", str(ctx.exception))
+        self.assertIn("Steuertyp 5", str(ctx.exception))
+
+    def test_add_items_unknown_tax_type(self):
+        """eine Position mit unbekanntem Steuertyp lässt add_items scheitern"""
+        self.zugferd.invoice = SimpleNamespace(
+            invoice_tax={1: [0.19, 1001, 190.19], 3: [0, 130, "Durchlaufender Posten"]}
+        )
+        # Steuertyp 4 fehlt in der Aufschlüsselung
+        with self.assertRaises(ValueError) as ctx:
+            self.zugferd.add_items(self._items_with_tax_types(), "19.00")
+        self.assertIn("Position 4", str(ctx.exception))
+
     def _trade_taxes(self) -> list:
         """(Netto, Steuer, Satz, Grund) aller ApplicableTradeTax im Dokument"""
         return [

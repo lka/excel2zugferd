@@ -12,6 +12,7 @@ from src.constants import (
     ANSCHRIFT_DEFAULT_SPALTE,
     RGNR_DEFAULT_SPALTE,
     RGDATUM_DEFAULT_SPALTE,
+    UST_KEY_DEFAULT_SPALTE,
 )
 
 
@@ -66,4 +67,14 @@ class InvoiceCollection(Invoice):
             self.invoicedate = daten.get_invoice_date(
                 spalte=spalte, zeile=self.management.datum_zeile
             )
-            self.invoice_tax = daten.get_tax_values()
+            spalte = (
+                self.management.umsatzsteueraufschluesselung_spalte
+                if self.management.umsatzsteueraufschluesselung_spalte
+                else UST_KEY_DEFAULT_SPALTE
+            )
+            zeile = (
+                self.management.umsatzsteueraufschluesselung_zeile
+                if self.management.umsatzsteueraufschluesselung_zeile
+                else None
+            )
+            self.invoice_tax = daten.get_tax_values(spalte=spalte, zeile=zeile, mgmnt=self.management)

@@ -233,9 +233,19 @@ class ZugFeRD:
         """merke die Pos. der steuerfreien Zeilen, gruppiert nach Steuertyp"""
         self.tax_free_positions.setdefault(steuertyp, []).append(pos)
 
-    def _get_tax_of_type(self, steuertyp: int) -> str:
-        """Steuersatz des Steuertyps in Prozent als Text, z.B. '19.00'"""
-        satz = float(self.invoice.invoice_tax[steuertyp][0])
+    def _get_tax_of_type(self, steuertyp: int, pos: str = None) -> str:
+        """Steuersatz des Steuertyps in Prozent als Text, z.B. '19.00'
+
+        raises ValueError wenn der Steuertyp nicht in der
+        Umsatzsteueraufschlüsselung steht (pos: Pos. der Zeile für die Meldung)
+        """
+        try:
+            satz = float(self.invoice.invoice_tax[steuertyp][0])
+        except KeyError:
+            raise ValueError(
+                f"Position {pos}: Der Steuertyp {steuertyp} kommt in der "
+                "Umsatzsteueraufschlüsselung nicht vor."
+            )
         return f"{satz * 100:.2f}"
 
     def _collect_tax_free_positions(self, dat) -> None:
@@ -244,7 +254,7 @@ class ZugFeRD:
         for item in dat[1:]:
             if len(item) > 7 and item[7] != "nan":
                 steuertyp = int(item[7])
-                if self._get_tax_of_type(steuertyp) == "0.00":
+                if self._get_tax_of_type(steuertyp, item[0]) == "0.00":
                     self._collect_tax_free_position(steuertyp, item[0])
 
     def _get_tax_and_reason(
@@ -253,7 +263,7 @@ class ZugFeRD:
         """Steuersatz und Steuerbefreiungsgrund (nur bei 0.00) der Position"""
         if len(item) > 7 and item[7] != "nan":
             steuertyp = int(item[7])
-            tax = self._get_tax_of_type(steuertyp)
+            tax = self._get_tax_of_type(steuertyp, item[0])
             fallback = self.invoice.invoice_tax[steuertyp][2]
             reason = reasons.get(steuertyp, fallback)
         else:

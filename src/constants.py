@@ -74,6 +74,7 @@ BRUTTOSUMME_POS_ERROR = (
 EINZELPOSITIONEN_POS_ERR = (
     "Bei den Einzelpositionen müssen entweder alle" " oder kein Wert ausgefüllt sein."
 )
+UST_KEY_DEFAULT_SPALTE = "E"
 ANSCHRIFT_DEFAULT_SPALTE = "A"
 RGNR_DEFAULT_SPALTE = "A"
 RGDATUM_DEFAULT_SPALTE = "A"

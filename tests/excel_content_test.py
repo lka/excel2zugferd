@@ -5,6 +5,7 @@ Modul excel_content_test
 from unittest import TestCase
 from datetime import datetime, time
 import os
+from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 from src.excel_content import ExcelContent
@@ -350,6 +351,38 @@ class TestExcelContent(TestCase):
         }
         retval = xlsx.get_tax_values()
         self.assertEqual(retval, expected, "should be equal")
+
+    def _read_div_steuern(self) -> ExcelContent:
+        xlsx = ExcelContent(
+            os.path.join(os.path.dirname(__file__), "testdaten_steuern.xlsx"), "."
+        )
+        xlsx.read_sheet(3)
+        return xlsx
+
+    def test_get_tax_values_with_zeile(self):
+        """mit zeile und spalte müssen dieselben Werte wie über search kommen"""
+        xlsx = self._read_div_steuern()
+        header = xlsx._search_cell_in_column("E", "Umsatzsteueraufschlüsselung:")
+        first_row = int(header.index[0]) + 1
+        retval = xlsx.get_tax_values(spalte="E", zeile=str(first_row))
+        self.assertEqual(retval, xlsx.get_tax_values(), "should be equal")
+        self.assertEqual(len(retval), 4, "should be equal")
+
+    def test_get_tax_values_with_mgmnt(self):
+        """zeile und spalte aus mgmnt haben Vorrang vor search"""
+        xlsx = self._read_div_steuern()
+        header = xlsx._search_cell_in_column("E", "Umsatzsteueraufschlüsselung:")
+        mgmnt = SimpleNamespace(
+            umsatzsteueraufschluesselung_zeile=str(int(header.index[0]) + 1), umsatzsteueraufschluesselung_spalte="E"
+        )
+        retval = xlsx.get_tax_values(spalte="Z", mgmnt=mgmnt, search="gibt es nicht")
+        self.assertEqual(retval, xlsx.get_tax_values(), "should be equal")
+
+    def test_get_tax_values_unknown_zeile(self):
+        """eine nicht vorhandene Zeile soll einen ValueError auslösen"""
+        xlsx = self._read_div_steuern()
+        with self.assertRaises(ValueError):
+            xlsx.get_tax_values(spalte="E", zeile="9999")
 
     def test__split_dataframe_by_search_value(self):
         """Lies den Inhalt der Positionen"""

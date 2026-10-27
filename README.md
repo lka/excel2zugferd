@@ -98,6 +98,17 @@ Als Vorlage benutzen Sie bitte die Datei "TestRechnung.xlsx".
 Alternativ können Sie die XY-Positionen im Excel Blatt (Spalten: A...Z, Zeilen: 1...) in den Stammdaten "Excel Steuerung" und "Excel Positionen" angeben.
 Damit können die XY-Positionen verändert werden und die Suchfunktion wird abgeschaltet. Durch die Angabe der "Excel Positionen" können Sie auch die Überschriften der Einzelpositionen anpassen z.B: Pos. -> Nr., Typ -> EH usw..
 
+#### Mehrere Steuersätze
+
+In der Excel-Datei TestRechnung.xlsx ist im Tabellenblatt "Rechnung div. Steuern" ein Beispiel für die Verwendung verschiedener Steuersätze in einer Rechnung.
+
+Die zweistufige Ausführung über Steuer 1..n und danach eine Umsatzsteueraufschlüsselung in die Steuersätze ist dem Umstand geschuldet, dass es verschiedene Ausnahmebegründungen für einen Steuersatz von 0.00% geben kann. Da die Umsatzsteuersumme bei Steuersatz 0.00% immer 0.00 € ergibt, habe ich da die jeweilige Ausnahmebegründung hinterlegt. Ich prüfe dabei nicht ab, ob der Eintrag sinnvoll ist. Das macht dann das Finanzamt 😊.
+
+Leider ist in der Spezifikation vorgesehen, dass nur eine ApplicableTradeTax mit CategoryType E im Header eingetragen werden darf. Bei der Prüfung der XML Daten geht ein aktuelles Prüfprogramm so vor, dass die Nettosummen aller Einzelpositionen mit ApplicableTradeTax, Category E und identischem ExceptionReason mit dem BasisAmount der ApplicableTradeTax, Category E und identischem ExceptionReason im Header verglichen wird. Bei Abweichung > 0.1% gibt es eine Warnung. Um das zu verhindern und trotzdem eine Unterscheidbarkeit der ExceptionReasons herbeizuführen, habe ich die ExceptionReasons so aufgebaut, dass:
+```Pos. x-y, n: ExceptionReason1 (Netto Summe1 EUR); Pos. z: ExceptionReason2 (Netto Summe2 EUR)```
+als kombinierte ExceptionReason verwendet wird. Die Nettosummen werden addiert und in den BasisAmount im Header geschrieben (Die Addition ergibt "hoffentlich" keine Rundungsfehler.).
+Die Struktur ```Steuer, Steuersatz (in %), Nettosumme, Steuersumme oder ExceptionReason wenn Steuer = 0.00%``` für die Umsatzsteueraufschlüsselung ist vorgegeben. Wenn eine Nettosumme 0,00 € enthält, wird diese Zeile nicht berücksichtigt.
+
 ## Versionen
 
 ### 0.26.x
