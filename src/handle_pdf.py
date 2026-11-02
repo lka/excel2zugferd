@@ -635,8 +635,12 @@ class Pdf(PDF):
         self.print_abspann(
             f"Bitte überweisen Sie den Betrag von {brutto} bis zum \
 {ueberweisungsdatum.strftime(GERMAN_DATE)} auf \
-u.a. Konto.\n\n{abspann}"
-        )
+u.a. Konto.\n\n{abspann}" if self._amount_of(brutto) > 0.00 else abspann
+            )
+
+    def _amount_of(self, currency: str) -> float:
+        """convert locale currency string like '1.149,86 €' to float"""
+        return locale.atof(currency.replace("€", "").strip())
 
     def _get_value(self, tuple) -> str:
         _, v = tuple
@@ -698,6 +702,7 @@ u.a. Konto.\n\n{abspann}"
         self._fill_abspann(brutto, ueberweisungsdatum)
 
         if self.invoice.management.create_girocode:
-            self._fill_girocode(
-                locale.atof(brutto.strip(" €")), rg_nr, datum.strftime(GERMAN_DATE)
-            )
+            if self._amount_of(brutto) > 0.00:
+                self._fill_girocode(
+                    self._amount_of(brutto), rg_nr, datum.strftime(GERMAN_DATE)
+                )

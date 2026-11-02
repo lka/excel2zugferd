@@ -109,6 +109,10 @@ Leider ist in der Spezifikation vorgesehen, dass nur eine ApplicableTradeTax mit
 als kombinierte ExceptionReason verwendet wird. Die Nettosummen werden addiert und in den BasisAmount im Header geschrieben (Die Addition ergibt "hoffentlich" keine Rundungsfehler.).
 Die Struktur ```Steuer, Steuersatz (in %), Nettosumme, Steuersumme oder ExceptionReason wenn Steuer = 0.00%``` für die Umsatzsteueraufschlüsselung ist vorgegeben. Wenn eine Nettosumme 0,00 € enthält, wird diese Zeile nicht berücksichtigt.
 
+#### Positionsweise "Gutschriften"
+
+Innerhalb einer Handelsrechnung können positionsweise "Gutschriften" erstellt werden, indem die Summe und die darauf erhobene Steuer berücksichtigt wird. Die XML Struktur erlaubt allerdings nur positive Einzelpreise. Das bedeutet, wenn in der Rechnung für eine Position die Menge negativ eingetragen wird, funktioniert das und wird auch als korrekt validiert.
+
 ## Versionen
 
 ### 0.26.x

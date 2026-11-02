@@ -47,7 +47,8 @@ POSITIONS_DIV_STEUERN_EXPECTED = np.array(
         [
             "5",
             "04.01.2024",
-            "Email wg. Herrn R Anmeldung im AWS (hat versucht sich anzumelden mehr als 120 Tage vor Beginn der Reha, steht in der Logdatei im W2k19-fs)",
+            "Email wg. Herrn R Anmeldung im AWS (hat versucht sich anzumelden mehr als 120 Tage vor Beginn der Reha, \
+steht in der Logdatei im W2k19-fs)",
             "1",
             "10 Min.",
             "22,00 €",
@@ -130,6 +131,14 @@ class TestHandlePdf(unittest.TestCase):
         self.assertEqual(
             value["maxlengths"], [4, 10, 138, 6, 7, 8, 8, 6], "should be equal"
         )
+
+    def test_amount_of(self):
+        """Währungstext im lokalen Format muss als float lesbar sein"""
+        self.assertEqual(self.pdf._amount_of("1.149,86 €"), 1149.86)
+        self.assertEqual(self.pdf._amount_of("0,00 €"), 0.0)
+        self.assertEqual(self.pdf._amount_of("-12,50 €"), -12.5)
+        self.assertEqual(self.pdf._amount_of("1.149,86 €"), 1149.86)
+        self.assertEqual(self.pdf._amount_of(self.pdf._currency(1149.86)), 1149.86)
 
     def test_uniquify(self):
         """
