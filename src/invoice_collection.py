@@ -13,6 +13,7 @@ from src.constants import (
     RGNR_DEFAULT_SPALTE,
     RGDATUM_DEFAULT_SPALTE,
     UST_KEY_DEFAULT_SPALTE,
+    STORNO_DEFAULT_SPALTE,
 )
 
 
@@ -23,6 +24,7 @@ class InvoiceCollection(Invoice):
 
     def __init__(self, daten: ExcelContent = None, stammdaten: dict = None) -> None:
         super().__init__()
+        self.storno: list | None = None
         self.set_stammdaten(stammdaten)
         self.set_daten(daten)
 
@@ -78,3 +80,11 @@ class InvoiceCollection(Invoice):
                 else None
             )
             self.invoice_tax = daten.get_tax_values(spalte=spalte, zeile=zeile, mgmnt=self.management)
+            spalte = (
+                self.management.storno_spalte
+                if self.management.storno_spalte
+                else STORNO_DEFAULT_SPALTE
+            )
+            self.storno = daten.get_storno_values(
+                spalte=spalte, zeile=self.management.storno_zeile, mgmnt=self.management
+            )

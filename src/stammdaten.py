@@ -189,6 +189,22 @@ STAMMDATEN = [
         "Dest": "Excel",
     },
     {
+        "Text": "StornoSpalte",
+        "Label": "Storno\nSpalte (A...Z)(optional)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "StornoSpalte",
+        "Dest": "Excel",
+    },
+    {
+        "Text": "StornoZeile",
+        "Label": "Storno\nZeile (1...)(optional)",
+        "Lines": 1,
+        "Type": "String",
+        "Variable": "StornoZeile",
+        "Dest": "Excel",
+    },
+    {
         "Text": "RechnungSpalte",
         "Label": "Rechnungsnummer\nSpalte (A...Z)",
         "Lines": 1,

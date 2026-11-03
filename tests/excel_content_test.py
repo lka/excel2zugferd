@@ -384,6 +384,134 @@ class TestExcelContent(TestCase):
         with self.assertRaises(ValueError):
             xlsx.get_tax_values(spalte="E", zeile="9999")
 
+    def _xlsx_with_storno(self, rows: list) -> ExcelContent:
+        """ExcelContent ohne Datei, Sheet aus rows (Spalten A..E, Zeilen ab 1)"""
+        xlsx = ExcelContent("gibt_es_nicht.xlsx", ".")
+        xlsx.daten = pd.DataFrame(
+            rows, columns=list("ABCDE"), index=range(1, len(rows) + 1)
+        )
+        return xlsx
+
+    def test_get_storno_values_gutschrift(self):
+        """Suche über den Code (Feld 2) in der Spalte rechts von spalte"""
+        xlsx = self._xlsx_with_storno(
+            [
+                ["Rechnung", np.nan, np.nan, np.nan, np.nan],
+                ["Gutschrift", 381.0, 20240001.0, datetime(2024, 1, 30), np.nan],
+            ]
+        )
+        self.assertEqual(
+            xlsx.get_storno_values(),
+            ["Gutschrift", 381, "20240001", "30.01.2024"],
+            "should be equal",
+        )
+
+    def test_get_storno_values_korrekturrechnung(self):
+        """variabler Text in Feld 1, Code 384, Strings bleiben Strings"""
+        xlsx = self._xlsx_with_storno(
+            [["Korrekturrechnung", 384, "RG-17", "15.12.2023", np.nan]]
+        )
+        self.assertEqual(
+            xlsx.get_storno_values(),
+            ["Korrekturrechnung", 384, "RG-17", "15.12.2023"],
+            "should be equal",
+        )
+
+    def test_get_storno_values_other_spalte(self):
+        """mit spalte='C' stehen die Felder in C bis F"""
+        xlsx = self._xlsx_with_storno(
+            [[np.nan, np.nan, "Gutschrift", 381, "RG-1"]]
+        )
+        xlsx.daten["F"] = "01.01.2024"
+        self.assertEqual(
+            xlsx.get_storno_values(spalte="C"),
+            ["Gutschrift", 381, "RG-1", "01.01.2024"],
+            "should be equal",
+        )
+
+    def test_get_storno_values_not_found(self):
+        """kein Code vorhanden: None"""
+        xlsx = self._xlsx_with_storno([["Rechnung", np.nan, np.nan, np.nan, np.nan]])
+        self.assertIsNone(xlsx.get_storno_values(), "should be None")
+
+    def test_get_storno_values_without_sheet(self):
+        """ohne Sheet: None"""
+        self.assertIsNone(self.xlsx.get_storno_values(), "should be None")
+
+    def test_get_storno_values_with_zeile(self):
+        """mit zeile wird direkt in dieser Zeile gelesen"""
+        xlsx = self._xlsx_with_storno(
+            [
+                ["x", 999, "x", "x", np.nan],
+                ["Gutschrift", 381, "RG-1", "01.01.2024", np.nan],
+            ]
+        )
+        self.assertEqual(
+            xlsx.get_storno_values(zeile="2"),
+            ["Gutschrift", 381, "RG-1", "01.01.2024"],
+            "should be equal",
+        )
+
+    def test_get_storno_values_with_zeile_empty_code(self):
+        """mit zeile, aber leerem Code: None"""
+        xlsx = self._xlsx_with_storno([[np.nan] * 5])
+        self.assertIsNone(xlsx.get_storno_values(zeile="1"), "should be None")
+
+    def test_get_storno_values_with_zeile_invalid_code(self):
+        """mit zeile und unbekanntem Code: ValueError"""
+        xlsx = self._xlsx_with_storno([["Gutschrift", 123, "RG-1", "x", np.nan]])
+        with self.assertRaises(ValueError):
+            xlsx.get_storno_values(zeile="1")
+
+    def test_get_storno_values_empty_invoice_number_is_switch(self):
+        """leere Rechnungsnummer: kein Storno, None ohne Fehler"""
+        xlsx = self._xlsx_with_storno([["Gutschrift", 381, np.nan, "x", np.nan]])
+        self.assertIsNone(xlsx.get_storno_values(), "should be None")
+        self.assertIsNone(xlsx.get_storno_values(zeile="1"), "should be None")
+        xlsx = self._xlsx_with_storno([["Gutschrift", 123, "  ", "x", np.nan]])
+        self.assertIsNone(xlsx.get_storno_values(zeile="1"), "should be None")
+
+    def test_get_storno_values_missing_date(self):
+        """Rechnungsnummer gefüllt, Rechnungsdatum leer: ValueError"""
+        xlsx = self._xlsx_with_storno([["Gutschrift", 381, "RG-1", np.nan, np.nan]])
+        with self.assertRaises(ValueError):
+            xlsx.get_storno_values()
+
+    def test_get_storno_values_invalid_date_format(self):
+        """Rechnungsdatum als Text nicht im Format TT.MM.JJJJ: ValueError"""
+        for value in ("2024-02-01", "1.2.24", "gestern"):
+            xlsx = self._xlsx_with_storno([["Gutschrift", 381, "RG-1", value, np.nan]])
+            with self.assertRaises(ValueError, msg=value):
+                xlsx.get_storno_values()
+
+    def test_get_storno_values_date_with_spaces(self):
+        """Leerzeichen um das Datum werden entfernt"""
+        xlsx = self._xlsx_with_storno([["Gutschrift", 381, "RG-1", " 01.02.2024 ", np.nan]])
+        self.assertEqual(xlsx.get_storno_values()[3], "01.02.2024", "should be equal")
+
+    def test_get_storno_values_date_normalized(self):
+        """einstellige Tage und Monate werden auf TT.MM.JJJJ ergänzt"""
+        xlsx = self._xlsx_with_storno([["Gutschrift", 381, "RG-1", "1.2.2024", np.nan]])
+        self.assertEqual(xlsx.get_storno_values()[3], "01.02.2024", "should be equal")
+
+    def test_get_storno_values_with_zeile_empty_code_and_number(self):
+        """mit zeile, Rechnungsnummer gefüllt, Code leer: ValueError"""
+        xlsx = self._xlsx_with_storno([["Gutschrift", np.nan, "RG-1", "x", np.nan]])
+        with self.assertRaises(ValueError):
+            xlsx.get_storno_values(zeile="1")
+
+    def test_get_storno_values_with_mgmnt(self):
+        """storno_spalte und storno_zeile aus mgmnt haben Vorrang"""
+        xlsx = self._xlsx_with_storno(
+            [["Gutschrift", 381, "RG-1", "01.01.2024", np.nan]]
+        )
+        mgmnt = SimpleNamespace(storno_zeile="1", storno_spalte="A")
+        self.assertEqual(
+            xlsx.get_storno_values(spalte="Z", mgmnt=mgmnt),
+            ["Gutschrift", 381, "RG-1", "01.01.2024"],
+            "should be equal",
+        )
+
     def test__split_dataframe_by_search_value(self):
         """Lies den Inhalt der Positionen"""
 

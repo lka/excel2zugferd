@@ -23,7 +23,7 @@ from drafthorse.pdf import attach_xml
 from src.kunde import Kunde
 from src.lieferant import Lieferant
 from src.invoice_collection import InvoiceCollection
-from src.constants import P19USTG, GERMAN_DATE, EINHEITEN
+from src.constants import P19USTG, GERMAN_DATE, EINHEITEN, STORNO_TYPE_NAMES
 
 
 class ZugFeRD:
@@ -371,11 +371,12 @@ class ZugFeRD:
         self.doc.trade.settlement.monetary_summation.charge_total = Decimal("0.00")
         self.doc.trade.settlement.monetary_summation.allowance_total = Decimal("0.00")
 
-    def add_zahlungsziel(self, text, datum):
-        """add zahlungsziel to zugferd"""
+    def add_zahlungsziel(self, text, datum=None):
+        """add zahlungsziel to zugferd, datum is optional"""
         terms = PaymentTerms()
         terms.description = text
-        terms.due = datum
+        if datum is not None:
+            terms.due = datum
         self.doc.trade.settlement.terms.add(terms)
 
     def add_xml2pdf(self, in_file=None, out_file=None) -> None:
@@ -530,6 +531,40 @@ class ZugFeRD:
                 )
         self._add_tax_free_trade_tax()
 
+    def _set_document_type(self, storno: list | None) -> None:
+        """set type_code and name of the document: invoice or, with storno, as storno[1]"""
+        code = storno[1] if storno is not None else 380
+        self.doc.header.type_code = str(code)
+        self.doc.header.name = STORNO_TYPE_NAMES.get(code, "RECHNUNG")
+
+    def _add_preceding_invoice(self, storno: list | None) -> None:
+        """
+        add number (BT-25) and date (BT-26) of the cancelled invoice,
+        storno[3] has to be formatted as dd.mm.yyyy (ValueError otherwise)
+        """
+        if storno is None:
+            return
+        ref = self.doc.trade.settlement.invoice_referenced_document
+        ref.issuer_assigned_id = storno[2]
+        ref.issue_date_time = datetime.strptime(storno[3], GERMAN_DATE).date()
+
+    def _add_payment_data(self, invoice: InvoiceCollection) -> None:
+        """
+        add payment means, payment terms and payment reference,
+        for a credit note (storno code 381) only a payment term without date,
+        because BR-CO-25 requires BT-9 or BT-20 if the amount due is positive
+        """
+        if invoice.storno is not None and invoice.storno[1] == 381:
+            self.add_zahlungsziel("Gutschrift - keine Zahlung erforderlich.")
+            return
+        self.add_zahlungsempfaenger(invoice.supplier_account.multiliner())
+        self.add_zahlungsziel(
+            f"Bitte überweisen Sie den Betrag von "
+            f"{self._get_brutto(invoice.sums)} bis zum",
+            invoice.supplier.get_ueberweisungsdatum(self.rg_date),
+        )
+        self.add_verwendungszweck(invoice.invoicenr, self.rg_date.strftime(GERMAN_DATE))
+
     def fill_xml(self, invoice: InvoiceCollection = None) -> None:
         """
         fills data into ZugFeRD part
@@ -537,9 +572,9 @@ class ZugFeRD:
         if invoice is None:
             return
         self.invoice = invoice
+        self._set_document_type(invoice.storno)
         kleinunternehmen = invoice.management.is_kleinunternehmen
         steuersatz = invoice.supplier.steuersatz
-        self.add_zahlungsempfaenger(invoice.supplier_account.multiliner())
 
         self.fill_lieferant_to_note(invoice.supplier)
         self.add_my_company(invoice.supplier)
@@ -568,9 +603,5 @@ class ZugFeRD:
         self.add_gesamtsummen(invoice.sums)
         # Datum
         self.add_rechnungsperiode(positions[headers[1]])
-        self.add_zahlungsziel(
-            f"Bitte überweisen Sie den Betrag von \
-{self._get_brutto(invoice.sums)} bis zum",
-            invoice.supplier.get_ueberweisungsdatum(self.rg_date),
-        )
-        self.add_verwendungszweck(invoice.invoicenr, self.rg_date.strftime(GERMAN_DATE))
+        self._add_payment_data(invoice)
+        self._add_preceding_invoice(invoice.storno)

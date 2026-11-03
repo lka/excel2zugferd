@@ -5,6 +5,7 @@ Module Invoice
 from src.constants import (
     ANSCHRIFT_POS_ERROR,
     RECHNUNG_POS_ERROR,
+    STORNO_POS_ERROR,
     RECHNUNGSDATUM_POS_ERROR,
     NETTOSUMME_POS_ERROR,
     MWSTSUMME_POS_ERROR,
@@ -28,6 +29,8 @@ class Steuerung(object):
         self._directory = None
         self._anschrift_spalte = None
         self._anschrift_zeile = None
+        self._storno_spalte = None
+        self._storno_zeile = None
         self._rechnung_spalte = None
         self._rechnung_zeile = None
         self._umsatzsteueraufschluesselung_zeile = None
@@ -57,6 +60,8 @@ class Steuerung(object):
  directory: '{self.directory}',\
  anschrift_spalte: '{self.anschrift_spalte}',\
  anschrift_zeile: '{self.anschrift_zeile}'\
+ storno_spalte: '{self.storno_spalte}',\
+ storno_zeile: '{self.storno_zeile}',\
  rechnung_spalte: '{self.rechnung_spalte}',\
  rechnung_zeile: '{self.rechnung_zeile}'\
  umsatzsteueraufschluesselung_zeile: '{self.umsatzsteueraufschluesselung_zeile}',\
@@ -147,6 +152,22 @@ class Steuerung(object):
     @anschrift_zeile.setter
     def anschrift_zeile(self, value):
         self._anschrift_zeile = value
+
+    @property
+    def storno_spalte(self):
+        return self._storno_spalte
+
+    @storno_spalte.setter
+    def storno_spalte(self, value):
+        self._storno_spalte = value
+
+    @property
+    def storno_zeile(self):
+        return self._storno_zeile
+
+    @storno_zeile.setter
+    def storno_zeile(self, value):
+        self._storno_zeile = value
 
     @property
     def rechnung_spalte(self):
@@ -366,6 +387,18 @@ class Steuerung(object):
         ):
             raise ValueError(RECHNUNG_POS_ERROR)
 
+    def _check_storno_position(self) -> None:
+        """raise ValueError on Failure"""
+        if (self.storno_zeile is not None and self.storno_spalte is None) or (
+            self.storno_zeile is None and self.storno_spalte is not None
+        ):
+            raise ValueError(STORNO_POS_ERROR)
+
+    def _fill_and_check_storno(self, theKeys: list, daten: dict) -> None:
+        self.storno_zeile = self._check_is_integer(theKeys, daten, "StornoZeile")
+        self.storno_spalte = self._check_is_upper(theKeys, daten, "StornoSpalte")
+        self._check_storno_position()
+
     def _fill_and_check_rechnungsnummer(self, theKeys: list, daten: dict) -> None:
         self.rechnung_zeile = self._check_is_integer(theKeys, daten, "RechnungZeile")
         self.rechnung_spalte = self._check_is_upper(theKeys, daten, "RechnungSpalte")
@@ -462,6 +495,7 @@ class Steuerung(object):
 
     def _fill_positions_for_excel(self, theKeys: list, daten: dict) -> None:
         self._fill_and_check_anschrift(theKeys, daten)
+        self._fill_and_check_storno(theKeys, daten)
         self._fill_and_check_rechnungsnummer(theKeys, daten)
         self._fill_and_check_rechnungsdatum(theKeys, daten)
         self._fill_and_check_umsatzsteueraufschluesselung(theKeys, daten)

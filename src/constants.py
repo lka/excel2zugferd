@@ -38,6 +38,12 @@ RECHNUNG_POS_ERROR = (
     "Ansonsten müssen beide leer sein, dann wird nach "
     "'Rechnungs-Nr:' gesucht."
 )
+STORNO_POS_ERROR = (
+    "Bei den Positionen für Storno muss sowohl"
+    " Storno Spalte, als auch Storno Zeile"
+    " ausgefüllt sein.\n"
+    "Ansonsten müssen beide leer sein."
+)
 RECHNUNGSDATUM_POS_ERROR = (
     "Bei den Positionen für Rechnungsdatum muss "
     "sowohl Rechnungsdatum Spalte, als auch "
@@ -78,6 +84,10 @@ UST_KEY_DEFAULT_SPALTE = "E"
 ANSCHRIFT_DEFAULT_SPALTE = "A"
 RGNR_DEFAULT_SPALTE = "A"
 RGDATUM_DEFAULT_SPALTE = "A"
+STORNO_DEFAULT_SPALTE = "A"
+STORNO_DEFAULT_VALUES = (381, 384)
+# ZUGFeRD type_code: Name im Dokumentkopf
+STORNO_TYPE_NAMES = {381: "GUTSCHRIFTANZEIGE", 384: "KORREKTURRECHNUNG"}
 
 EINHEITEN = {
     "h": "HUR",
