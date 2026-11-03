@@ -148,8 +148,8 @@ class PDF(FPDF):
         """
         prints Betreffzeile
         """
-        self._set_section("Betreff", 25, 97.4, "B", 12)
-        self.cell(None, None, text)
+        self._set_section("Betreff", 25, 95, "B", 12)
+        self.multi_cell(120, 4, text, align="L")
         self.ln()
 
     def _printTableHeader(self):
@@ -621,7 +621,16 @@ class Pdf(PDF):
             return len(theDict["maxlengths"])
         return len(theDict)
 
-    def _fill_abspann(self, brutto: str, ueberweisungsdatum: datetime) -> None:
+    def _is_gutschrift(self) -> bool:
+        """True if the invoice is a credit note (storno code 381)"""
+        storno = self.invoice.storno
+        return storno is not None and storno[1] == 381
+
+    def _get_abspann_text(self, brutto: str, ueberweisungsdatum: datetime) -> str:
+        """
+        return abspann, with request to pay only if the amount is positive
+        and it is not a credit note
+        """
         abspann = (
             self.invoice.management.abspann
             if self.invoice.management.abspann
@@ -632,11 +641,16 @@ class Pdf(PDF):
                 else ""
             )
         )
-        self.print_abspann(
-            f"Bitte überweisen Sie den Betrag von {brutto} bis zum \
-{ueberweisungsdatum.strftime(GERMAN_DATE)} auf \
-u.a. Konto.\n\n{abspann}" if self._amount_of(brutto) > 0.00 else abspann
-            )
+        if self._is_gutschrift() or self._amount_of(brutto) <= 0.00:
+            return abspann
+        return (
+            f"Bitte überweisen Sie den Betrag von {brutto} bis zum "
+            f"{ueberweisungsdatum.strftime(GERMAN_DATE)} auf "
+            f"u.a. Konto.\n\n{abspann}"
+        )
+
+    def _fill_abspann(self, brutto: str, ueberweisungsdatum: datetime) -> None:
+        self.print_abspann(self._get_abspann_text(brutto, ueberweisungsdatum))
 
     def _amount_of(self, currency: str) -> float:
         """convert locale currency string like '1.149,86 €' to float"""
@@ -663,6 +677,29 @@ u.a. Konto.\n\n{abspann}" if self._amount_of(brutto) > 0.00 else abspann
             ("Bruttobetrag:", self._currency(brutto)),
         ]
 
+    def _get_bezug_text(self, rg_nr: dict, datum: datetime) -> str:
+        """
+        return text for print_bezug: invoice number and date,
+        with storno also the cancelled invoice
+        """
+        key, value = list(rg_nr.items())[0]
+        storno = self.invoice.storno
+        if storno is not None:
+            return (
+                f"{storno[0]} {value} vom {datum.strftime(GERMAN_DATE)}"
+                f" zu {key} {storno[2]} vom {storno[3]}"
+            )
+        return f"{key} {value} vom {datum.strftime(GERMAN_DATE)}"
+
+    def _needs_girocode(self, brutto: str) -> bool:
+        """
+        GiroCode only if wanted, the amount is positive
+        and it is not a credit note (storno code 381)
+        """
+        if self._is_gutschrift():
+            return False
+        return self.invoice.management.create_girocode and self._amount_of(brutto) > 0.00
+
     def fill_pdf(self, invoice: InvoiceCollection) -> None:
         """
         set own data
@@ -680,10 +717,7 @@ u.a. Konto.\n\n{abspann}" if self._amount_of(brutto) > 0.00 else abspann
 
         # print("handle_pdf.py: Line 677\n", tax_values)
 
-        self.print_bezug(
-            f"{list(rg_nr.keys())[0]} {list(rg_nr.values())[0]} vom\
- {datum.strftime(GERMAN_DATE)}"
-        )
+        self.print_bezug(self._get_bezug_text(rg_nr, datum))
 
         self.print_leistungszeitraum(
             von.strftime(GERMAN_DATE), bis.strftime(GERMAN_DATE)
@@ -701,8 +735,7 @@ u.a. Konto.\n\n{abspann}" if self._amount_of(brutto) > 0.00 else abspann
         #     self.fill_xml(rg_nr, summen, brutto, ueberweisungsdatum, datum)
         self._fill_abspann(brutto, ueberweisungsdatum)
 
-        if self.invoice.management.create_girocode:
-            if self._amount_of(brutto) > 0.00:
-                self._fill_girocode(
-                    self._amount_of(brutto), rg_nr, datum.strftime(GERMAN_DATE)
-                )
+        if self._needs_girocode(brutto):
+            self._fill_girocode(
+                self._amount_of(brutto), rg_nr, datum.strftime(GERMAN_DATE)
+            )

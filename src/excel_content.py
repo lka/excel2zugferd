@@ -11,9 +11,12 @@ from src.kunde import Kunde
 from src.steuerung import Steuerung
 from src.constants import (
     DATUM_NOT_FOUND_ERR,
+    GERMAN_DATE,
     ANSCHRIFT_DEFAULT_SPALTE,
     RGNR_DEFAULT_SPALTE,
     RGDATUM_DEFAULT_SPALTE,
+    STORNO_DEFAULT_SPALTE,
+    STORNO_DEFAULT_VALUES,
 )
 import decimal
 import string
@@ -244,6 +247,95 @@ class ExcelContent:
         theDict = {rg_date: value}
 
         return theDict
+
+    def _storno_code(self, value) -> int | None:
+        """return value as int if it is a storno code, else None"""
+        try:
+            code = int(value)
+        except (TypeError, ValueError):
+            return None
+        return code if code in STORNO_DEFAULT_VALUES else None
+
+    def _storno_to_str(self, value, name: str) -> str:
+        """return value as string (dates as dd.mm.yyyy), raise if empty"""
+        if pd.isna(value) or str(value).strip() == "":
+            raise ValueError(f"Storno: {name} darf nicht leer sein.")
+        if isinstance(value, datetime):
+            return value.strftime("%d.%m.%Y")
+        if isinstance(value, float) and value.is_integer():
+            return str(int(value))
+        return str(value)
+
+    def _storno_date_to_str(self, value) -> str:
+        """
+        return date normalized as dd.mm.yyyy (1.2.2024 -> 01.02.2024),
+        raise ValueError if it has another format
+        """
+        text = self._storno_to_str(value, "Rechnungsdatum").strip()
+        try:
+            return datetime.strptime(text, GERMAN_DATE).strftime(GERMAN_DATE)
+        except ValueError:
+            raise ValueError(
+                f"Storno: Rechnungsdatum '{text}' muss das Format TT.MM.JJJJ haben."
+            )
+
+    def _find_storno_row(self, code_spalte: str) -> any:
+        """return index of first row with a storno code in code_spalte, else None"""
+        for idx, value in self.daten[code_spalte].items():
+            if self._storno_code(value) is not None:
+                return idx
+        return None
+
+    def get_storno_values(
+        self,
+        spalte: str = STORNO_DEFAULT_SPALTE,
+        zeile: str = None,
+        mgmnt: Steuerung = None,
+    ) -> list | None:
+        """
+        return None or [text, code, invoice number, invoice date] of the
+        invoice to cancel. The 4 fields are in the 4 columns starting at spalte.
+        Without zeile (or mgmnt.storno_zeile, spalte is then mgmnt.storno_spalte)
+        the first row with a storno code (field 2) is searched.
+        An empty invoice number (field 3) means no storno: None.
+        With an invoice number, an empty date or (with zeile) an invalid code
+        raises ValueError.
+        """
+        if self.daten is None:
+            return None
+        if mgmnt and mgmnt.storno_zeile:
+            spalte, zeile = mgmnt.storno_spalte, mgmnt.storno_zeile
+        columns = self._get_storno_columns(spalte)
+        row = int(zeile) if zeile else self._find_storno_row(columns[1])
+        if row is None:
+            return None
+        return self._read_storno_row(columns, row)
+
+    def _get_storno_columns(self, spalte: str) -> list:
+        """return the 4 storno columns starting at spalte, raise if missing"""
+        columns = self._get_tax_values_columns(spalte)
+        if len(columns) < 4:
+            raise ValueError(self._get_col_err(columns[-1]))
+        return columns
+
+    def _read_storno_row(self, columns: list, row: int) -> list | None:
+        """
+        return [text, code, invoice number, invoice date] of row,
+        None if the invoice number is empty (no storno)
+        """
+        rg_nr = self._get_content_at(columns[2], row)
+        if pd.isna(rg_nr) or str(rg_nr).strip() == "":
+            return None
+        code = self._storno_code(self._get_content_at(columns[1], row))
+        if code is None:
+            raise ValueError(f"Storno: ungültiger Code in Zeile {row}.")
+        text = self._get_content_at(columns[0], row)
+        return [
+            "" if pd.isna(text) else str(text),
+            code,
+            self._storno_to_str(rg_nr, "Rechnungsnummer"),
+            self._storno_date_to_str(self._get_content_at(columns[3], row)),
+        ]
 
     def get_invoice_positions(
         self, spalte: str = "A", search: str = "Pos.", mgmnt: Steuerung = None

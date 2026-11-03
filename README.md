@@ -113,7 +113,30 @@ Die Struktur ```Steuer, Steuersatz (in %), Nettosumme, Steuersumme oder Exceptio
 
 Innerhalb einer Handelsrechnung können positionsweise "Gutschriften" erstellt werden, indem die Summe und die darauf erhobene Steuer berücksichtigt wird. Die XML Struktur erlaubt allerdings nur positive Einzelpreise. Das bedeutet, wenn in der Rechnung für eine Position die Menge negativ eingetragen wird, funktioniert das und wird auch als korrekt validiert.
 
+#### Gutschriftanzeige / Stornorechnung oder Korrekturrechnung
+
+Um eine Gutschriftanzeige oder Korrekturrechnung zu erzeugen wird im Excel-Sheet eine Zeile mit 4 Feldern hinterlegt:
+```
+Feld 1 = Gutschrift (oder Korrekturrechnung); Das ist der Text, der dann im PDF statt Rechnungs-Nr. steht.
+Feld 2 = 381 (oder 384 falls es eine Korrekturrechnung sein soll); Das ist der Typ, der im XML eingetragen wird.
+Feld 3 = Rechnungsnummer der zu stornierenden Rechnung (händisch eintragen)
+Feld 4 = Rechnungsdatum der zu stornierenden Rechnung (händisch eintragen)
+```
+
+In der neuen Rechnungsnummer steht dann die Gutschriftsnummer, also z.b. G-001 (oder die neue Rechnungsnummer z.B. R-002, wenn es eine Korrekturrechnung sein soll).
+
+Eine Korrekturrechnung ersetzt die alte Rechnung.
+
+Die Funktion wird ausgeschaltet, wenn Feld 3 (die Rechnungsnummer) leer ist, dann funktioniert alles wie gehabt und eine Rechnung wird erzeugt.
+
+Die Position der 4 Felder kann auch über die Excel-Steuerung in den Feldern Storno vorgegeben werden, die Reihenfolge ist aber fest vorgegeben.
+
 ## Versionen
+
+### 0.27.0
+
+- sowohl Gutschriftanzeige (381), als auch Korrekturrechnung (384) sind jetzt erzeugbar; siehe Vorlage "Rechnung div. Steuern" in "TestRechnung.xlsx"
+- Die Validierung des erzeugten ZUGFeRD Dokuments auf https://www.portinvoice.com ist erfolgreich (Ohne Fehler und Warnungen).
 
 ### 0.26.x
 

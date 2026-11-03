@@ -3,6 +3,7 @@
 # from locale import currency
 from types import SimpleNamespace
 import unittest
+from datetime import date, datetime
 
 # import os
 # from datetime import datetime, timedelta
@@ -16,6 +17,99 @@ import decimal
 
 class TestZugFerd(unittest.TestCase):
     """Testclass for zugferd tests."""
+
+    def test_document_type_defaults(self):
+        """ohne Storno: Rechnung (380)"""
+        self.assertEqual(str(self.zugferd.doc.header.type_code), "380", "should be equal")
+        self.assertEqual(str(self.zugferd.doc.header.name), "RECHNUNG", "should be equal")
+        self.zugferd._set_document_type(None)
+        self.assertEqual(str(self.zugferd.doc.header.type_code), "380", "should be equal")
+        self.assertEqual(str(self.zugferd.doc.header.name), "RECHNUNG", "should be equal")
+
+    def test_document_type_storno(self):
+        """mit Storno: type_code und name entsprechend storno[1]"""
+        expected = {
+            381: "GUTSCHRIFTANZEIGE",
+            384: "KORREKTURRECHNUNG",
+        }
+        for code, name in expected.items():
+            self.zugferd._set_document_type(["x", code, "R-001", "01.02.2024"])
+            self.assertEqual(
+                str(self.zugferd.doc.header.type_code), str(code), "should be equal"
+            )
+            self.assertEqual(str(self.zugferd.doc.header.name), name, "should be equal")
+
+    def test_add_preceding_invoice(self):
+        """storno[2] und storno[3] kommen als Vorrechnung (BT-25, BT-26) ins XML"""
+        self.zugferd._add_preceding_invoice(
+            ["Gutschrift", 381, "R-001", "01.02.2024"]
+        )
+        ref = self.zugferd.doc.trade.settlement.invoice_referenced_document
+        self.assertEqual(ref.issuer_assigned_id._text, "R-001", "should be equal")
+        self.assertEqual(ref.issue_date_time._value, date(2024, 2, 1), "should be equal")
+
+    def test_add_preceding_invoice_without_storno(self):
+        """ohne Storno keine Vorrechnung"""
+        self.zugferd._add_preceding_invoice(None)
+        ref = self.zugferd.doc.trade.settlement.invoice_referenced_document
+        self.assertIsNone(ref._data["issuer_assigned_id"], "should be empty")
+
+    def test_add_preceding_invoice_invalid_date(self):
+        """ein Datum nicht im Format TT.MM.JJJJ ist ein ValueError"""
+        with self.assertRaises(ValueError):
+            self.zugferd._add_preceding_invoice(["x", 381, "R-001", "2024-02-01"])
+
+    def _payment_invoice(self, storno):
+        return SimpleNamespace(
+            supplier_account=SimpleNamespace(
+                multiliner=lambda: "Firma\nIBAN DE12 3456\nBIC ABCDEF"
+            ),
+            supplier=SimpleNamespace(
+                get_ueberweisungsdatum=lambda d: d
+            ),
+            sums=[("n", 1.0), ("u", 0.19), ("b", 1.19)],
+            invoicenr={"Rechnungs-Nr:": "G-001"},
+            storno=storno,
+        )
+
+    def test_add_payment_data(self):
+        """ohne Storno: Zahlungsart, Zahlungsziel und Verwendungszweck"""
+        self.zugferd.rg_date = datetime(2024, 2, 4)
+        self.zugferd._add_payment_data(self._payment_invoice(None))
+        settlement = self.zugferd.doc.trade.settlement
+        self.assertEqual(str(settlement.payment_means.type_code), "58", "should be equal")
+        self.assertEqual(len(settlement.terms.children), 1, "should be equal")
+        self.assertEqual(
+            str(settlement.payment_reference),
+            "Rechnungs-Nr: G-001 vom 04.02.2024",
+            "should be equal",
+        )
+
+    def test_add_payment_data_gutschrift(self):
+        """Gutschrift (381): keine Zahlungsart, kein Verwendungszweck, nur Zahlungsbedingung ohne Datum"""
+        self.zugferd.rg_date = datetime(2024, 2, 4)
+        self.zugferd._add_payment_data(
+            self._payment_invoice(["Gutschrift", 381, "R-001", "01.02.2024"])
+        )
+        settlement = self.zugferd.doc.trade.settlement
+        self.assertEqual(str(settlement.payment_means.type_code), "", "should be empty")
+        self.assertEqual(str(settlement.payment_reference), "", "should be equal")
+        # BR-CO-25: bei positivem Betrag muss BT-20 (Zahlungsbedingungen) vorhanden sein
+        self.assertEqual(len(settlement.terms.children), 1, "should be equal")
+        terms = settlement.terms.children[0]
+        self.assertEqual(
+            str(terms.description), "Gutschrift - keine Zahlung erforderlich.", "should be equal"
+        )
+        self.assertIsNone(terms._data["due"], "no due date for credit note")
+
+    def test_add_payment_data_korrekturrechnung(self):
+        """Korrekturrechnung (384): wie eine Rechnung mit Zahlungsdaten"""
+        self.zugferd.rg_date = datetime(2024, 2, 4)
+        self.zugferd._add_payment_data(
+            self._payment_invoice(["Korrektur", 384, "R-001", "01.02.2024"])
+        )
+        settlement = self.zugferd.doc.trade.settlement
+        self.assertEqual(str(settlement.payment_means.type_code), "58", "should be equal")
 
     def setUp(self) -> None:
         self.zugferd = handle_zugferd.ZugFeRD()

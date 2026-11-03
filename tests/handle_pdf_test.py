@@ -5,6 +5,8 @@ Modul handle_pdf_test
 import os
 from pathlib import Path
 import unittest
+from datetime import datetime
+from types import SimpleNamespace
 import numpy as np
 import src.handle_pdf as handle_pdf
 from src.excel_content import ExcelContent
@@ -139,6 +141,87 @@ class TestHandlePdf(unittest.TestCase):
         self.assertEqual(self.pdf._amount_of("-12,50 €"), -12.5)
         self.assertEqual(self.pdf._amount_of("1.149,86 €"), 1149.86)
         self.assertEqual(self.pdf._amount_of(self.pdf._currency(1149.86)), 1149.86)
+
+    def test_get_bezug_text_without_storno(self):
+        """ohne Storno: Rechnungsnummer vom Datum"""
+        self.pdf.invoice = SimpleNamespace(storno=None)
+        retval = self.pdf._get_bezug_text(
+            {"Rechnungs-Nr:": "R-002"}, datetime(2024, 2, 4)
+        )
+        self.assertEqual(retval, "Rechnungs-Nr: R-002 vom 04.02.2024", "should be equal")
+
+    def test_get_bezug_text_with_storno(self):
+        """mit Storno: Text, Nummer und Datum, dazu die stornierte Rechnung"""
+        self.pdf.invoice = SimpleNamespace(
+            storno=["Gutschrift", 381, "R-001", "01.02.2024"]
+        )
+        retval = self.pdf._get_bezug_text({"Nr.:": "G-001"}, datetime(2024, 2, 4))
+        self.assertEqual(
+            retval,
+            "Gutschrift G-001 vom 04.02.2024 zu Nr.: R-001 vom 01.02.2024",
+            "should be equal",
+        )
+
+    def _invoice_for_girocode(self, create_girocode, storno):
+        return SimpleNamespace(
+            management=SimpleNamespace(create_girocode=create_girocode), storno=storno
+        )
+
+    def test_needs_girocode(self):
+        """GiroCode nur bei Einstellung, positivem Betrag und ohne Gutschrift (381)"""
+        self.pdf.invoice = self._invoice_for_girocode(True, None)
+        self.assertTrue(self.pdf._needs_girocode("10,00 €"), "should be True")
+        self.assertFalse(self.pdf._needs_girocode("0,00 €"), "should be False")
+        self.pdf.invoice = self._invoice_for_girocode(False, None)
+        self.assertFalse(self.pdf._needs_girocode("10,00 €"), "should be False")
+
+    def test_needs_girocode_with_storno(self):
+        """bei Gutschrift (381) kein GiroCode, bei Korrekturrechnung (384) schon"""
+        self.pdf.invoice = self._invoice_for_girocode(
+            True, ["Gutschrift", 381, "R-001", "01.02.2024"]
+        )
+        self.assertFalse(self.pdf._needs_girocode("10,00 €"), "should be False")
+        self.pdf.invoice = self._invoice_for_girocode(
+            True, ["Korrekturrechnung", 384, "R-001", "01.02.2024"]
+        )
+        self.assertTrue(self.pdf._needs_girocode("10,00 €"), "should be True")
+
+    def _invoice_for_abspann(self, storno):
+        return SimpleNamespace(
+            management=SimpleNamespace(abspann="Mit Gruß\nFirma"),
+            supplier=SimpleNamespace(name="Firma"),
+            storno=storno,
+        )
+
+    def test_get_abspann_text(self):
+        """positiver Betrag ohne Storno: mit Überweisungsaufforderung"""
+        self.pdf.invoice = self._invoice_for_abspann(None)
+        retval = self.pdf._get_abspann_text("10,00 €", datetime(2024, 2, 4))
+        self.assertEqual(
+            retval,
+            "Bitte überweisen Sie den Betrag von 10,00 € bis zum 04.02.2024 auf "
+            "u.a. Konto.\n\nMit Gruß\nFirma",
+            "should be equal",
+        )
+
+    def test_get_abspann_text_not_positive(self):
+        """Betrag nicht positiv: nur der Abspann"""
+        self.pdf.invoice = self._invoice_for_abspann(None)
+        retval = self.pdf._get_abspann_text("0,00 €", datetime(2024, 2, 4))
+        self.assertEqual(retval, "Mit Gruß\nFirma", "should be equal")
+
+    def test_get_abspann_text_with_storno(self):
+        """Gutschrift (381): keine Überweisungsaufforderung, Korrektur (384) schon"""
+        self.pdf.invoice = self._invoice_for_abspann(
+            ["Gutschrift", 381, "R-001", "01.02.2024"]
+        )
+        retval = self.pdf._get_abspann_text("10,00 €", datetime(2024, 2, 4))
+        self.assertEqual(retval, "Mit Gruß\nFirma", "should be equal")
+        self.pdf.invoice = self._invoice_for_abspann(
+            ["Korrekturrechnung", 384, "R-001", "01.02.2024"]
+        )
+        retval = self.pdf._get_abspann_text("10,00 €", datetime(2024, 2, 4))
+        self.assertTrue(retval.startswith("Bitte überweisen Sie"), "should be True")
 
     def test_uniquify(self):
         """
