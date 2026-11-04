@@ -223,6 +223,28 @@ class TestHandlePdf(unittest.TestCase):
         retval = self.pdf._get_abspann_text("10,00 €", datetime(2024, 2, 4))
         self.assertTrue(retval.startswith("Bitte überweisen Sie"), "should be True")
 
+    def test_tax_values_to_print(self):
+        """Zeilen mit Nettosumme != 0 werden gedruckt, auch negative (Gutschrift)"""
+        tax_values = {
+            1: [0.19, -100, -19.0],
+            2: [0.07, 50, 3.5],
+            3: [0, -30, "Durchlaufender Posten"],
+            4: [0, 0, "Nichts"],
+            5: [0.19, 0, 0.0],
+        }
+        self.assertEqual(
+            [key for key, _ in self.pdf._tax_values_to_print(tax_values)],
+            [1, 2, 3],
+            "should be equal",
+        )
+
+    def test_tax_values_to_print_empty(self):
+        """nichts zu drucken: leere Liste"""
+        self.assertEqual(self.pdf._tax_values_to_print({}), [], "should be equal")
+        self.assertEqual(
+            self.pdf._tax_values_to_print({1: [0.19, 0, 0.0]}), [], "should be equal"
+        )
+
     def test_uniquify(self):
         """
         Check whether uniquify counts up filename if file already exists

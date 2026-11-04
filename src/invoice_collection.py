@@ -14,6 +14,7 @@ from src.constants import (
     RGDATUM_DEFAULT_SPALTE,
     UST_KEY_DEFAULT_SPALTE,
     STORNO_DEFAULT_SPALTE,
+    NEGATIVE_PRICE_ERR,
 )
 
 
@@ -38,6 +39,12 @@ class InvoiceCollection(Invoice):
             self.management = Steuerung()
             self.management.fill_steuerung(stammdaten)
 
+    def _check_prices(self, positions) -> None:
+        """raise ValueError if an item has a negative net price (6th column)"""
+        for pos, preis in zip(positions.iloc[:, 0], positions.iloc[:, 5]):
+            if float(preis) < 0:
+                raise ValueError(NEGATIVE_PRICE_ERR.format(pos=pos))
+
     def set_daten(self, daten: ExcelContent = None) -> None:
         if daten is not None:
             self.customer = Kunde()
@@ -52,6 +59,7 @@ class InvoiceCollection(Invoice):
                 customer=self.customer,
             )
             self.positions = daten.get_invoice_positions(mgmnt=self.management)
+            self._check_prices(self.positions)
             self.sums = daten.get_invoice_sums(management=self.management)
             spalte = (
                 self.management.rechnung_spalte

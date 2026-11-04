@@ -39,6 +39,191 @@ class TestZugFerd(unittest.TestCase):
             )
             self.assertEqual(str(self.zugferd.doc.header.name), name, "should be equal")
 
+    def _gutschrift_invoice(self, brutto=119.0, **kwargs):
+        return SimpleNamespace(
+            storno=["Gutschrift", 381, "R-001", "01.02.2024"],
+            sums=[("n", brutto / 1.19), ("u", brutto - brutto / 1.19), ("b", brutto)],
+            **kwargs,
+        )
+
+    def test_gutschrift_gesamtsummen_keep_sign(self):
+        """Gutschrift (381): die Summen behalten das Vorzeichen aus Excel (wie im PDF)"""
+        for vorzeichen in (1, -1):
+            self.zugferd = handle_zugferd.ZugFeRD()
+            self.zugferd.invoice = self._gutschrift_invoice(brutto=vorzeichen * 119.0)
+            self.zugferd.add_gesamtsummen(
+                [
+                    ("netto:", vorzeichen * decimal.Decimal("100.00")),
+                    ("USt.:", vorzeichen * decimal.Decimal("19.00")),
+                    ("brutto:", vorzeichen * decimal.Decimal("119.00")),
+                ]
+            )
+            summation = self.zugferd.doc.trade.settlement.monetary_summation
+            sign = "-" if vorzeichen < 0 else ""
+            self.assertEqual(
+                str(summation.grand_total), f"{sign}119.00 None", "should be equal"
+            )
+            self.assertEqual(
+                str(summation.tax_basis_total), f"{sign}100.00 None", "should be equal"
+            )
+            self.assertEqual(str(summation.tax_total), f"{sign}19.00 EUR", "should be equal")
+
+    def test_negative_sums_without_storno_keep_sign(self):
+        """ohne Storno bleibt das Vorzeichen der Summen unverändert (Negativrechnung)"""
+        self.zugferd.invoice = SimpleNamespace(
+            storno=None, sums=[("n", -100.0), ("u", -19.0), ("b", -119.0)]
+        )
+        self.zugferd.add_gesamtsummen(
+            [
+                ("netto:", decimal.Decimal("-100.00")),
+                ("USt.:", decimal.Decimal("-19.00")),
+                ("brutto:", decimal.Decimal("-119.00")),
+            ]
+        )
+        summation = self.zugferd.doc.trade.settlement.monetary_summation
+        self.assertEqual(str(summation.grand_total), "-119.00 None", "should be equal")
+
+    def test_korrekturrechnung_negative_sums_keep_sign(self):
+        """Korrekturrechnung (384) ist eine Negativrechnung: Vorzeichen bleibt"""
+        self.zugferd.invoice = SimpleNamespace(
+            storno=["Korrektur", 384, "R-001", "01.02.2024"],
+            sums=[("n", -100.0), ("u", -19.0), ("b", -119.0)],
+        )
+        self.zugferd.add_gesamtsummen(
+            [
+                ("netto:", decimal.Decimal("-100.00")),
+                ("USt.:", decimal.Decimal("-19.00")),
+                ("brutto:", decimal.Decimal("-119.00")),
+            ]
+        )
+        summation = self.zugferd.doc.trade.settlement.monetary_summation
+        self.assertEqual(str(summation.grand_total), "-119.00 None", "should be equal")
+
+    def test_gutschrift_negative_tax_values_create_trade_tax(self):
+        """Gutschrift mit negativen Beträgen: Steuerzeilen entstehen, Vorzeichen bleibt"""
+        self.zugferd.invoice = self._gutschrift_invoice(
+            brutto=-169.0,
+            invoice_tax={1: [0.19, -100, -19.0], 3: [0, -50, "Durchlaufender Posten"]},
+        )
+        self.zugferd._add_tax_free_positions_if_needed()
+        taxes = self.zugferd.doc.trade.settlement.trade_tax.children
+        self.assertEqual(len(taxes), 2, "should be equal")
+        self.assertEqual(taxes[0].basis_amount._value, decimal.Decimal("-100.00"))
+        self.assertEqual(taxes[0].calculated_amount._value, decimal.Decimal("-19.00"))
+        self.assertEqual(taxes[1].basis_amount._value, decimal.Decimal("-50.00"))
+
+    def test_gutschrift_positive_tax_values_unchanged(self):
+        """Gutschrift mit positiven Beträgen: wie bisher"""
+        self.zugferd.invoice = self._gutschrift_invoice(
+            invoice_tax={1: [0.19, 100, 19.0]}
+        )
+        self.zugferd._add_tax_free_positions_if_needed()
+        taxes = self.zugferd.doc.trade.settlement.trade_tax.children
+        self.assertEqual(len(taxes), 1, "should be equal")
+        self.assertEqual(taxes[0].basis_amount._value, decimal.Decimal("100.00"))
+
+    def test_negative_tax_values_without_storno_keep_sign(self):
+        """ohne Storno: negative Nettosumme erzeugt eine Steuerzeile (BG-23), Vorzeichen bleibt"""
+        self.zugferd.invoice = SimpleNamespace(
+            storno=None,
+            sums=[("n", -100.0), ("u", -19.0), ("b", -119.0)],
+            invoice_tax={1: [0.19, -100, -19.0]},
+        )
+        self.zugferd._add_tax_free_positions_if_needed()
+        taxes = self.zugferd.doc.trade.settlement.trade_tax.children
+        self.assertEqual(len(taxes), 1, "should be equal")
+        self.assertEqual(taxes[0].basis_amount._value, decimal.Decimal("-100.00"))
+
+    def test_tax_value_zero_creates_no_trade_tax(self):
+        """Nettosumme 0 erzeugt weiterhin keine Steuerzeile"""
+        self.zugferd.invoice = SimpleNamespace(
+            storno=None, invoice_tax={1: [0.19, 0, 0.0], 3: [0, 0, "Grund"]}
+        )
+        self.zugferd._add_tax_free_positions_if_needed()
+        self.assertEqual(
+            len(self.zugferd.doc.trade.settlement.trade_tax.children), 0, "should be equal"
+        )
+
+    def _items_mixed(self):
+        return [
+            ["Pos.", "Datum", "Tätigkeit", "Anzahl", "Typ", "Preis", "Summe"],
+            ["1", "2024-01-01 00:00:00", "A", "2", "h", "60", "120"],
+            ["2", "2024-01-02 00:00:00", "Rabatt", "-1", "Stk.", "10", "-10"],
+        ]
+
+    def _item_values(self):
+        return [
+            (
+                li.agreement.net.amount._value,
+                li.delivery.billed_quantity._amount,
+                li.settlement.monetary_summation.total_amount._value,
+            )
+            for li in self.zugferd.doc.trade.items.children
+        ]
+
+    def test_gutschrift_positive_total_keeps_negative_items(self):
+        """Gutschrift mit positiver Summe: negative Einzelposition (Rabatt) bleibt negativ"""
+        self.zugferd.invoice = self._gutschrift_invoice(brutto=130.9, invoice_tax={})
+        self.zugferd.add_items(self._items_mixed(), "19.00")
+        D = decimal.Decimal
+        self.assertEqual(
+            self._item_values(),
+            [(D("60.00"), D("2.0000"), D("120.00")), (D("10.00"), D("-1.0000"), D("-10.00"))],
+            "should be equal",
+        )
+
+    def test_gutschrift_negative_total_keeps_items(self):
+        """Gutschrift mit negativer Summe: Mengen und Summen bleiben wie in Excel"""
+        data = [
+            ["Pos.", "Datum", "Tätigkeit", "Anzahl", "Typ", "Preis", "Summe"],
+            ["1", "2024-01-01 00:00:00", "A", "-2", "h", "60", "-120"],
+            ["2", "2024-01-02 00:00:00", "Rabatt", "1", "Stk.", "10", "10"],
+        ]
+        self.zugferd.invoice = self._gutschrift_invoice(brutto=-130.9, invoice_tax={})
+        self.zugferd.add_items(data, "19.00")
+        D = decimal.Decimal
+        self.assertEqual(
+            self._item_values(),
+            [(D("60.00"), D("-2.0000"), D("-120.00")), (D("10.00"), D("1.0000"), D("10.00"))],
+            "should be equal",
+        )
+
+    def _items_negative_price(self):
+        return [
+            ["Pos.", "Datum", "Tätigkeit", "Anzahl", "Typ", "Preis", "Summe"],
+            ["1", "2024-01-01 00:00:00", "A", "5", "h", "60", "300"],
+            ["2", "2024-01-02 00:00:00", "Rabatt", "1", "Stk.", "-10", "-10"],
+        ]
+
+    def test_negative_price_raises_value_error(self):
+        """negativer Einzelpreis (BR-27): ValueError, für Rechnung, Korrektur und Gutschrift"""
+        invoices = {
+            "Rechnung": SimpleNamespace(storno=None, invoice_tax={}, sums=[("b", 1.0)] * 3),
+            "Korrekturrechnung": SimpleNamespace(
+                storno=["Korrektur", 384, "R-001", "01.02.2024"],
+                invoice_tax={},
+                sums=[("b", -1.0)] * 3,
+            ),
+            "Gutschrift": self._gutschrift_invoice(invoice_tax={}),
+        }
+        for name, invoice in invoices.items():
+            self.zugferd = handle_zugferd.ZugFeRD()
+            self.zugferd.invoice = invoice
+            with self.assertRaises(ValueError, msg=name) as ctx:
+                self.zugferd.add_items(self._items_negative_price(), "19.00")
+            self.assertIn("Position 2", str(ctx.exception), name)
+            self.assertIn("Einzelpreis", str(ctx.exception), name)
+
+    def test_price_zero_is_allowed(self):
+        """Einzelpreis 0 ist kein negativer Preis"""
+        data = [
+            ["Pos.", "Datum", "Tätigkeit", "Anzahl", "Typ", "Preis", "Summe"],
+            ["1", "2024-01-01 00:00:00", "A", "5", "h", "0", "0"],
+        ]
+        self.zugferd.invoice = SimpleNamespace(storno=None, invoice_tax={})
+        self.zugferd.add_items(data, "19.00")
+        self.assertEqual(len(self.zugferd.doc.trade.items.children), 1, "should be equal")
+
     def test_add_preceding_invoice(self):
         """storno[2] und storno[3] kommen als Vorrechnung (BT-25, BT-26) ins XML"""
         self.zugferd._add_preceding_invoice(

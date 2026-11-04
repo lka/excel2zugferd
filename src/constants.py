@@ -38,6 +38,10 @@ RECHNUNG_POS_ERROR = (
     "Ansonsten müssen beide leer sein, dann wird nach "
     "'Rechnungs-Nr:' gesucht."
 )
+NEGATIVE_PRICE_ERR = (
+    "Position {pos}: Der Einzelpreis darf nicht negativ sein. "
+    "Negative Beträge bitte über eine negative Menge eintragen."
+)
 STORNO_POS_ERROR = (
     "Bei den Positionen für Storno muss sowohl"
     " Storno Spalte, als auch Storno Zeile"

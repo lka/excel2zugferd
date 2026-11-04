@@ -131,11 +131,16 @@ Die Funktion wird ausgeschaltet, wenn Feld 3 (die Rechnungsnummer) leer ist, dan
 
 Die Position der 4 Felder kann auch über die Excel-Steuerung in den Feldern Storno vorgegeben werden, die Reihenfolge ist aber fest vorgegeben.
 
+Siehe Vorlagen "Gutschriftanzeige", "Gutschriftanzeige negativ" und "Korrekturrechnung" in "TestRechnung.xlsx"
+
+Die Spezifikation für eine Gutschriftanzeige enthält folgenden Satz: "Nicht möglich (gemäß der semantischen Norm) sind hingegen negative Gutschriften, also Gutschriften, deren Betrag inkl. Steuern negativ ist."
+Ich habe Typ 381 Gutschriftanzeige bewusst so gestaltet, dass er das nicht beachtet, denn eigentlich erstelle ich damit eine Negativrechnung. Der Validator aktzeptiert das als korrekt. Sie sollte das also mit dem Empfänger der Gutschriftanzeige vorab klären.
+
 ## Versionen
 
 ### 0.27.0
 
-- sowohl Gutschriftanzeige (381), als auch Korrekturrechnung (384) sind jetzt erzeugbar; siehe Vorlage "Rechnung div. Steuern" in "TestRechnung.xlsx"
+- sowohl Gutschriftanzeige (381), als auch Korrekturrechnung (384) sind jetzt erzeugbar; siehe Vorlage "Gutschriftanzeige", "Gutschriftanzeige negativ" und "Korrekturrechnung" in "TestRechnung.xlsx"
 - Die Validierung des erzeugten ZUGFeRD Dokuments auf https://www.portinvoice.com ist erfolgreich (Ohne Fehler und Warnungen).
 
 ### 0.26.x

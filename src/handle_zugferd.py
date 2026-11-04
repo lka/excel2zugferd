@@ -23,7 +23,13 @@ from drafthorse.pdf import attach_xml
 from src.kunde import Kunde
 from src.lieferant import Lieferant
 from src.invoice_collection import InvoiceCollection
-from src.constants import P19USTG, GERMAN_DATE, EINHEITEN, STORNO_TYPE_NAMES
+from src.constants import (
+    P19USTG,
+    GERMAN_DATE,
+    EINHEITEN,
+    NEGATIVE_PRICE_ERR,
+    STORNO_TYPE_NAMES,
+)
 
 
 class ZugFeRD:
@@ -287,8 +293,9 @@ class ZugFeRD:
                 li = LineItem()
                 self._fillPosAndNameOfLi(li, item)
                 self._setOccurrenceInLi(li, item[1])
-                menge = float(item[3])
-                einzelpreisnetto = float(item[5])
+                menge, einzelpreisnetto = self._line_amounts(
+                    item[0], float(item[3]), float(item[5])
+                )
                 # self._replaceCommaWithDot(item[5])
                 li.agreement.net.amount = Decimal(f"{einzelpreisnetto:.2f}")
                 li.delivery.billed_quantity = (
@@ -300,6 +307,16 @@ class ZugFeRD:
                 )
                 self._setTaxInLi(li, item[6], tax, excemption_reason)
                 self.doc.trade.items.add(li)
+
+    def _line_amounts(self, pos: str, menge: float, preis: float) -> tuple:
+        """
+        return (quantity, net price) of an item.
+        The net price must not be negative (BR-27), negative amounts have to be
+        entered with a negative quantity: ValueError otherwise.
+        """
+        if preis < 0:
+            raise ValueError(NEGATIVE_PRICE_ERR.format(pos=pos))
+        return menge, preis
 
     def _get_float_value(self, tuple) -> float:
         _, v = tuple
@@ -485,7 +502,7 @@ class ZugFeRD:
         return {
             key: value
             for key, value in self.invoice.invoice_tax.items()
-            if value[1] > 0 and value[0] == 0
+            if value[1] != 0 and value[0] == 0
         }
 
     def _get_tax_free_reasons(self) -> dict:
@@ -520,10 +537,10 @@ class ZugFeRD:
         invoice.invoice_tax is a dict with key=Steuertyp
         and value=[Steuersatz, Nettosumme,
         Steuersumme oder Steuerbefreiungsgrund bei Steuersatz == 0]
-        Nur Steuertypen mit Nettosumme > 0 werden eingetragen.
+        Nur Steuertypen mit Nettosumme != 0 werden eingetragen (auch negative).
         """
         for value in self.invoice.invoice_tax.values():
-            if value[1] > 0 and value[0] != 0:
+            if value[1] != 0 and value[0] != 0:
                 self.add_applicable_trade_tax(
                     Decimal(f"{value[1]:.2f}"),
                     Decimal(f"{value[2]:.2f}"),

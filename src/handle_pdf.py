@@ -245,7 +245,8 @@ class PDF(FPDF):
         """
         prints tax values
         """
-        if len(tax_values) == 0:
+        rows = self._tax_values_to_print(tax_values)
+        if len(rows) == 0:
             return
         self._printTaxValuesHeader()
         with self.table(
@@ -266,9 +267,15 @@ class PDF(FPDF):
             padding=(2, 0, 2, 0),
             v_align="TOP",
         ) as table:
-            for key, value in tax_values.items():
-                if value[1] > 0:
-                    table.row(self._taxValuesRow(key, value))
+            for key, value in rows:
+                table.row(self._taxValuesRow(key, value))
+
+    def _tax_values_to_print(self, tax_values: dict) -> list:
+        """
+        return (key, value) of the tax values with net sum != 0,
+        also negative ones (credit note)
+        """
+        return [(key, value) for key, value in tax_values.items() if value[1] != 0]
 
     def _printTaxValuesHeader(self) -> None:
         """start section and set font and lines for tax values table"""
