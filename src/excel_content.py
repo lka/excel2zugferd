@@ -337,11 +337,44 @@ class ExcelContent:
             self._storno_date_to_str(self._get_content_at(columns[3], row)),
         ]
 
+    # Spalten der Positionen, die Zahlen enthalten: Anzahl, Preis, Summe
+    NUMBER_COLUMNS = (3, 5, 6)
+
+    def _to_number(self, value: any) -> any:
+        """
+        convert text like '144,84', '22,00 €' or '1.149,86 €' to float,
+        numbers, NaN, None and unreadable text are returned unchanged
+        """
+        if not isinstance(value, str):
+            return value
+        text = "".join(value.replace("€", " ").split())
+        if "," in text:
+            text = text.replace(".", "").replace(",", ".")
+        try:
+            return float(text)
+        except ValueError:
+            return value
+
+    def _convert_number_columns(self, positions: pd.DataFrame) -> pd.DataFrame:
+        """
+        convert text numbers in the columns Anzahl, Preis and Summe,
+        columns without any text stay untouched
+        """
+        retval = positions.copy()
+        for idx in self.NUMBER_COLUMNS:
+            if idx >= len(retval.columns):
+                continue
+            column = retval.iloc[:, idx]
+            if column.map(lambda v: isinstance(v, str)).any():
+                retval.isetitem(idx, column.map(self._to_number))
+        return retval
+
     def get_invoice_positions(
         self, spalte: str = "A", search: str = "Pos.", mgmnt: Steuerung = None
     ) -> dict:
         """
-        return pandas DataFrame with positions for invoice
+        return pandas DataFrame with positions for invoice,
+        numbers entered as text with comma are converted to float
         """
         if mgmnt and mgmnt.positionen_zeile:
             columns = [
@@ -355,8 +388,12 @@ class ExcelContent:
             ]
             if mgmnt.steuer_spalte:
                 columns.append(mgmnt.steuer_spalte)
-            return self.mapReducePositions(self.daten, columns, mgmnt.positionen_zeile)
-        return self._split_dataframe_by_search_value(spalte, search)
+            positions = self.mapReducePositions(
+                self.daten, columns, mgmnt.positionen_zeile
+            )
+        else:
+            positions = self._split_dataframe_by_search_value(spalte, search)
+        return self._convert_number_columns(positions)
 
     def _round(self, value, prec: int) -> decimal.Decimal:
         """round decimal to prec as in excel"""

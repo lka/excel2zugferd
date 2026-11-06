@@ -9,6 +9,7 @@ from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 from src.excel_content import ExcelContent
+from src.invoice_collection import InvoiceCollection
 from src.kunde import Kunde
 import src.handle_pdf as pdf
 import decimal
@@ -512,6 +513,115 @@ class TestExcelContent(TestCase):
             ["Gutschrift", 381, "RG-1", "01.01.2024"],
             "should be equal",
         )
+
+    def test__to_number_text_with_comma(self):
+        """Text mit Komma (auch mit Tausenderpunkt, €, Leerzeichen) wird zur Zahl"""
+        cases = {
+            "144,84": 144.84,
+            "22,00 €": 22.0,
+            "1.149,86 €": 1149.86,
+            " 22 ": 22.0,
+            "-10,5": -10.5,
+            "22.5": 22.5,
+            "1 234,50 €": 1234.5,
+        }
+        for text, expected in cases.items():
+            self.assertEqual(self.xlsx._to_number(text), expected, text)
+
+    def test__to_number_keeps_numbers_and_unreadable(self):
+        """echte Zahlen, NaN, None und nicht lesbare Texte bleiben unverändert"""
+        for value in (22, 22.5, -3, 0):
+            self.assertEqual(self.xlsx._to_number(value), value, str(value))
+        self.assertIs(type(self.xlsx._to_number(22)), int, "int should stay int")
+        self.assertTrue(np.isnan(self.xlsx._to_number(np.nan)), "nan should stay nan")
+        self.assertIsNone(self.xlsx._to_number(None), "None should stay None")
+        for text in ("Preis", "abc", "", "1,2,3"):
+            self.assertEqual(self.xlsx._to_number(text), text, text)
+
+    def _xlsx_with_positions(self, rows: list) -> ExcelContent:
+        header = ["Pos.", "Datum", "Tätigkeit", "Anzahl", "Typ", "Preis", "Summe"]
+        data = [header] + rows + [[np.nan] * 7]
+        xlsx = ExcelContent("gibt_es_nicht.xlsx", ".")
+        xlsx.daten = pd.DataFrame(
+            data, columns=list("ABCDEFG"), index=range(1, len(data) + 1)
+        )
+        return xlsx
+
+    def test_get_invoice_positions_text_numbers(self):
+        """Anzahl, Preis und Summe als Text mit Komma werden zu Zahlen"""
+        xlsx = self._xlsx_with_positions(
+            [
+                [1, "x", "A", "2", "h", "144,84", "289,68 €"],
+                [2, "x", "B", "1,5", "h", "10,00 €", "15,00 €"],
+            ]
+        )
+        positions = xlsx.get_invoice_positions()
+        self.assertEqual(positions["Anzahl"].tolist(), [2.0, 1.5], "should be equal")
+        self.assertEqual(positions["Preis"].tolist(), [144.84, 10.0], "should be equal")
+        self.assertEqual(positions["Summe"].tolist(), [289.68, 15.0], "should be equal")
+
+    def test_get_invoice_positions_pure_numbers_unchanged(self):
+        """reine Zahlen bleiben unverändert"""
+        xlsx = self._xlsx_with_positions(
+            [
+                [1, "x", "A", 2, "h", 144.84, 289.68],
+                [2, "x", "B", 1.5, "h", 10, 15],
+            ]
+        )
+        positions = xlsx.get_invoice_positions()
+        self.assertEqual(positions["Anzahl"].tolist(), [2, 1.5], "should be equal")
+        self.assertEqual(positions["Preis"].tolist(), [144.84, 10], "should be equal")
+        self.assertEqual(positions["Summe"].tolist(), [289.68, 15], "should be equal")
+        # auch die Darstellung als Text (1 bleibt 1, nicht 1.0)
+        self.assertEqual(positions["Anzahl"].astype(str).tolist(), ["2", "1.5"])
+        self.assertEqual(positions["Summe"].astype(str).tolist(), ["289.68", "15"])
+
+    def test_get_invoice_positions_only_text_columns_are_converted(self):
+        """nur Spalten mit Text werden umgewandelt, Zahlenspalten bleiben wie sie sind"""
+        xlsx = self._xlsx_with_positions(
+            [
+                [1, "x", "A", 1, "h", "10,5", 10],
+                [2, "x", "B", 2, "h", "20", 40],
+            ]
+        )
+        positions = xlsx.get_invoice_positions()
+        self.assertEqual(positions["Anzahl"].astype(str).tolist(), ["1", "2"])
+        self.assertEqual(positions["Summe"].astype(str).tolist(), ["10", "40"])
+        self.assertEqual(positions["Preis"].tolist(), [10.5, 20.0], "should be equal")
+
+    def test_get_invoice_positions_other_columns_unchanged(self):
+        """Pos., Datum, Tätigkeit und Typ werden nicht angefasst"""
+        xlsx = self._xlsx_with_positions([[1, "1,5", "Text 2,5", "2", "h", "1", "2"]])
+        positions = xlsx.get_invoice_positions()
+        self.assertEqual(
+            positions.iloc[0, [0, 1, 2, 4]].tolist(), [1, "1,5", "Text 2,5", "h"]
+        )
+
+    def test_get_invoice_positions_text_numbers_with_mgmnt(self):
+        """auch über feste Spalten (Steuerung) werden Text-Zahlen umgewandelt"""
+        xlsx = self._xlsx_with_positions(
+            [[1, "x", "A", "2", "h", "144,84", "289,68"]]
+        )
+        mgmnt = SimpleNamespace(
+            positionen_zeile="1",
+            pos_spalte="A", dat_spalte="B", desc_spalte="C", anz_spalte="D",
+            typ_spalte="E", preis_spalte="F", sum_spalte="G", steuer_spalte=None,
+        )
+        positions = xlsx.get_invoice_positions(mgmnt=mgmnt)
+        self.assertEqual(positions["Preis"].tolist(), [144.84], "should be equal")
+        self.assertEqual(positions["Anzahl"].tolist(), [2.0], "should be equal")
+
+    def test_get_invoice_positions_text_prices_pass_price_check(self):
+        """Text-Preise lösen in der Preisprüfung keinen Fehler mehr aus"""
+        xlsx = self._xlsx_with_positions(
+            [[1, "x", "A", "2", "h", "144,84", "289,68"]]
+        )
+        InvoiceCollection()._check_prices(xlsx.get_invoice_positions())
+        xlsx = self._xlsx_with_positions(
+            [[1, "x", "A", "2", "h", "-144,84", "-289,68"]]
+        )
+        with self.assertRaises(ValueError):
+            InvoiceCollection()._check_prices(xlsx.get_invoice_positions())
 
     def test__split_dataframe_by_search_value(self):
         """Lies den Inhalt der Positionen"""
