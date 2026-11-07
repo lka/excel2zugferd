@@ -5,6 +5,8 @@ Modul handle_pdf_test
 import os
 from pathlib import Path
 import unittest
+import locale
+from decimal import Decimal
 from datetime import datetime
 from types import SimpleNamespace
 import numpy as np
@@ -134,14 +136,6 @@ class TestHandlePdf(unittest.TestCase):
             value["maxlengths"], [4, 10, 138, 6, 7, 8, 8, 6], "should be equal"
         )
 
-    def test_amount_of(self):
-        """Währungstext im lokalen Format muss als float lesbar sein"""
-        self.assertEqual(self.pdf._amount_of("1.149,86 €"), 1149.86)
-        self.assertEqual(self.pdf._amount_of("0,00 €"), 0.0)
-        self.assertEqual(self.pdf._amount_of("-12,50 €"), -12.5)
-        self.assertEqual(self.pdf._amount_of("1.149,86 €"), 1149.86)
-        self.assertEqual(self.pdf._amount_of(self.pdf._currency(1149.86)), 1149.86)
-
     def test_get_bezug_text_without_storno(self):
         """ohne Storno: Rechnungsnummer vom Datum"""
         self.pdf.invoice = SimpleNamespace(storno=None)
@@ -162,35 +156,62 @@ class TestHandlePdf(unittest.TestCase):
             "should be equal",
         )
 
-    def _invoice_for_girocode(self, create_girocode, storno):
+    def _sums(self, brutto):
+        return [("netto:", brutto), ("USt.:", 0), ("Bruttobetrag:", brutto)]
+
+    def _numeric_locale_c(self):
+        """Zahlenformat auf 'C' zurücksetzen (Währungsformat bleibt deutsch)"""
+        old = locale.setlocale(locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+        self.addCleanup(locale.setlocale, locale.LC_NUMERIC, old)
+
+    def _invoice_for_girocode(self, create_girocode, storno, brutto=Decimal("10.00")):
         return SimpleNamespace(
-            management=SimpleNamespace(create_girocode=create_girocode), storno=storno
+            management=SimpleNamespace(create_girocode=create_girocode),
+            storno=storno,
+            sums=self._sums(brutto),
         )
+
+    def test_brutto_amount(self):
+        """der Bruttobetrag kommt als Zahl aus den Summen, nicht aus dem Text"""
+        for brutto in (Decimal("144.84"), Decimal("0.00"), Decimal("-12.50"), 1149.86):
+            self.pdf.invoice = self._invoice_for_girocode(True, None, brutto)
+            self.assertEqual(self.pdf._brutto_amount(), float(brutto), str(brutto))
 
     def test_needs_girocode(self):
         """GiroCode nur bei Einstellung, positivem Betrag und ohne Gutschrift (381)"""
         self.pdf.invoice = self._invoice_for_girocode(True, None)
-        self.assertTrue(self.pdf._needs_girocode("10,00 €"), "should be True")
-        self.assertFalse(self.pdf._needs_girocode("0,00 €"), "should be False")
+        self.assertTrue(self.pdf._needs_girocode(), "should be True")
+        self.pdf.invoice = self._invoice_for_girocode(True, None, Decimal("0.00"))
+        self.assertFalse(self.pdf._needs_girocode(), "should be False")
+        self.pdf.invoice = self._invoice_for_girocode(True, None, Decimal("-5.00"))
+        self.assertFalse(self.pdf._needs_girocode(), "should be False")
         self.pdf.invoice = self._invoice_for_girocode(False, None)
-        self.assertFalse(self.pdf._needs_girocode("10,00 €"), "should be False")
+        self.assertFalse(self.pdf._needs_girocode(), "should be False")
 
     def test_needs_girocode_with_storno(self):
         """bei Gutschrift (381) kein GiroCode, bei Korrekturrechnung (384) schon"""
         self.pdf.invoice = self._invoice_for_girocode(
             True, ["Gutschrift", 381, "R-001", "01.02.2024"]
         )
-        self.assertFalse(self.pdf._needs_girocode("10,00 €"), "should be False")
+        self.assertFalse(self.pdf._needs_girocode(), "should be False")
         self.pdf.invoice = self._invoice_for_girocode(
             True, ["Korrekturrechnung", 384, "R-001", "01.02.2024"]
         )
-        self.assertTrue(self.pdf._needs_girocode("10,00 €"), "should be True")
+        self.assertTrue(self.pdf._needs_girocode(), "should be True")
 
-    def _invoice_for_abspann(self, storno):
+    def test_needs_girocode_independent_of_numeric_locale(self):
+        """unabhängig vom Zahlenformat des Prozesses (Fehler could not convert '144,84')"""
+        self._numeric_locale_c()
+        self.pdf.invoice = self._invoice_for_girocode(True, None, Decimal("144.84"))
+        self.assertTrue(self.pdf._needs_girocode(), "should be True")
+
+    def _invoice_for_abspann(self, storno, brutto=Decimal("10.00")):
         return SimpleNamespace(
             management=SimpleNamespace(abspann="Mit Gruß\nFirma"),
             supplier=SimpleNamespace(name="Firma"),
             storno=storno,
+            sums=self._sums(brutto),
         )
 
     def test_get_abspann_text(self):
@@ -206,9 +227,10 @@ class TestHandlePdf(unittest.TestCase):
 
     def test_get_abspann_text_not_positive(self):
         """Betrag nicht positiv: nur der Abspann"""
-        self.pdf.invoice = self._invoice_for_abspann(None)
-        retval = self.pdf._get_abspann_text("0,00 €", datetime(2024, 2, 4))
-        self.assertEqual(retval, "Mit Gruß\nFirma", "should be equal")
+        for brutto in (Decimal("0.00"), Decimal("-10.00")):
+            self.pdf.invoice = self._invoice_for_abspann(None, brutto)
+            retval = self.pdf._get_abspann_text("0,00 €", datetime(2024, 2, 4))
+            self.assertEqual(retval, "Mit Gruß\nFirma", "should be equal")
 
     def test_get_abspann_text_with_storno(self):
         """Gutschrift (381): keine Überweisungsaufforderung, Korrektur (384) schon"""
@@ -222,6 +244,14 @@ class TestHandlePdf(unittest.TestCase):
         )
         retval = self.pdf._get_abspann_text("10,00 €", datetime(2024, 2, 4))
         self.assertTrue(retval.startswith("Bitte überweisen Sie"), "should be True")
+
+    def test_get_abspann_text_independent_of_numeric_locale(self):
+        """unabhängig vom Zahlenformat des Prozesses"""
+        self._numeric_locale_c()
+        self.pdf.invoice = self._invoice_for_abspann(None, Decimal("144.84"))
+        retval = self.pdf._get_abspann_text("144,84 €", datetime(2024, 2, 4))
+        self.assertTrue(retval.startswith("Bitte überweisen Sie"), "should be True")
+        self.assertIn("144,84 €", retval, "amount is shown as formatted text")
 
     def test_tax_values_to_print(self):
         """Zeilen mit Nettosumme != 0 werden gedruckt, auch negative (Gutschrift)"""

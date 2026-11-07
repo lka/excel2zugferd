@@ -648,7 +648,7 @@ class Pdf(PDF):
                 else ""
             )
         )
-        if self._is_gutschrift() or self._amount_of(brutto) <= 0.00:
+        if self._is_gutschrift() or self._brutto_amount() <= 0.00:
             return abspann
         return (
             f"Bitte überweisen Sie den Betrag von {brutto} bis zum "
@@ -659,9 +659,12 @@ class Pdf(PDF):
     def _fill_abspann(self, brutto: str, ueberweisungsdatum: datetime) -> None:
         self.print_abspann(self._get_abspann_text(brutto, ueberweisungsdatum))
 
-    def _amount_of(self, currency: str) -> float:
-        """convert locale currency string like '1.149,86 €' to float"""
-        return locale.atof(currency.replace("€", "").strip())
+    def _brutto_amount(self) -> float:
+        """
+        gross amount of the invoice as number, taken from the sums and not
+        from the formatted text (which depends on the locale of the process)
+        """
+        return float(self._get_value(self.invoice.sums[-1]))
 
     def _get_value(self, tuple) -> str:
         _, v = tuple
@@ -698,14 +701,14 @@ class Pdf(PDF):
             )
         return f"{key} {value} vom {datum.strftime(GERMAN_DATE)}"
 
-    def _needs_girocode(self, brutto: str) -> bool:
+    def _needs_girocode(self) -> bool:
         """
         GiroCode only if wanted, the amount is positive
         and it is not a credit note (storno code 381)
         """
         if self._is_gutschrift():
             return False
-        return self.invoice.management.create_girocode and self._amount_of(brutto) > 0.00
+        return self.invoice.management.create_girocode and self._brutto_amount() > 0.00
 
     def fill_pdf(self, invoice: InvoiceCollection) -> None:
         """
@@ -742,7 +745,7 @@ class Pdf(PDF):
         #     self.fill_xml(rg_nr, summen, brutto, ueberweisungsdatum, datum)
         self._fill_abspann(brutto, ueberweisungsdatum)
 
-        if self._needs_girocode(brutto):
+        if self._needs_girocode():
             self._fill_girocode(
-                self._amount_of(brutto), rg_nr, datum.strftime(GERMAN_DATE)
+                self._brutto_amount(), rg_nr, datum.strftime(GERMAN_DATE)
             )
