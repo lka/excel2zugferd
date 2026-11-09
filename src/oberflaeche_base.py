@@ -166,7 +166,9 @@ class Oberflaeche:
         """
         if fn is not None and Path(fn).exists():
             img = Image.open(fn)
-            img = img.resize((100, 100), Image.BOX)
+            height = 100
+            width = int(img.width * (height / img.height))
+            img = img.resize((width, height), Image.BOX)
             image = ImageTk.PhotoImage(img)
             if self.canvas:
                 self.img_area = self.canvas.create_image(
@@ -446,16 +448,22 @@ fehlgeschlagen.\n{ex}",
         }
         for key, field in self.ents.items():
             value = content.get(key, "") if content else ""
-            if hasattr(field, "delete") and hasattr(field, "insert"):
-                field.delete("1.0", "end")
-                if value:
-                    field.insert(tk.END, value)
-            elif isinstance(field, ttk.Label):
-                field.configure(text=value)
-            elif menu_variables.get(key) in self.menuvars:
-                self.menuvars[menu_variables[key]].set(
-                    "1" if value in ["Ja", "1", True] else "0"
-                )
+            self._load_value_into_entry(key, field, value, menu_variables)
+
+    def _load_value_into_entry(
+        self, key: str, field: any, value: str, menu_variables: dict
+    ) -> None:
+        """Set the value of one form entry."""
+        if hasattr(field, "delete") and hasattr(field, "insert"):
+            field.delete("1.0", "end")
+            if value:
+                field.insert(tk.END, value)
+        elif isinstance(field, ttk.Label):
+            field.configure(text=value)
+        elif menu_variables.get(key) in self.menuvars:
+            self.menuvars[menu_variables[key]].set(
+                "1" if value in ["Ja", "1", True] else "0"
+            )
 
     def pre_open_excel2zugferd(self):
         obj = src.oberflaeche_excel2zugferd.OberflaecheExcel2Zugferd

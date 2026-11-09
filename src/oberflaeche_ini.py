@@ -105,7 +105,7 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
         if Path(self.logo_fn).exists():
             self.logo_delete.pack(side=tk.LEFT, padx=PADX)
 
-        self.canvas = tk.Canvas(row, width=100, height=100, bg="white")
+        self.canvas = tk.Canvas(row, width=400, height=100, bg="white")
         self.canvas.pack(side=tk.RIGHT, padx=38, anchor="w", expand=True)
 
         self.make_logo(self.logo_fn)
@@ -186,22 +186,11 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
         if not self.middleware:
             return
         selected = self.company_var.get().strip()
-        if not selected:
-            messagebox.showinfo("Information", "Es ist keine Firma ausgewählt.")
-            return
-
-        confirm = messagebox.askyesno(
-            "Firma löschen",
-            f"Soll die Firma '{selected}' wirklich gelöscht werden?",
-        )
-        if not confirm:
+        if not self._confirm_company_deletion(selected):
             return
 
         self.fetch_values_from_entries()
-        try:
-            self.middleware.ini_file.delete_company(selected)
-        except ValueError as ex:
-            messagebox.showerror("Fehler", ex.args[0])
+        if not self._delete_company(selected):
             return
 
         self._refresh_company_selector()
@@ -209,6 +198,23 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
         if not self._persist_company_changes():
             return
         self.root.lift()
+
+    def _confirm_company_deletion(self, selected: str) -> bool:
+        if not selected:
+            messagebox.showinfo("Information", "Es ist keine Firma ausgewählt.")
+            return False
+        return messagebox.askyesno(
+            "Firma löschen",
+            f"Soll die Firma '{selected}' wirklich gelöscht werden?",
+        )
+
+    def _delete_company(self, selected: str) -> bool:
+        try:
+            self.middleware.ini_file.delete_company(selected)
+        except ValueError as ex:
+            messagebox.showerror("Fehler", ex.args[0])
+            return False
+        return True
 
     def handle_company_rename(self):
         if not self.middleware:
@@ -218,6 +224,18 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
             messagebox.showinfo("Information", "Es ist keine Firma ausgewählt.")
             return
 
+        renamed_name = self._rename_company(selected)
+        if renamed_name is None:
+            return
+
+        self._refresh_company_selector()
+        self.company_var.set(renamed_name)
+        self._load_active_company_into_form()
+        if not self._persist_company_changes():
+            return
+        self.root.lift()
+
+    def _rename_company(self, selected: str):
         self.fetch_values_from_entries()
         new_name = simpledialog.askstring(
             "Firma umbenennen",
@@ -230,14 +248,8 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
             renamed_name = self.middleware.ini_file.rename_company(selected, new_name)
         except ValueError as ex:
             messagebox.showerror("Fehler", ex.args[0])
-            return
-
-        self._refresh_company_selector()
-        self.company_var.set(renamed_name)
-        self._load_active_company_into_form()
-        if not self._persist_company_changes():
-            return
-        self.root.lift()
+            return None
+        return renamed_name
 
     def _safe_filename_part(self, value: str) -> str:
         sanitized = re.sub(r"[^A-Za-z0-9._-]", "_", value or "firma")
@@ -251,6 +263,9 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
             messagebox.showinfo("Information", "Es ist keine Firma ausgewählt.")
             return
 
+        self._export_company_profile(selected)
+
+    def _export_company_profile(self, selected: str):
         self.fetch_values_from_entries()
         default_name = f"{self._safe_filename_part(selected)}.json"
         target_file = filedialog.asksaveasfilename(
@@ -281,10 +296,8 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
             return
 
         self.fetch_values_from_entries()
-        try:
-            imported_name = self.middleware.ini_file.import_company_profile(source_file)
-        except (ValueError, OSError, KeyError, TypeError) as ex:
-            messagebox.showerror("Fehler", f"Import fehlgeschlagen:\n{ex}")
+        imported_name = self._import_company_profile(source_file)
+        if imported_name is None:
             return
 
         self._refresh_company_selector()
@@ -294,6 +307,13 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
             return
         messagebox.showinfo("Information", f"Firmenprofil '{imported_name}' importiert.")
         self.root.lift()
+
+    def _import_company_profile(self, source_file: str):
+        try:
+            return self.middleware.ini_file.import_company_profile(source_file)
+        except (ValueError, OSError, KeyError, TypeError) as ex:
+            messagebox.showerror("Fehler", f"Import fehlgeschlagen:\n{ex}")
+            return None
 
     def handle_file_button(self):
         """

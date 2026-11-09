@@ -382,10 +382,10 @@ class PDF(FPDF):
         if fn is None:
             return
         self.start_section("Logo", 0)
-        rect1 = 27, 30, 20, 20
+        rect1 = 27, 30, 0, 20
         self.set_draw_color(255)
         self.rect(*rect1)
-        self.image(fn, *rect1, keep_aspect_ratio=True)
+        self.image(fn, *rect1, keep_aspect_ratio=True, alt_text="Logo")
         self.set_draw_color(0)
 
     def print_qrcode(self, img: object) -> None:
