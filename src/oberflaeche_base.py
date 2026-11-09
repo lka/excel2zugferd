@@ -158,21 +158,26 @@ class Oberflaeche:
         self._add_items(menu_bar, menu_items)
         self.root.config(menu=menu_bar)
 
-    def make_logo(self, fn: str) -> None:
+    def make_logo(self, fn: str, rect: tuple = None) -> None:
         """set logo to position
 
         Args:
             fn (str): filename of logo
+            rect (tuple, optional): x, y, w, h in pixel on the canvas.
+                Defaults to None: height 100 at the upper left corner,
+                aspect ratio is kept.
         """
         if fn is not None and Path(fn).exists():
             img = Image.open(fn)
-            height = 100
-            width = int(img.width * (height / img.height))
-            img = img.resize((width, height), Image.BOX)
+            if rect is None:
+                height = 100
+                rect = 0, 0, int(img.width * (height / img.height)), height
+            x, y, width, height = rect
+            img = img.resize((max(width, 1), max(height, 1)), Image.BOX)
             image = ImageTk.PhotoImage(img)
             if self.canvas:
                 self.img_area = self.canvas.create_image(
-                    0, 0, anchor=tk.NW, image=image
+                    x, y, anchor=tk.NW, image=image
                 )
                 self.canvas.img = image
 

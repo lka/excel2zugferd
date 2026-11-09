@@ -73,6 +73,31 @@ class TestSteuerung(unittest.TestCase):
                 getattr(obj, prop, "Attribute not found"), value, f"{prop} {MSG}"
             )
 
+    def test_logo_align_default_is_legacy(self):
+        """ohne Eintrag LogoAusrichtung gilt das Verhalten bis 0.27.3 (A)"""
+        steuerung = Steuerung()
+        steuerung.fill_steuerung({"Abspann": "x"})
+        self.assertEqual(steuerung.logo_align, "A")
+
+    def test_logo_align_from_stammdaten(self):
+        """A, L, C und R werden übernommen"""
+        for value in ("A", "L", "C", "R"):
+            steuerung = Steuerung()
+            steuerung.fill_steuerung({"LogoAusrichtung": value})
+            self.assertEqual(steuerung.logo_align, value)
+
+    def test_logo_align_empty_is_left(self):
+        """leerer Eintrag: wie bisher"""
+        steuerung = Steuerung()
+        steuerung.fill_steuerung({"LogoAusrichtung": ""})
+        self.assertEqual(steuerung.logo_align, "A")
+
+    def test_logo_align_invalid_raises(self):
+        """ungültiger Eintrag ist ein Fehler"""
+        steuerung = Steuerung()
+        with self.assertRaises(ValueError):
+            steuerung.fill_steuerung({"LogoAusrichtung": "X"})
+
     def test_fill_steuerung(self):
         """
         Tests that procedure fill_steuerung works

@@ -115,3 +115,14 @@ LABELWIDTH = 22
 TEXTWIDTH = 60
 PADX = 5
 PADY = 5
+
+# Platzierung des Logos im PDF (A=wie bis Version 0.27.3, L=links, C=mittig, R=rechts)
+LOGO_ALIGN_KEY = "LogoAusrichtung"
+LOGO_ALIGN_DEFAULT = "A"
+LOGO_ALIGN_CHOICES = {
+    "Wie bisher (bis 0.27.3)": "A",
+    "Links": "L",
+    "Mittig": "C",
+    "Rechts": "R",
+}
+LOGO_ALIGN_ERROR = "LogoAusrichtung muss A (wie bisher), L (links), C (mittig) oder R (rechts) sein."

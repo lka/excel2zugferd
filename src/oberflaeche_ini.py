@@ -8,14 +8,25 @@ import os
 import re
 from pathlib import Path
 import shutil
+from PIL import Image
 
 from src.middleware import Middleware
-from src.constants import PADX, PADY
+from src.handle_pdf import LOGO_BOX, logo_placement
+from src.constants import (
+    PADX,
+    PADY,
+    LOGO_ALIGN_KEY,
+    LOGO_ALIGN_DEFAULT,
+    LOGO_ALIGN_CHOICES,
+)
 import src
 import src.oberflaeche_base
 import src.oberflaeche_excelpositions
 import src.oberflaeche_excelsteuerung
 import src.oberflaeche_steuerung
+
+PREVIEW_WIDTH = 400  # px, corresponds to the width of LOGO_BOX
+PREVIEW_HEIGHT = round(PREVIEW_WIDTH * LOGO_BOX[3] / LOGO_BOX[2])
 
 
 class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
@@ -105,14 +116,65 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
         if Path(self.logo_fn).exists():
             self.logo_delete.pack(side=tk.LEFT, padx=PADX)
 
-        self.canvas = tk.Canvas(row, width=400, height=100, bg="white")
+        self.canvas = tk.Canvas(
+            row, width=PREVIEW_WIDTH, height=PREVIEW_HEIGHT, bg="white"
+        )
         self.canvas.pack(side=tk.RIGHT, padx=38, anchor="w", expand=True)
 
-        self.make_logo(self.logo_fn)
+        self._make_logo_align_row(3)
+        self._show_logo()
 
-        self.ents = self.makeform("Stammdaten", offset=3)
+        self.ents = self.makeform("Stammdaten", offset=4)
         self._refresh_company_selector()
-        self._add_quit_save_buttons(len(self.ents) + 3, self.fetch)
+        self._add_quit_save_buttons(len(self.ents) + 4, self.fetch)
+
+    def _make_logo_align_row(self, grid_row: int) -> None:
+        """input for the horizontal placement of the logo in the pdf"""
+        current = LOGO_ALIGN_DEFAULT
+        if self.middleware and self.middleware.ini_file:
+            current = self.middleware.ini_file.content.get(
+                LOGO_ALIGN_KEY, LOGO_ALIGN_DEFAULT
+            )
+        if current not in LOGO_ALIGN_CHOICES.values():
+            current = LOGO_ALIGN_DEFAULT
+        self.logo_align_var = tk.StringVar(value=current)
+        align_row = tk.Frame(self.content_frame)
+        align_row.grid(
+            row=grid_row, column=0, columnspan=2, padx=PADX, pady=PADY, sticky=tk.W
+        )
+        ttk.Label(align_row, text="Logo platzieren:").pack(side=tk.LEFT, padx=PADX)
+        for text, value in LOGO_ALIGN_CHOICES.items():
+            ttk.Radiobutton(
+                align_row,
+                text=text,
+                value=value,
+                variable=self.logo_align_var,
+                command=self._show_logo,
+            ).pack(side=tk.LEFT, padx=PADX)
+
+    def _show_logo(self) -> None:
+        """show the logo in the preview where it will be placed in the pdf.
+        The preview shows the area LOGO_BOX of the page"""
+        self.canvas.delete("all")
+        self.canvas.create_rectangle(
+            0, 0, PREVIEW_WIDTH - 1, PREVIEW_HEIGHT - 1, outline="lightgrey"
+        )
+        if not Path(self.logo_fn).exists():
+            return
+        with Image.open(self.logo_fn) as img:
+            size = img.size
+        box_x, box_y, _, _ = LOGO_BOX
+        x, y, w, h = logo_placement(size, self.logo_align_var.get())
+        scale = PREVIEW_WIDTH / LOGO_BOX[2]
+        self.make_logo(
+            self.logo_fn,
+            (
+                round((x - box_x) * scale),
+                round((y - box_y) * scale),
+                round(w * scale),
+                round(h * scale),
+            ),
+        )
 
     def _refresh_company_selector(self) -> None:
         names = []
@@ -329,7 +391,7 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
 
         if filename is not None and filename:
             shutil.copy(filename, self.logo_fn)
-            self.make_logo(self.logo_fn)
+            self._show_logo()
             self.logo_delete.pack(side=tk.LEFT, padx=5)
             self.root.lift()
 
@@ -344,13 +406,16 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
         if resp is True:
             os.remove(self.logo_fn)
             self.logo_delete.pack_forget()
-            self.canvas.delete("all")
+            self._show_logo()
         self.root.lift()
 
     def fetch_values_from_entries(self):
         content = self._get_current_form_content()
         if content and self.middleware:
             self.middleware.ini_file.save_current_company_content(content)
+            self.middleware.ini_file.merge_content_of_ini_file(
+                {LOGO_ALIGN_KEY: self.logo_align_var.get()}
+            )
             self._refresh_company_selector()
             return self.middleware.ini_file.content
         return content

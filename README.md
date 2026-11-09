@@ -134,9 +134,17 @@ Die Position der 4 Felder kann auch über die Excel-Steuerung in den Feldern Sto
 Siehe Vorlagen "Gutschriftanzeige", "Gutschriftanzeige negativ" und "Korrekturrechnung" in "TestRechnung.xlsx"
 
 Die Spezifikation für eine Gutschriftanzeige enthält folgenden Satz: "Nicht möglich (gemäß der semantischen Norm) sind hingegen negative Gutschriften, also Gutschriften, deren Betrag inkl. Steuern negativ ist."
-Ich habe Typ 381 Gutschriftanzeige bewusst so gestaltet, dass er das nicht beachtet, denn eigentlich erstelle ich damit eine Negativrechnung. Der Validator aktzeptiert das als korrekt. Sie sollte das also mit dem Empfänger der Gutschriftanzeige vorab klären.
+Ich habe Typ 381 Gutschriftanzeige bewusst so gestaltet, dass er das nicht beachtet, denn eigentlich erstelle ich damit eine Negativrechnung. Der Validator aktzeptiert das als korrekt. Sie sollten das also mit dem Empfänger der Gutschriftanzeige vorab klären.
 
 ## Versionen
+
+### 0.28.0
+
+- Das Logo kann jetzt linksbündig, mittig oder rechtsbündig im Bereich zwischen Überschrift, Absender und Adressfeld platziert werden.
+- Wenn das Logo kleiner ist als dieser Bereich wird die Größe beibehalten, die Position ist dann oben bündig und entsprechend der Auswahl links, mittig oder rechts.
+- Wenn das Logo größer ist, wird es entsprechend skaliert und eingepasst.
+- Für die Größenberechnung verwende ich feste 96 DPI.
+- Default ist das Verhalten wie vor dieser Änderung.
 
 ### 0.27.0
 

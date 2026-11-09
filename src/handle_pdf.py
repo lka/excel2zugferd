@@ -15,13 +15,18 @@ from fpdf.output import PDFICCProfile
 import src.handle_girocode as gc
 import pandas as pd
 import numpy as np
+from PIL import Image
 from src.invoice_collection import InvoiceCollection
 import math
 import locale
 import decimal
-from src.constants import P19USTG, GERMAN_DATE
+from src.constants import P19USTG, GERMAN_DATE, LOGO_ALIGN_DEFAULT
 
 LEFTofABSENDER = 135
+TOPofADRESS = 63.6
+LOGO_DPI = 96  # fixed resolution to calculate the natural size of the logo
+LOGO_BOX_LEGACY = 27, 30, 20, 20  # x, y, w, h as up to version 0.27.3
+LOGO_BOX = 26, 25.5, LEFTofABSENDER - 30, TOPofADRESS - 31  # x, y, w, h
 
 
 class PDF(FPDF):
@@ -375,18 +380,52 @@ class PDF(FPDF):
         self.multi_cell(0, None, text)
         self.ln()
 
-    def print_logo(self, fn: str) -> None:
+    @staticmethod
+    def _logo_rect(
+        img_size: tuple, box: tuple = LOGO_BOX, align: str = "L"
+    ) -> tuple:
         """
-        print Logo
+        calculate the position and size of the logo inside the box.
+        A logo larger than the box is scaled down to fill the box, keeping
+        its aspect ratio. A smaller logo keeps its size.
+        It is placed at the top of the box.
+        Args:
+            img_size (tuple): (width, height) of the image in mm
+            box (tuple): x, y, w, h of the available area
+            align (str): "L" (left), "C" (center) or "R" (right)
+        Returns:
+            tuple: x, y, w, h of the logo
+        """
+        if align not in ("L", "C", "R"):
+            raise ValueError(f"align must be 'L', 'C' or 'R', not '{align}'")
+        box_x, box_y, box_w, box_h = box
+        img_w, img_h = img_size
+        scale = min(box_w / img_w, box_h / img_h, 1)
+        w, h = img_w * scale, img_h * scale
+        offset = {"L": 0, "C": (box_w - w) / 2, "R": box_w - w}[align]
+        return box_x + offset, box_y, w, h
+
+    def print_logo(self, fn: str, align: str = LOGO_ALIGN_DEFAULT) -> None:
+        """
+        print Logo inside LOGO_BOX, keeping the aspect ratio
+        Args:
+            fn (str): filename of the logo
+            align (str): "A" (as up to version 0.27.3: logo fills a 20 x 20 mm box),
+                "L" (left), "C" (center) or "R" (right)
         """
         if fn is None:
             return
+        if align == "A":
+            self.start_section("Logo", 0)
+            self.set_draw_color(255)
+            self.rect(*LOGO_BOX_LEGACY)
+            self.image(fn, *LOGO_BOX_LEGACY, keep_aspect_ratio=True, alt_text="Logo")
+            self.set_draw_color(0)
+            return
+        with Image.open(fn) as img:
+            size = (img.width / LOGO_DPI * 25.4, img.height / LOGO_DPI * 25.4)
         self.start_section("Logo", 0)
-        rect1 = 27, 30, 0, 20
-        self.set_draw_color(255)
-        self.rect(*rect1)
-        self.image(fn, *rect1, keep_aspect_ratio=True, alt_text="Logo")
-        self.set_draw_color(0)
+        self.image(fn, *self._logo_rect(size, LOGO_BOX, align), alt_text="Logo")
 
     def print_qrcode(self, img: object) -> None:
         """
@@ -499,7 +538,9 @@ class Pdf(PDF):
 
         self.add_page()
         self.print_faltmarken()
-        self.print_logo(self.logo_fn)
+        self.print_logo(
+            self.logo_fn, self.invoice.management.logo_align or LOGO_ALIGN_DEFAULT
+        )
         self.print_absender(self.invoice.supplier.anschrift)
         bundesland = self.invoice.supplier.bundesland
         if bundesland and len(bundesland) > 0:
@@ -749,3 +790,22 @@ class Pdf(PDF):
             self._fill_girocode(
                 self._brutto_amount(), rg_nr, datum.strftime(GERMAN_DATE)
             )
+
+
+def logo_placement(img_px_size: tuple, align: str = LOGO_ALIGN_DEFAULT) -> tuple:
+    """
+    position and size of the logo on the page as printed by Pdf.print_logo
+    Args:
+        img_px_size (tuple): (width, height) of the logo in pixel
+        align (str): "A" (as up to version 0.27.3), "L", "C" or "R"
+    Returns:
+        tuple: x, y, w, h in mm
+    """
+    img_w, img_h = img_px_size
+    if align == "A":
+        box_x, box_y, box_w, box_h = LOGO_BOX_LEGACY
+        scale = min(box_w / img_w, box_h / img_h)
+        w, h = img_w * scale, img_h * scale
+        return box_x + (box_w - w) / 2, box_y + (box_h - h) / 2, w, h
+    size = (img_w / LOGO_DPI * 25.4, img_h / LOGO_DPI * 25.4)
+    return PDF._logo_rect(size, LOGO_BOX, align)

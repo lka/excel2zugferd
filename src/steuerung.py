@@ -11,6 +11,9 @@ from src.constants import (
     MWSTSUMME_POS_ERROR,
     BRUTTOSUMME_POS_ERROR,
     EINZELPOSITIONEN_POS_ERR,
+    LOGO_ALIGN_CHOICES,
+    LOGO_ALIGN_DEFAULT,
+    LOGO_ALIGN_ERROR,
 )
 
 
@@ -24,6 +27,7 @@ class Steuerung(object):
         self._create_girocode = None
         self._is_kleinunternehmen = None
         self._abspann = None
+        self._logo_align = None
         self._BYOPdf = None
         self._pdf_filename = None
         self._directory = None
@@ -55,6 +59,7 @@ class Steuerung(object):
         return f"Steuerung(create_xml: '{self.create_xml}', \
  create_girocode: '{self.create_girocode}',\
  is_kleinunternehmen: '{self.is_kleinunternehmen}', abspann: '{self.abspann}',\
+ logo_align: '{self.logo_align}',\
  BYOPdf: '{self.BYOPdf}',\
  pdf_filename: '{self.pdf_filename}',\
  directory: '{self.directory}',\
@@ -112,6 +117,14 @@ class Steuerung(object):
     @abspann.setter
     def abspann(self, value):
         self._abspann = value
+
+    @property
+    def logo_align(self):
+        return self._logo_align
+
+    @logo_align.setter
+    def logo_align(self, value):
+        self._logo_align = value
 
     @property
     def BYOPdf(self):
@@ -320,6 +333,14 @@ class Steuerung(object):
         )
         self.BYOPdf = self._check_TrueFalse(thekeys, daten, "BYOPdf")
 
+    def _fill_and_check_logo_align(self, thekeys: list, daten: dict) -> None:
+        """LogoAusrichtung: L, C or R; default L. Raise ValueError otherwise"""
+        value = daten["LogoAusrichtung"] if "LogoAusrichtung" in thekeys else None
+        value = value.strip() if value else LOGO_ALIGN_DEFAULT
+        if value not in LOGO_ALIGN_CHOICES.values():
+            raise ValueError(LOGO_ALIGN_ERROR)
+        self.logo_align = value
+
     def _check_is_integer(self, thekeys: list, daten: dict, name: str) -> str | None:
         """
         Check whether content of name is int, if yes return str else None
@@ -510,6 +531,7 @@ class Steuerung(object):
             thekeys = daten.keys()
             self.abspann = daten["Abspann"] if "Abspann" in thekeys else None
             self._fill_bools(thekeys, daten)
+            self._fill_and_check_logo_align(thekeys, daten)
             self._fill_positions_for_excel(thekeys, daten)
             self.directory = daten["Verzeichnis"] if "Verzeichnis" in thekeys else None
             # print(repr(self))

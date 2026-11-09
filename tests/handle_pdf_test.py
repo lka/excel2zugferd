@@ -136,6 +136,78 @@ class TestHandlePdf(unittest.TestCase):
             value["maxlengths"], [4, 10, 138, 6, 7, 8, 8, 6], "should be equal"
         )
 
+    def test_logo_rect_wide_logo_limited_by_width(self):
+        """breites Logo: Breite der Box ausgefüllt, Seitenverhältnis bleibt"""
+        box = (26, 25.5, 105, 32.6)
+        x, y, w, h = self.pdf._logo_rect((400, 100), box, "L")
+        self.assertAlmostEqual(w, 105)
+        self.assertAlmostEqual(h, 26.25)
+        self.assertAlmostEqual(x, 26)
+        self.assertAlmostEqual(y, 25.5)
+
+    def test_logo_rect_high_logo_limited_by_height(self):
+        """hohes Logo: Höhe der Box ausgefüllt"""
+        box = (26, 25.5, 105, 32.6)
+        x, y, w, h = self.pdf._logo_rect((100, 200), box, "L")
+        self.assertAlmostEqual(h, 32.6)
+        self.assertAlmostEqual(w, 16.3)
+        self.assertAlmostEqual(x, 26)
+
+    def test_print_logo_legacy_fills_box(self):
+        """A: Verhalten bis 0.27.3, Logo füllt die Box 27, 30, 20, 20 (auch vergrößert)"""
+        from unittest.mock import MagicMock
+        from PIL import Image
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            fn = os.path.join(tmp, "logo.jpg")
+            Image.new("RGB", (20, 10)).save(fn)
+            self.pdf.add_page()
+            self.pdf.start_section = MagicMock()
+            self.pdf.image = MagicMock()
+            self.pdf.print_logo(fn, "A")
+        args, kwargs = self.pdf.image.call_args
+        self.assertEqual(args, (fn, 27, 30, 20, 20))
+        self.assertTrue(kwargs["keep_aspect_ratio"])
+
+    def test_logo_placement_legacy_fills_legacy_box_centered(self):
+        """A: Logo füllt die Box 27, 30, 20, 20 (zentriert), Seitenverhältnis bleibt"""
+        x, y, w, h = handle_pdf.logo_placement((200, 100), "A")
+        self.assertAlmostEqual((w, h), (20, 10))
+        self.assertAlmostEqual(x, 27)
+        self.assertAlmostEqual(y, 30 + 5)
+
+    def test_logo_placement_other_uses_logo_rect(self):
+        """L/C/R: wie _logo_rect mit der natürlichen Größe bei 96 DPI"""
+        px = (96, 96)  # 25.4 mm x 25.4 mm
+        x, y, w, h = handle_pdf.logo_placement(px, "R")
+        self.assertAlmostEqual(w, 25.4)
+        self.assertAlmostEqual(x, 26 + 105 - 25.4)
+        self.assertAlmostEqual(y, 25.5)
+
+    def test_logo_rect_small_logo_not_enlarged(self):
+        """kleines Logo (in mm) wird nicht vergrößert, nur platziert"""
+        box = (26, 25.5, 105, 32.6)
+        x, y, w, h = self.pdf._logo_rect((40, 10), box, "L")
+        self.assertAlmostEqual((x, y, w, h), (26, 25.5, 40, 10))
+        x, _, _, _ = self.pdf._logo_rect((40, 10), box, "C")
+        self.assertAlmostEqual(x, 26 + (105 - 40) / 2)
+        x, _, _, _ = self.pdf._logo_rect((40, 10), box, "R")
+        self.assertAlmostEqual(x, 26 + 105 - 40)
+
+    def test_logo_rect_align_center_and_right(self):
+        """mittig und rechtsbündig verschieben x"""
+        box = (26, 25.5, 105, 32.6)
+        x_c, _, w, _ = self.pdf._logo_rect((100, 200), box, "C")
+        x_r, _, _, _ = self.pdf._logo_rect((100, 200), box, "R")
+        self.assertAlmostEqual(x_c, 26 + (105 - w) / 2)
+        self.assertAlmostEqual(x_r, 26 + 105 - w)
+
+    def test_logo_rect_invalid_align(self):
+        """ungültige Ausrichtung ist ein Fehler"""
+        with self.assertRaises(ValueError):
+            self.pdf._logo_rect((100, 100), (0, 0, 10, 10), "X")
+
     def test_get_bezug_text_without_storno(self):
         """ohne Storno: Rechnungsnummer vom Datum"""
         self.pdf.invoice = SimpleNamespace(storno=None)
