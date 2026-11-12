@@ -71,7 +71,11 @@ Nach dem Start des Programms:
 * Speichere die Datei als Tabellenblatt-Name.pdf im Verzeichnis der ausgew채hlten Excel-Datei.
 
 ### Stammdateneingabe
-![Image der Stammdaten](/assets/Stammdaten.png)
+Die Firmendaten sind auf drei Reiter verteilt: Anschrift, Steuer und Bank sowie Logo.
+
+![Image der Stammdaten, Reiter Anschrift](/assets/Stammdaten.png)
+![Image der Stammdaten, Reiter Steuer und Bank](/assets/Stammdaten_SteuerBank.png)
+![Image der Stammdaten, Reiter Logo](/assets/Stammdaten_Logo.png)
 ![Image der Sonstigen Stammdaten](/assets/Sonstige.png)
 ![Image der Excel Steuerung](/assets/Excelsteuerung.png)
 ![Image der Excel Positionen](/assets/Excelpositionen.png)
@@ -137,6 +141,11 @@ Die Spezifikation f체r eine Gutschriftanzeige enth채lt folgenden Satz: "Nicht m�
 Ich habe Typ 381 Gutschriftanzeige bewusst so gestaltet, dass er das nicht beachtet, denn eigentlich erstelle ich damit eine Negativrechnung. Der Validator aktzeptiert das als korrekt. Sie sollten das also mit dem Empf채nger der Gutschriftanzeige vorab kl채ren.
 
 ## Versionen
+
+### 1.0.0
+
+- Die Oberfl채che wurde komplett umgestellt auf ein moderneres Aussehen
+- Im Men체 "Ansicht" kann zwischen "System" (folgt den Windows-Einstellungen), "Hell" und "Dunkel" umgeschaltet werden. Die Auswahl wird gespeichert.
 
 ### 0.28.0
 
