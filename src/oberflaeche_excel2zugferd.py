@@ -2,19 +2,22 @@
 Modul OberflaecheExcel2Zugferd
 """
 
-import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
+import re
+from tkinter import messagebox, filedialog
+import customtkinter as ctk
 from pathlib import Path
 
 from src.excel_content import ExcelContent
 from src.middleware import Middleware
-from src.constants import PADY
+from src.constants import PADX, PADY
 import src
 import src.oberflaeche_base
 import src.oberflaeche_excelpositions
 import src.oberflaeche_excelsteuerung
 import src.oberflaeche_ini
 import src.oberflaeche_steuerung
+
+FILE_LABEL_WIDTH = 300  # px, longer paths are wrapped
 
 
 class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
@@ -25,12 +28,12 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
     def __init__(
         self, myfields: dict, middleware: Middleware = None, window=None
     ) -> None:
-        super().__init__(window, wsize="480x440")
+        super().__init__(window, wsize="520x480")
         self.fields: dict = myfields
         self.middleware = middleware
         self.filename: str = None
         self.selected_lb_item = None
-        self.double_clicked_flag = False
+        self.sheet_buttons: list = []
         self.root.title("Excel2ZugFeRD")
         self.make_menu_bar(
             [
@@ -75,14 +78,54 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
             return
         self.middleware.fill_pdf(self.selected_lb_item)
 
-    def _read_sheet_list(self) -> list:
+    def _read_sheet_list(self) -> None:
         """creates ExcelContent from filename, reads sheet list"""
         self.middleware.excel_file = ExcelContent(self.filename, "")
-        self.file_name_label.config(text=self.filename)
-        self.lb.delete(0, "end")
-        items = self.middleware.excel_file.read_sheet_list()
-        for item in items:
-            self.lb.insert("end", item)
+        self.file_name_label.configure(text=self._wrappable(self.filename))
+        for button in self.sheet_buttons:
+            button.destroy()
+        self.sheet_buttons = []
+        self.selected_lb_item = None
+        for item in self.middleware.excel_file.read_sheet_list():
+            self._add_sheet_button(item)
+
+    def _wrappable(self, path: str) -> str:
+        """insert line breaks after path separators so that no line is
+        wider than FILE_LABEL_WIDTH"""
+        font = self.file_name_label.cget("font")
+        lines = [""]
+        for part in re.findall(r"[^/\\]*[/\\]|[^/\\]+", path):
+            if lines[-1] and font.measure(lines[-1] + part) > FILE_LABEL_WIDTH:
+                lines.append("")
+            lines[-1] += part
+        return "\n".join(lines)
+
+    def _add_sheet_button(self, item: str) -> None:
+        """add one selectable entry to the sheet list"""
+        button = ctk.CTkButton(
+            self.lb,
+            text=item,
+            anchor="w",
+            fg_color="transparent",
+            text_color=("black", "white"),
+            hover_color=("gray80", "gray30"),
+            command=lambda: self.select_sheet(item),
+        )
+        button.bind("<Double-Button-1>", lambda event: self.double_click(item))
+        button.pack(fill="x", padx=2, pady=1)
+        self.sheet_buttons.append(button)
+
+    def select_sheet(self, item: str) -> None:
+        """mark the sheet as selected"""
+        self.selected_lb_item = item
+        for button in self.sheet_buttons:
+            selected = button.cget("text") == item
+            button.configure(fg_color=("gray75", "gray25") if selected else "transparent")
+
+    def double_click(self, item: str) -> None:
+        """select the sheet and create the pdf"""
+        self.select_sheet(item)
+        self.create_pdf()
 
     def _file_dialog(self, init_dir: str) -> None:
         self.filename = filedialog.askopenfilename(
@@ -111,48 +154,17 @@ kann nicht beschrieben werden.\n{ex}",
             self._read_sheet_list()
             self._try_to_save_Verzeichnis()
 
-    def mouse_click(self, event):  # pylint: disable=unused-argument
-        """
-        reaction to clicking of the selected item in listbox
-        """
-        self.lb.after(300, self.mouse_action, event)
-
-    def double_click(self, event):  # pylint: disable=unused-argument
-        """
-        reaction to double-clicking of the selected item in listbox
-        """
-        self.double_clicked_flag = True
-
-    def mouse_action(self, event):  # pylint: disable=unused-argument
-        """
-        reaction to clicking or double-clicking of the selected item in listbox
-        """
-        # get selected indices
-        selected_indices = self.lb.curselection()
-        # get selected items
-        self.selected_lb_item = ",".join([self.lb.get(i) for i in selected_indices])
-        if self.double_clicked_flag:
-            # messagebox.showinfo("Info", "Double-Clicked")
-            self.create_pdf()
-            self.double_clicked_flag = False
-
-    def myListbox(self) -> tk.Listbox:
-        """create listbox with scrollbar"""
-        # create frame for listbox and scrollbar
-        frame = ttk.Frame(self.content_frame)
-        frame.grid(row=1, column=0, columnspan=2, pady=PADY, sticky=tk.W)
-        # create listbox for excel sheetnames
-        lb = tk.Listbox(
-            frame, height=20, width=60, justify="left", selectmode=tk.SINGLE
+    def myListbox(self) -> ctk.CTkScrollableFrame:
+        """create scrollable list of the sheet names"""
+        lb = ctk.CTkScrollableFrame(
+            self.content_frame,
+            width=420,
+            height=330,
+            border_width=2,
+            border_color=("gray60", "gray40"),
+            fg_color=("white", "gray17"),
         )
-        lb.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        lb.bind("<<ListboxSelect>>", self.mouse_click)
-        lb.bind("<Double-Button>", self.double_click)
-        # Add a scrollbar to the listbox
-        scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=lb.yview)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        # Configure the listbox to work with the scrollbar
-        lb.config(yscrollcommand=scrollbar.set)
+        lb.grid(row=1, column=0, columnspan=2, pady=PADY, sticky="w")
         return lb
 
     def makeform(self):
@@ -160,14 +172,16 @@ kann nicht beschrieben werden.\n{ex}",
         create form for input
         overwrites makeform from base class
         """
-        self.file_name_button = ttk.Button(
+        self.file_name_button = ctk.CTkButton(
             self.content_frame, text="Excel-Datei...", command=self.open_file
         )
         self.file_name_button.grid(row=0, column=0, pady=PADY)
-        self.file_name_label = ttk.Label(
+        self.file_name_label = ctk.CTkLabel(
             self.content_frame,
-            text="Bitte erst die Excel Datei auswählen\
- (über Datei -> Öffnen...).",
+            text="Bitte erst eine Excel-Datei auswählen.",
+            wraplength=FILE_LABEL_WIDTH,
+            justify="left",
+            anchor="w",
         )
-        self.file_name_label.grid(row=0, column=1, pady=PADY)
+        self.file_name_label.grid(row=0, column=1, padx=PADX, pady=PADY, sticky="w")
         self.lb = self.myListbox()

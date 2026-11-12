@@ -3,7 +3,8 @@ Modul OberflaecheIniFile
 """
 
 import tkinter as tk
-from tkinter import messagebox, filedialog, simpledialog, ttk
+from tkinter import messagebox, filedialog
+import customtkinter as ctk
 import os
 import re
 from pathlib import Path
@@ -25,6 +26,50 @@ import src.oberflaeche_excelpositions
 import src.oberflaeche_excelsteuerung
 import src.oberflaeche_steuerung
 
+TAB_ACTIVE_COLOR = ("#3B8ED0", "#1F6AA5")
+TAB_INACTIVE_COLOR = ("gray75", "gray28")
+TAB_HOVER_COLOR = ("gray65", "gray35")
+SEPARATOR = "-"  # row type: horizontal line inside a card
+TAB_NAMES = ("Anschrift", "Steuer und Bank", "Logo")
+CARD_PAGES = (0, 1, 1)  # tab of each entry of CARDS
+CARDS = [
+    (
+        "Anschrift und Kontakt",
+        [
+            ("Firma", [("Betriebsbezeichnung", 400)]),
+            ("Abteilung", [("Abteilung", 400)]),
+            ("z. Hd.", [("Ansprechpartner", 400)]),
+            ("Straße / Nr.", [("Strasse", 300), (None, "Nr."), ("Hausnummer", 70)]),
+            ("PLZ / Ort", [("PLZ", 90), (None, " "), ("Ort", 300)]),
+            ("Bundesland", [("Bundesland", 400)]),
+            ("Postfach", [("Postfach", 400)]),
+            ("Telefon", [("Telefon", 400)]),
+            ("Fax", [("Fax", 400)]),
+            ("E-Mail", [("Email", 400)]),
+        ],
+    ),
+    (
+        "Steuerdaten",
+        [
+            (
+                "Steuernr. / FA",
+                [("Steuernummer", 150), (None, "Finanzamt"), ("Finanzamt", 200)],
+            ),
+            (None, [(None, "oder")]),
+            ("USt-IdNr.", [("UmsatzsteuerID", 200)]),
+            (SEPARATOR, None),
+            ("", [("Kleinunternehmen", 0)]),
+        ],
+    ),
+    (
+        "Bankverbindung",
+        [
+            ("Kontoinhaber", [("Kontoinhaber", 400)]),
+            ("IBAN", [("IBAN", 300)]),
+            ("BIC", [("BIC", 150)]),
+        ],
+    ),
+]
 PREVIEW_WIDTH = 400  # px, corresponds to the width of LOGO_BOX
 PREVIEW_HEIGHT = round(PREVIEW_WIDTH * LOGO_BOX[3] / LOGO_BOX[2])
 
@@ -37,7 +82,7 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
     def __init__(
         self, thefields: list, middleware: Middleware = None, window=None
     ) -> None:
-        super().__init__(window=window, wsize="700x800")  # tk.Toplevel())
+        super().__init__(window=window, wsize="720x680")  # tk.Toplevel())
         self.fields: list = thefields
         self.middleware: Middleware = middleware
         self.root.title("Stammdateneingabe - Firmendaten")
@@ -48,7 +93,7 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
                         "Stammdateneingabe": {
                             "Sonstige": self.pre_open_steuerung,
                             "Excel Steuerung": self.pre_open_excelsteuerung,
-                            "Excel Positionen": self.pre_open_excelsteuerung,
+                            "Excel Positionen": self.pre_open_excelpositions,
                         },
                         "Separator1": 0,
                         "Excel2ZUGFeRD": self.pre_open_excel2zugferd,
@@ -60,75 +105,226 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
             ]
         )
         self.company_var = tk.StringVar()
-        self.company_row = tk.Frame(self.content_frame)
+        self.company_row = ctk.CTkFrame(self.content_frame, fg_color="transparent")
         self.company_row.grid(
             row=0, column=0, columnspan=2, padx=PADX, pady=PADY, sticky=tk.W
         )
-        ttk.Label(self.company_row, text="Firma auswählen:").pack(side=tk.LEFT, padx=PADX)
-        self.company_combo = ttk.Combobox(
+        ctk.CTkLabel(self.company_row, text="Firma auswählen:").pack(side=tk.LEFT, padx=PADX)
+        self.company_combo = ctk.CTkComboBox(
             self.company_row,
-            textvariable=self.company_var,
+            variable=self.company_var,
             state="readonly",
-            width=40,
+            width=320,
+            values=[""],
+            command=self.handle_company_change,
         )
         self.company_combo.pack(side=tk.LEFT, padx=PADX)
-        self.company_combo.bind("<<ComboboxSelected>>", self.handle_company_change)
-        self.company_actions = tk.Frame(self.content_frame)
+        self.company_actions = ctk.CTkFrame(self.content_frame, fg_color="transparent")
         self.company_actions.grid(
             row=1, column=0, columnspan=2, padx=PADX, pady=PADY, sticky=tk.W
         )
-        self.company_add_button = ttk.Button(
-            self.company_actions, text="Neu", command=self.handle_company_add
+        self.company_add_button = ctk.CTkButton(
+            self.company_actions, text="Neu", width=110, command=self.handle_company_add
         )
         self.company_add_button.pack(side=tk.LEFT, padx=PADX)
-        self.company_delete_button = ttk.Button(
-            self.company_actions, text="Löschen", command=self.handle_company_delete
+        self.company_delete_button = ctk.CTkButton(
+            self.company_actions, text="Löschen", width=110, command=self.handle_company_delete
         )
         self.company_delete_button.pack(side=tk.LEFT, padx=PADX)
-        self.company_rename_button = ttk.Button(
-            self.company_actions, text="Umbenennen", command=self.handle_company_rename
+        self.company_rename_button = ctk.CTkButton(
+            self.company_actions, text="Umbenennen", width=110, command=self.handle_company_rename
         )
         self.company_rename_button.pack(side=tk.LEFT, padx=PADX)
-        self.company_export_button = ttk.Button(
-            self.company_actions, text="Export", command=self.handle_company_export
+        self.company_export_button = ctk.CTkButton(
+            self.company_actions, text="Export", width=110, command=self.handle_company_export
         )
         self.company_export_button.pack(side=tk.LEFT, padx=PADX)
-        self.company_import_button = ttk.Button(
-            self.company_actions, text="Import", command=self.handle_company_import
+        self.company_import_button = ctk.CTkButton(
+            self.company_actions, text="Import", width=110, command=self.handle_company_import
         )
         self.company_import_button.pack(side=tk.LEFT, padx=PADX)
-        row = tk.Frame(self.content_frame)
-        row.grid(row=2, column=0, columnspan=2, padx=PADX, pady=PADY, sticky=tk.W)
-        # row.pack(side=tk.TOP, fill=tk.X, padx=PADX, pady=PADY)
-        self.logo_button = ttk.Button(
-            row,
-            text="Logo auswählen...",  # anchor="w",
-            command=self.handle_file_button,
+        self.ents = self.makeform("Stammdaten", offset=2)
+        self._refresh_company_selector()
+        self._add_quit_save_buttons(4, self.fetch)
+
+    def makeform(self, type: str, offset: int = 0) -> dict:
+        """create the form on three tabs; related fields are grouped in boxes"""
+        content = {}
+        if self.middleware.ini_file:
+            content = self.middleware.ini_file.get_active_company_content()
+        self._make_tab_nav(offset)
+        pages = self._make_tab_pages(offset + 1)
+        entries = self._make_cards(pages, content)
+        entries.update(self._make_remaining_fields(type, pages[1], content, entries))
+        self._make_logo_card(pages[2])
+        self._show_tab(TAB_NAMES[0])
+        return entries
+
+    def _make_tab_nav(self, grid_row: int) -> None:
+        """row of buttons to switch between the tabs"""
+        self.tab_nav = ctk.CTkFrame(self.content_frame, fg_color="transparent")
+        self.tab_nav.grid(
+            row=grid_row, column=0, columnspan=2, padx=PADX, pady=PADY, sticky="w"
+        )
+        self.tab_buttons = {}
+        for name in TAB_NAMES:
+            button = ctk.CTkButton(
+                self.tab_nav,
+                text=name,
+                width=150,
+                command=lambda n=name: self._show_tab(n),
+            )
+            button.pack(side="left", padx=(0, 4))
+            self.tab_buttons[name] = button
+
+    def _make_tab_pages(self, grid_row: int) -> list:
+        """one frame per tab, all in the same grid cell"""
+        pages = [
+            ctk.CTkFrame(self.content_frame, fg_color="transparent")
+            for _ in TAB_NAMES
+        ]
+        self.tab_pages = dict(zip(TAB_NAMES, pages))
+        for page in pages:
+            page.grid(row=grid_row, column=0, columnspan=2, sticky="nw")
+        return pages
+
+    def _make_cards(self, pages: list, content: dict) -> dict:
+        """put the boxes of CARDS on their tabs, returns their entries"""
+        entries = {}
+        by_key = {f["Text"]: f for f in self.fields}
+        for page, (title, rows) in zip(CARD_PAGES, CARDS):
+            grid_row = len(pages[page].grid_slaves())
+            entries.update(
+                self._make_card(pages[page], grid_row, title, rows, by_key, content)
+            )
+        return entries
+
+    def _make_remaining_fields(
+        self, type: str, page: ctk.CTkFrame, content: dict, done: dict
+    ) -> dict:
+        """fields of this form which are not part of a box"""
+        entries = {}
+        row = len(page.grid_slaves())
+        for field in self.fields:
+            if field["Dest"] == type and field["Text"] not in done:
+                entries[field["Text"]] = self.get_entries_from_type(
+                    page, field, content, row
+                )
+                row += 1
+        return entries
+
+    def _show_tab(self, name: str) -> None:
+        """show the page of the selected tab, hide the others"""
+        for tab, page in self.tab_pages.items():
+            selected = tab == name
+            if selected:
+                page.grid()
+            else:
+                page.grid_remove()
+            self.tab_buttons[tab].configure(
+                fg_color=TAB_ACTIVE_COLOR if selected else TAB_INACTIVE_COLOR,
+                hover_color=TAB_ACTIVE_COLOR if selected else TAB_HOVER_COLOR,
+                text_color=("white", "white") if selected else ("black", "white"),
+            )
+
+    def _make_card(
+        self,
+        parent: ctk.CTkFrame,
+        grid_row: int,
+        title: str,
+        rows: list,
+        by_key: dict,
+        content: dict,
+    ) -> dict:
+        """build one framed block, returns its entries"""
+        card = ctk.CTkFrame(parent, border_width=1, border_color=("gray60", "gray40"))
+        card.grid(
+            row=grid_row, column=0, columnspan=2, padx=PADX, pady=PADY, sticky="w"
+        )
+        ctk.CTkLabel(
+            card, text=title, font=ctk.CTkFont(size=15, weight="bold")
+        ).grid(row=0, column=0, columnspan=2, padx=10, pady=(8, 2), sticky="w")
+        entries = {}
+        for row, (label, keys_widths) in enumerate(rows, start=1):
+            if label == SEPARATOR:
+                self._make_separator(card, row)
+            else:
+                pady = (3, 12) if row == len(rows) else 3
+                line = self._make_card_line(card, row, label, pady)
+                entries.update(self._make_line_entries(line, keys_widths, by_key, content))
+        return entries
+
+    @staticmethod
+    def _make_separator(card: ctk.CTkFrame, row: int) -> None:
+        """horizontal line inside a card"""
+        ctk.CTkFrame(
+            card, height=2, corner_radius=0, fg_color=("gray60", "gray45")
+        ).grid(row=row, column=0, columnspan=2, sticky="ew", padx=10, pady=6)
+
+    @staticmethod
+    def _make_card_line(
+        card: ctk.CTkFrame, row: int, label: str, pady: tuple | int
+    ) -> ctk.CTkFrame:
+        """label and the frame which takes the inputs of one line"""
+        ctk.CTkLabel(card, text=label or "", anchor="w", width=110).grid(
+            row=row, column=0, padx=(10, 5), pady=pady, sticky="nw"
+        )
+        line = ctk.CTkFrame(card, fg_color="transparent")
+        line.grid(row=row, column=1, padx=(0, 12), pady=pady, sticky="w")
+        return line
+
+    def _make_line_entries(
+        self, line: ctk.CTkFrame, keys_widths: list, by_key: dict, content: dict
+    ) -> dict:
+        """inputs (or separator texts) of one line, returns the inputs"""
+        entries = {}
+        for key, width in keys_widths:
+            if key is None:  # separator text
+                ctk.CTkLabel(line, text=width).pack(side="left", padx=5)
+                continue
+            if by_key[key]["Type"] == "Boolean":
+                entries[key] = self._create_checkbox(line, by_key[key], content)
+            else:
+                entries[key] = self._create_textbox(line, by_key[key], content, width)
+            entries[key].pack(side="left")
+        return entries
+
+    def _make_logo_card(self, parent: ctk.CTkFrame) -> None:
+        """framed box with all elements for the logo"""
+        card = ctk.CTkFrame(
+            parent, border_width=1, border_color=("gray60", "gray40")
+        )
+        card.grid(row=0, column=0, padx=PADX, pady=PADY, sticky="w")
+        ctk.CTkLabel(
+            card, text="Logo", font=ctk.CTkFont(size=15, weight="bold")
+        ).pack(anchor="w", padx=10, pady=(8, 2))
+        buttons = ctk.CTkFrame(card, fg_color="transparent")
+        buttons.pack(anchor="w", padx=5, pady=3)
+        self.logo_button = ctk.CTkButton(
+            buttons, text="Logo auswählen...", command=self.handle_file_button
         )
         self.logo_button.pack(side=tk.LEFT, padx=PADX)
         self.logo_button.bind("<Return>", (lambda event: self.handle_file_button))
-        self.logo_delete = ttk.Button(
-            row, text="Logo löschen", command=self.handle_logo_delete_button
+        self.logo_delete = ctk.CTkButton(
+            buttons, text="Logo löschen", command=self.handle_logo_delete_button
         )
         self.logo_delete.bind(
             "<Return>", (lambda event: self.handle_logo_delete_button)
         )
         if Path(self.logo_fn).exists():
             self.logo_delete.pack(side=tk.LEFT, padx=PADX)
-
         self.canvas = tk.Canvas(
-            row, width=PREVIEW_WIDTH, height=PREVIEW_HEIGHT, bg="white"
+            card,
+            width=PREVIEW_WIDTH,
+            height=PREVIEW_HEIGHT,
+            bg="white",
+            highlightthickness=0,
         )
-        self.canvas.pack(side=tk.RIGHT, padx=38, anchor="w", expand=True)
-
-        self._make_logo_align_row(3)
+        self.canvas.pack(anchor="w", padx=10, pady=5)
+        self._make_logo_align_row(card)
         self._show_logo()
 
-        self.ents = self.makeform("Stammdaten", offset=4)
-        self._refresh_company_selector()
-        self._add_quit_save_buttons(len(self.ents) + 4, self.fetch)
-
-    def _make_logo_align_row(self, grid_row: int) -> None:
+    def _make_logo_align_row(self, parent: ctk.CTkFrame) -> None:
         """input for the horizontal placement of the logo in the pdf"""
         current = LOGO_ALIGN_DEFAULT
         if self.middleware and self.middleware.ini_file:
@@ -138,13 +334,11 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
         if current not in LOGO_ALIGN_CHOICES.values():
             current = LOGO_ALIGN_DEFAULT
         self.logo_align_var = tk.StringVar(value=current)
-        align_row = tk.Frame(self.content_frame)
-        align_row.grid(
-            row=grid_row, column=0, columnspan=2, padx=PADX, pady=PADY, sticky=tk.W
-        )
-        ttk.Label(align_row, text="Logo platzieren:").pack(side=tk.LEFT, padx=PADX)
+        align_row = ctk.CTkFrame(parent, fg_color="transparent")
+        align_row.pack(anchor="w", padx=5, pady=(3, 12))
+        ctk.CTkLabel(align_row, text="Logo platzieren:").pack(side=tk.LEFT, padx=PADX)
         for text, value in LOGO_ALIGN_CHOICES.items():
-            ttk.Radiobutton(
+            ctk.CTkRadioButton(
                 align_row,
                 text=text,
                 value=value,
@@ -180,7 +374,7 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
         names = []
         if self.middleware:
             names = self.middleware.ini_file.get_company_names()
-        self.company_combo["values"] = names
+        self.company_combo.configure(values=names or [""])
         active_name = None
         if self.middleware:
             active_name = self.middleware.ini_file.get_active_company_name()
@@ -205,6 +399,8 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
         previous = self.middleware.ini_file.get_active_company_name()
         self.fetch_values_from_entries()
         self.middleware.ini_file.set_active_company(selected)
+        # fetch_values_from_entries has reset the selector to the previous company
+        self._refresh_company_selector()
         self._load_active_company_into_form()
         if not self._persist_company_changes() and previous:
             self.middleware.ini_file.set_active_company(previous)
@@ -223,7 +419,7 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
         if not self.middleware:
             return
         self.fetch_values_from_entries()
-        name = simpledialog.askstring(
+        name = self.ask_string(
             "Neue Firma", "Name/Betriebsbezeichnung der neuen Firma:"
         )
         if name is None:
@@ -299,7 +495,7 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
 
     def _rename_company(self, selected: str):
         self.fetch_values_from_entries()
-        new_name = simpledialog.askstring(
+        new_name = self.ask_string(
             "Firma umbenennen",
             "Neuer Firmenname:",
             initialvalue=selected,
