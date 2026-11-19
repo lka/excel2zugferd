@@ -318,6 +318,6 @@ Copyright [2024] [Herbert Lischka]
 
  ## Unterstützen
 
-Wenn das Projekt gefällt, freue ich mich über eine Spende:
+Excel2ZUGFeRD ist kostenlos und Open Source. Es hilft Ihnen, die E-Rechnungspflicht ohne Abo-Software zu erfüllen. Wenn es Ihnen Zeit spart, freue ich mich über einen kleinen Beitrag. Er hilft mir, neue Versionen und Formatänderungen zeitnah umzusetzen.
 
-[![Spenden via PayPal](https://img.shields.io/badge/Spenden-PayPal-blue?logo=paypal)](https://paypal.me/Lka030)
+[![☕ Projekt unterstützen via PayPal](https://img.shields.io/badge/Spenden-PayPal-blue?logo=paypal)](https://paypal.me/Lka030)
