@@ -20,8 +20,6 @@ Läuft alles? Dann freue ich mich über [eine kleine Unterstützung](https://pay
 
 Änderungen der einzelnen Versionen stehen in der [CHANGELOG.md](CHANGELOG.md).
 
-- Wenn eine neue Version des Setup-Programms herauskommt, meckert der Virenscanner bei der Ausführung, dass das eine Datei sei, die einen Virus enthalten könnte, das ist die am Anfang fehlende Hash-Signatur für das Python Setup. Ich sage dann "Download beibehalten" und lasse das Ganze vom Virenprogramm im Internet Scannen. Nach ca. 14 Tagen hat sich das bisher immer gegeben.
-
 ## Updates
 
 - Die Vorgehensweise ist Identisch zur Installation.
