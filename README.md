@@ -8,26 +8,6 @@ Alternativ kann das Programm den ZugFeRD - Anteil an eine von Ihnen erstellte PD
 >
 > [![Projekt unterstützen via PayPal](https://img.shields.io/badge/Spenden-PayPal-blue?logo=paypal)](https://paypal.me/Lka030)
 
-Die verwendbaren Einheiten in der Spalte 'Typ' sind:
-* 'h': Stunden,
-* 'min': Minuten,
-* 'Tag(e)': Tage,
-* 'Monat(e)': Monate,
-* 'Jahr(e)': Jahre,
-* 'l': Liter,
-* 'Liter': Liter,
-* 'kg': Kilogramm,
-* 't': Tonne,
-* 'm': Meter,
-* 'm²': Quadratmeter,
-* 'm³': Kubikmeter,
-* '1': Stück,
-* 'Stk.': Stück,
-* 'kWh': Kilowattstunden
-* 'AW' : Arbeitswerte (service unit);
-* der Default liefert Stück und dokumentiert in der Beschreibung (BT-154): "Die Einheit 'NIX' ist nicht\
- verfügbar und wurde durch 'C62' (Stück) ersetzt."
-
  ### Für die Automatisierer:
 
 Das Programm kann auch ohne Oberfläche verwendet werden (nach der Einstellung der Stammdaten):
@@ -52,9 +32,11 @@ oder
 - Alternativ: In einem Administrator - CMD Fenster `winget install excel2zugferd` ausführen.
 - Die Freigabe durch freiwillige Helfer bei WingetCreate findet normalerweise ca. 6 - 12 h nach der neuen Release statt.
 
-- Wenn eine neue Version des Setup-Programms herauskommt, meckert der Virenscanner bei der Ausführung, dass das eine Datei sei, die einen Virus enthalten könnte, das ist die am Anfang fehlende Hash-Signatur für das Python Setup. Ich sage dann "Download beibehalten" und lasse das Ganze vom Virenprogramm im Internet Scannen. Nach ca. 14 Tagen hat sich das bisher immer gegeben.
+Läuft alles? Dann freue ich mich über [eine kleine Unterstützung](https://paypal.me/Lka030). 
 
-Läuft alles? Dann freue ich mich über [eine kleine Unterstützung](https://paypal.me/Lka030). Änderungen der einzelnen Versionen stehen in der [CHANGELOG.md](CHANGELOG.md).
+Änderungen der einzelnen Versionen stehen in der [CHANGELOG.md](CHANGELOG.md).
+
+- Wenn eine neue Version des Setup-Programms herauskommt, meckert der Virenscanner bei der Ausführung, dass das eine Datei sei, die einen Virus enthalten könnte, das ist die am Anfang fehlende Hash-Signatur für das Python Setup. Ich sage dann "Download beibehalten" und lasse das Ganze vom Virenprogramm im Internet Scannen. Nach ca. 14 Tagen hat sich das bisher immer gegeben.
 
 ## Updates
 
@@ -106,6 +88,28 @@ Als Vorlage benutzen Sie bitte die Datei "TestRechnung.xlsx".
 
 Alternativ können Sie die XY-Positionen im Excel Blatt (Spalten: A...Z, Zeilen: 1...) in den Stammdaten "Excel Steuerung" und "Excel Positionen" angeben.
 Damit können die XY-Positionen verändert werden und die Suchfunktion wird abgeschaltet. Durch die Angabe der "Excel Positionen" können Sie auch die Überschriften der Einzelpositionen anpassen z.B: Pos. -> Nr., Typ -> EH usw..
+
+#### Einheiten
+Die verwendbaren Einheiten in der Spalte 'Typ' sind:
+* 'h': Stunden,
+* 'min': Minuten,
+* 'Tag(e)': Tage,
+* 'Monat(e)': Monate,
+* 'Jahr(e)': Jahre,
+* 'l': Liter,
+* 'Liter': Liter,
+* 'kg': Kilogramm,
+* 't': Tonne,
+* 'm': Meter,
+* 'm²': Quadratmeter,
+* 'm³': Kubikmeter,
+* '1': Stück,
+* 'Stk.': Stück,
+* 'kWh': Kilowattstunden
+* 'AW' : Arbeitswerte (service unit);
+* der Default liefert Stück und dokumentiert in der Beschreibung (BT-154): "Die Einheit 'NIX' ist nicht verfügbar und wurde durch 'C62' (Stück) ersetzt."
+
+Sollten Sie weitere Einheiten benötigen, schreiben Sie gerne einen „Issue“.
 
 #### Mehrere Steuersätze
 
