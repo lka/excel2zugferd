@@ -4,6 +4,10 @@ Dieses Programm liest die Daten aus einer Excel Datei aus und hängt sie als ZUG
 
 Alternativ kann das Programm den ZugFeRD - Anteil an eine von Ihnen erstellte PDF anhängen. Dann wird die PDF als IhrPdfName_ZuGFeRD.pdf ins Verzeichnis Ihrer PDF gestellt.
 
+> **Kostenlos und Open Source.** Excel2ZUGFeRD hilft Ihnen, die E-Rechnungspflicht ohne Abo-Software zu erfüllen. Wenn es Ihnen Zeit spart, freue ich mich über einen kleinen Beitrag. Er hilft mir, neue Versionen und Formatänderungen zeitnah umzusetzen.
+>
+> [![Projekt unterstützen via PayPal](https://img.shields.io/badge/Spenden-PayPal-blue?logo=paypal)](https://paypal.me/Lka030)
+
 Die verwendbaren Einheiten in der Spalte 'Typ' sind:
 * 'h': Stunden,
 * 'min': Minuten,
@@ -45,10 +49,12 @@ oder
 1. Aus dem Release-Verzeichnis in github die neueste Version "setup_excel2zugferd_x6432_VERSION.msi" herunterladen und als Administrator ausführen.
 1. Eine Verknüpfung auf die Datei "excel2zugferd.exe" auf dem Desktop wird vom Setup-Programm erstellt.
 
-- Alternativ: In einem Administrator - CMD Fenster `winget excel2zugferd` ausführen.
+- Alternativ: In einem Administrator - CMD Fenster `winget install excel2zugferd` ausführen.
 - Die Freigabe durch freiwillige Helfer bei WingetCreate findet normalerweise ca. 6 - 12 h nach der neuen Release statt.
 
 - Wenn eine neue Version des Setup-Programms herauskommt, meckert der Virenscanner bei der Ausführung, dass das eine Datei sei, die einen Virus enthalten könnte, das ist die am Anfang fehlende Hash-Signatur für das Python Setup. Ich sage dann "Download beibehalten" und lasse das Ganze vom Virenprogramm im Internet Scannen. Nach ca. 14 Tagen hat sich das bisher immer gegeben.
+
+Läuft alles? Dann freue ich mich über [eine kleine Unterstützung](https://paypal.me/Lka030). Änderungen der einzelnen Versionen stehen in der [CHANGELOG.md](CHANGELOG.md).
 
 ## Updates
 
@@ -155,9 +161,3 @@ Copyright [2024] [Herbert Lischka]
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
- ## Unterstützen
-
-Excel2ZUGFeRD ist kostenlos und Open Source. Es hilft Ihnen, die E-Rechnungspflicht ohne Abo-Software zu erfüllen. Wenn es Ihnen Zeit spart, freue ich mich über einen kleinen Beitrag. Er hilft mir, neue Versionen und Formatänderungen zeitnah umzusetzen.
-
-[![☕ Projekt unterstützen via PayPal](https://img.shields.io/badge/Spenden-PayPal-blue?logo=paypal)](https://paypal.me/Lka030)
