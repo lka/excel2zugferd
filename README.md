@@ -8,22 +8,6 @@ Alternativ kann das Programm den ZugFeRD - Anteil an eine von Ihnen erstellte PD
 >
 > [![Projekt unterstützen via PayPal](https://img.shields.io/badge/Spenden-PayPal-blue?logo=paypal)](https://paypal.me/Lka030)
 
- ### Für die Automatisierer:
-
-Das Programm kann auch ohne Oberfläche verwendet werden (nach der Einstellung der Stammdaten):
-
-`"C:\Program Files (x86)\Excel2ZUGFeRD\excel2zugferd.exe" -BlattNr Pfad_zur_Exceldatei.xlsx`
-
-oder
-
-`"C:\Program Files (x86)\Excel2ZUGFeRD\excel2zugferd.exe" -BlattNr Pfad_zur_eigenen_PDF.pdf Pfad_zur_Exceldatei.xlsx`
-* BlattNr 0..n: 0 ist das erste Tabellenblatt
-* alle Parameter sind als Zeichenketten anzugeben.
-
-- Die Anwendung schreibt Meldungen in die Windows Ereignisanzeige unter 'Windows-Protokolle' -> 'Anwendung' mit der Quelle 'Excel2ZUGFeRD'
-- Fehler werden dort als 'Fehler' ausgegeben und das Programm mit exit Code -1 beendet; bitte die Details ansehen
-- bei fehlerfreiem Durchlauf wird die Erfolgsmeldung als 'Informationen' ausgegeben und das Programm mit exit Code 0 beendet
-
 ## Installation
 
 1. Aus dem Release-Verzeichnis in github die neueste Version "setup_excel2zugferd_x6432_VERSION.msi" herunterladen und als Administrator ausführen.
@@ -42,6 +26,21 @@ Läuft alles? Dann freue ich mich über [eine kleine Unterstützung](https://pay
 
 - Die Vorgehensweise ist Identisch zur Installation.
 - Alternativ: In einem Administrator - CMD Fenster `winget update excel2zugferd` ausführen.
+
+ ### Für die Automatisierer:
+Das Programm kann auch ohne Oberfläche verwendet werden (nach der Einstellung der Stammdaten):
+
+`"C:\Program Files (x86)\Excel2ZUGFeRD\excel2zugferd.exe" -BlattNr Pfad_zur_Exceldatei.xlsx`
+
+oder
+
+`"C:\Program Files (x86)\Excel2ZUGFeRD\excel2zugferd.exe" -BlattNr Pfad_zur_eigenen_PDF.pdf Pfad_zur_Exceldatei.xlsx`
+* BlattNr 0..n: 0 ist das erste Tabellenblatt
+* alle Parameter sind als Zeichenketten anzugeben.
+
+- Die Anwendung schreibt Meldungen in die Windows Ereignisanzeige unter 'Windows-Protokolle' -> 'Anwendung' mit der Quelle 'Excel2ZUGFeRD'
+- Fehler werden dort als 'Fehler' ausgegeben und das Programm mit exit Code -1 beendet; bitte die Details ansehen
+- bei fehlerfreiem Durchlauf wird die Erfolgsmeldung als 'Informationen' ausgegeben und das Programm mit exit Code 0 beendet
 
 ## Programmablauf
 
