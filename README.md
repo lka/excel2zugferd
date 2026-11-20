@@ -125,21 +125,27 @@ Innerhalb einer Handelsrechnung können positionsweise "Gutschriften" erstellt w
 
 #### Gutschriftanzeige / Stornorechnung oder Korrekturrechnung
 
-Um eine Gutschriftanzeige oder Korrekturrechnung zu erzeugen wird im Excel-Sheet eine Zeile mit 4 Feldern hinterlegt:
+Um eine Gutschriftanzeige oder Korrekturrechnung zu erzeugen, wird im Excel-Sheet eine Zeile mit 4 Feldern hinterlegt:
 ```
-Feld 1 = Gutschrift (oder Korrekturrechnung); Das ist der Text, der dann im PDF statt Rechnungs-Nr. steht.
+Feld 1 = Gutschriftanzeige (oder Korrekturrechnung); Das ist der Text, der dann im PDF statt Rechnungs-Nr. steht.
 Feld 2 = 381 (oder 384 falls es eine Korrekturrechnung sein soll); Das ist der Typ, der im XML eingetragen wird.
 Feld 3 = Rechnungsnummer der zu stornierenden Rechnung (händisch eintragen)
 Feld 4 = Rechnungsdatum der zu stornierenden Rechnung (händisch eintragen)
 ```
 
-In der neuen Rechnungsnummer steht dann die Gutschriftsnummer, also z.b. G-001 (oder die neue Rechnungsnummer z.B. R-002, wenn es eine Korrekturrechnung sein soll).
+![Image der Gutschriftanzeige im Excel](/assets/Gutschriftanzeige.png)
+
+In der neuen Rechnungsnummer steht dann die Gutschriftsnummer, also z.b. G-2024004 (oder die neue Rechnungsnummer z.B. 20240004, wenn es eine Korrekturrechnung sein soll).
 
 Eine Korrekturrechnung ersetzt die alte Rechnung.
 
+![Image der Korrekturrechnung im Excel](/assets/Korrekturrechnung.png)
+
 Die Funktion wird ausgeschaltet, wenn Feld 3 (die Rechnungsnummer) leer ist, dann funktioniert alles wie gehabt und eine Rechnung wird erzeugt.
 
-Die Position der 4 Felder kann auch über die Excel-Steuerung in den Feldern Storno vorgegeben werden, die Reihenfolge ist aber fest vorgegeben.
+![Image der Rechnung im Excel](/assets/Rechnung.png)
+
+Die Position der 4 Felder kann auch über die Excel-Steuerung in den Feldern Storno vorgegeben werden, die Reihenfolge ist aber fest vorgegeben. Hier wäre es Zeile 7 Spalte A.
 
 Siehe Vorlagen "Gutschriftanzeige", "Gutschriftanzeige negativ" und "Korrekturrechnung" in "TestRechnung.xlsx"
 
