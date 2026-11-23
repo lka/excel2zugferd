@@ -39,6 +39,12 @@ class ExcelContent:
             print(f"file not found '{self.path}'")
             pass
 
+    @staticmethod
+    def _strip_ods_text(value):
+        """the odf reader returns the displayed text of a cell, which may be
+        padded with blanks by the cell format; remove them like in xlsx"""
+        return value.strip() if isinstance(value, str) else value
+
     def read_sheet_list(self):
         """Read the List of Sheets in this Excel File"""
         return self.xlsx.sheet_names
@@ -47,6 +53,8 @@ class ExcelContent:
         """Read the specified sheet content"""
         # self.daten = self.xlsx.parse(sheet_name, header=None)
         self.daten = pd.read_excel(io=self.xlsx, sheet_name=sheet_name, header=None)
+        if self.path.lower().endswith(".ods"):
+            self.daten = self.daten.map(self._strip_ods_text)
         self.daten.columns = list(string.ascii_uppercase)[0 : len(self.daten.columns)]
         self.daten.index = range(1, len(self.daten.index) + 1)
         # print("excel_content.py: Line 49\n", self.daten)

@@ -61,9 +61,9 @@ class Middleware:
     def _usage(self) -> None:
         msg = (
             "Benutzung:\nexcel2zugferd.exe"
-            " -BlattNr Pfad_zur_Exceldatei.xlsx\noder\n"
+            " -BlattNr Pfad_zur_Exceldatei.xlsx (oder .ods)\noder\n"
             "excel2zugferd.exe"
-            " -BlattNr Pfad_zur_eigenen_PDF.pdf Pfad_zur_Exceldatei.xlsx\n\n"
+            " -BlattNr Pfad_zur_eigenen_PDF.pdf Pfad_zur_Exceldatei.xlsx (oder .ods)\n\n"
             "BlattNr 0..n, 0 ist das erste Tabellenblatt\n"
             "alle Parameter sind als Zeichenketten anzugeben."
         )
