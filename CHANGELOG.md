@@ -1,5 +1,10 @@
 ## Versionen
 
+### 1.1.0
+
+- Neben Excel-Dateien (.xlsx) können jetzt auch LibreOffice Calc Dateien (.ods) verwendet werden, in der Oberfläche und im Aufruf ohne Oberfläche. Siehe Vorlage "TestRechnung.ods".
+- Die Validierung des erzeugten ZUGFeRD Dokuments auf https://www.portinvoice.com ist erfolgreich (Ohne Fehler und Warnungen).
+
 ### 1.0.0
 
 - Die Oberfläche wurde komplett umgestellt auf ein moderneres Aussehen

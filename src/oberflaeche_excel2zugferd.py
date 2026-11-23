@@ -129,9 +129,12 @@ class OberflaecheExcel2Zugferd(src.oberflaeche_base.Oberflaeche):
 
     def _file_dialog(self, init_dir: str) -> None:
         self.filename = filedialog.askopenfilename(
-            title="Bitte die Excel Datei auswählen",
+            title="Bitte die Excel- oder LibreOffice-Datei auswählen",
             initialdir=Path(init_dir).resolve(),
-            filetypes=(("Excel Datei", "*.xlsx"), ("Alle Dateien", "*.*")),
+            filetypes=(
+                ("Excel / LibreOffice Datei", "*.xlsx *.ods"),
+                ("Alle Dateien", "*.*"),
+            ),
         )
 
     def _try_to_save_Verzeichnis(self) -> None:
@@ -173,12 +176,12 @@ kann nicht beschrieben werden.\n{ex}",
         overwrites makeform from base class
         """
         self.file_name_button = ctk.CTkButton(
-            self.content_frame, text="Excel-Datei...", command=self.open_file
+            self.content_frame, text="Tabelle öffnen...", command=self.open_file
         )
         self.file_name_button.grid(row=0, column=0, pady=PADY)
         self.file_name_label = ctk.CTkLabel(
             self.content_frame,
-            text="Bitte erst eine Excel-Datei auswählen.",
+            text="Bitte erst eine Excel- oder LibreOffice-Datei auswählen.",
             wraplength=FILE_LABEL_WIDTH,
             justify="left",
             anchor="w",

@@ -1,6 +1,6 @@
 # Excel2ZugFeRD
 
-Dieses Programm liest die Daten aus einer Excel Datei aus und hängt sie als ZUGFeRD - kompatible XML-Daten an die neu erstellte Rechnungs-PDF an.
+Dieses Programm liest die Daten aus einer Excel oder LibreOffice Calc Datei aus und hängt sie als ZUGFeRD - kompatible XML-Daten an die neu erstellte Rechnungs-PDF an.
 
 Alternativ kann das Programm den ZugFeRD - Anteil an eine von Ihnen erstellte PDF anhängen. Dann wird die PDF als IhrPdfName_ZuGFeRD.pdf ins Verzeichnis Ihrer PDF gestellt.
 
@@ -33,6 +33,7 @@ Das Programm kann auch ohne Oberfläche verwendet werden (nach der Einstellung d
 oder
 
 `"C:\Program Files (x86)\Excel2ZUGFeRD\excel2zugferd.exe" -BlattNr Pfad_zur_eigenen_PDF.pdf Pfad_zur_Exceldatei.xlsx`
+* Pfad_zur_Exceldatei kann eine .xlsx- oder eine LibreOffice-.ods-Datei sein
 * BlattNr 0..n: 0 ist das erste Tabellenblatt
 * alle Parameter sind als Zeichenketten anzugeben.
 
@@ -81,7 +82,7 @@ dementsprechend geschützt aufbewahrt und übertragen werden.
 
 ### Excel-Datei
 Die Struktur der Excel Datei ist vorgegeben und kann nicht verändert werden, ohne die Funktion zu verlieren.
-Als Vorlage benutzen Sie bitte die Datei "TestRechnung.xlsx".
+Als Vorlage benutzen Sie bitte die Datei "TestRechnung.xlsx". Alternativ können auch LibreOffice-Dateien (.ods) verwendet werden, z.B. "TestRechnung.ods".
 
 Alternativ können Sie die XY-Positionen im Excel Blatt (Spalten: A...Z, Zeilen: 1...) in den Stammdaten "Excel Steuerung" und "Excel Positionen" angeben.
 Damit können die XY-Positionen verändert werden und die Suchfunktion wird abgeschaltet. Durch die Angabe der "Excel Positionen" können Sie auch die Überschriften der Einzelpositionen anpassen z.B: Pos. -> Nr., Typ -> EH usw..

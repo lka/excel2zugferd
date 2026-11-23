@@ -780,3 +780,35 @@ class TestExcelContent(TestCase):
 
 # if __name__ == "__main__":
 #     unittest.main()
+
+
+class TestExcelContentOds(TestCase):
+    """the LibreOffice file must give the same content as the Excel file"""
+
+    def setUp(self) -> None:
+        self.xlsx = ExcelContent("TestRechnung.xlsx", ".")
+        self.ods = ExcelContent("TestRechnung.ods", ".")
+
+    def test_sheet_list_equal(self):
+        """both files have the same sheets"""
+        self.assertEqual(self.ods.read_sheet_list(), self.xlsx.read_sheet_list())
+
+    def test_sheet_content_equal(self):
+        """texts of all cells are equal, numbers are compared by value"""
+        for sheet in self.xlsx.read_sheet_list():
+            with self.subTest(sheet=sheet):
+                expected = self.xlsx.read_sheet(sheet)
+                actual = self.ods.read_sheet(sheet)
+                self.assertEqual(actual.shape, expected.shape)
+                for col in expected.columns:
+                    for row in expected.index:
+                        exp, act = expected.at[row, col], actual.at[row, col]
+                        if pd.isna(exp):
+                            self.assertTrue(pd.isna(act), f"{col}{row}")
+                        elif isinstance(exp, str):
+                            self.assertEqual(act, exp.strip(), f"{col}{row}")
+                        else:
+                            if isinstance(exp, (int, float)):
+                                self.assertAlmostEqual(float(act), float(exp), msg=f"{col}{row}")
+                            else:
+                                self.assertEqual(act, exp, f"{col}{row}")
