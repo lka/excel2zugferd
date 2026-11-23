@@ -186,6 +186,9 @@ class OberflaecheIniFile(src.oberflaeche_base.Oberflaeche):
         self.tab_pages = dict(zip(TAB_NAMES, pages))
         for page in pages:
             page.grid(row=grid_row, column=0, columnspan=2, sticky="nw")
+        # only the first tab is visible while the form is built
+        for page in pages[1:]:
+            page.grid_remove()
         return pages
 
     def _make_cards(self, pages: list, content: dict) -> dict:
